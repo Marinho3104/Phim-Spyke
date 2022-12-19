@@ -1,0 +1,16 @@
+
+
+Allocate x bytes into stack memory
+Allocate x bytes into heap memory
+
+Copy x bytes from previous loaded address to other previous loaded address (need to have loaded 2 address before)
+
+Load address into stack (not memory)
+
+Call a block of byte code
+
+Binary add
+Binary sub
+Binary mul
+Binary div
+

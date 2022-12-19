@@ -1,84 +1,98 @@
 
+#define END_CODE 1 // End of code
+#define END_INSTRUCTION 2 // ;
 
-#define END_CODE  // End of code
-#define END_INSTRUCTION  // ;
 
-#define OPEN_PARENTHESIS  // (
-#define CLOSE_PARENTHESIS  // )
+#define OPEN_PARENTHESIS 3 // (
+#define CLOSE_PARENTHESIS 4 // )
 
-#define OPEN_BRACES  // {
-#define CLOSE_BRACES  // }
 
-#define OPEN_BRACKET  // [
-#define CLOSE_BRACKET  // ]
+#define OPEN_BRACES 5 // {
+#define CLOSE_BRACES 6 // }
 
-#define COMMA  // ,
-#define COLON  // :
-#define DOUBLE_COLON // ::
-#define QUESTION_MARK  // ?
-#define QUOTATION_MARK  // "
-#define SINGLE_QUOTATION_MARK  // '
-#define COMMENT_LINE  // //
-#define COMMENT  // /*
-#define COMMENT_END  // */
-#define PRE_PROCESSOR  // #
 
-#define POINTER  // * 
-#define ADDRESS  // &
+#define OPEN_BRACKET 7 // [
+#define CLOSE_BRACKET 8 // ]
 
-#define FUNCTION_OPERATOR_PLUS   // +
-#define FUNCTION_OPERATOR_MINUS  // -
-#define FUNCTION_OPERATOR_MULTIPLICATION  // *
-#define FUNCTION_OPERATOR_DIVISION  // /
-#define FUNCTION_OPERATOR_MODULOS // %
 
-#define FUNCTION_OPERATOR_PLUS_ASSIGN  // +=
-#define FUNCTION_OPERATOR_MINUS_ASSIGN  // -=
-#define FUNCTION_OPERATOR_MULTIPLICATION_ASSIGN  // *=
-#define FUNCTION_OPERATOR_DIVISION_ASSIGN  // /=
-#define FUNCTION_OPERATOR_MODULOS_ASSIGN  // %=
+#define COMMA 9 // ,
+#define COLON 10 // :
+#define DOUBLE_COLON 11 / ::
+#define QUESTION_MARK 12 // ?
+#define QUOTATION_MARK 13 // "
+#define SINGLE_QUOTATION_MARK 14 // '
+#define COMMENT_LINE 15 // //
+#define COMMENT 16 // /*
+#define COMMENT_END 17 // */
+#define PRE_PROCESSOR 18 // #
 
-#define FUNCTION_OPERATOR_INCREMENT  // ++
-#define FUNCTION_OPERATOR_DECREMENT  // --
 
-#define FUNCTION_OPERATOR_INCREMENT_LEFT  // ++
-#define FUNCTION_OPERATOR_DECREMENT_LEFT  // --
+#define POINTER 19 // * 
+#define ADDRESS 20 // &
 
-#define FUNCTION_OPERATOR_AND  // &&
-#define FUNCTION_OPERATOR_OR  // ||
-#define FUNCTION_OPERATOR_NOT  // !
 
-#define FUNCTION_EQUAL_TO  // ==
-#define FUNCTION_NOT_EQUAL_TO  // !=
-#define FUNCTION_GREATER_THAN  // >
-#define FUNCTION_LESS_THAN  // <
-#define FUNCTION_GREATER_THAN_EQUAL_TO  // >=
-#define FUNCTION_LESS_THAN_EQUAL_TO  // <= 
+#define FUNCTION_OPERATOR_PLUS 21  // +
+#define FUNCTION_OPERATOR_MINUS 22 // -
+#define FUNCTION_OPERATOR_MULTIPLICATION 23 // *
+#define FUNCTION_OPERATOR_DIVISION 24 // /
+#define FUNCTION_OPERATOR_MODULOS 25 / %
 
-#define FUNCTION_BITWISE_AND  // &
-#define FUNCTION_BITWISE_OR  // |
-#define FUNCTION_BITWISE_XOR  // ^
-#define FUNCTION_BITWISE_LEFT_SIHFT  // <<
-#define FUNCTION_BITWISE_RIGHT_SHIFT  // >>
 
-#define FUNCTION_BITWISE_AND_ASSIGN  // &=
-#define FUNCTION_BITWISE_OR_ASSIGN  // |=
-#define FUNCTION_BITWISE_XOR_ASSIGN  // ^=
-#define FUNCTION_BITWISE_LEFT_SIHFT_ASSIGN  // <<=
-#define FUNCTION_BITWISE_RIGHT_SHIFT_ASSIGN  // >>=
+#define FUNCTION_OPERATOR_PLUS_ASSIGN 26 // +=
+#define FUNCTION_OPERATOR_MINUS_ASSIGN 27 // -=
+#define FUNCTION_OPERATOR_MULTIPLICATION_ASSIGN 28 // *=
+#define FUNCTION_OPERATOR_DIVISION_ASSIGN 29 // /=
+#define FUNCTION_OPERATOR_MODULOS_ASSIGN 30 // %=
 
-#define BINARY_ADDITION  // +b
-#define BINARY_SUBTRACTION  // -b
-#define BINARY_MULTIPLICATION  // *b
-#define BINARY_DIVISION  // /b
-#define BINARY_MODULOS  // %b
 
-#define PRIMITIVE_TYPE_VOID  // void
-#define PRIMITIVE_TYPE_BYTE  // byte
-#define PRIMITIVE_TYPE_INT  // int
-#define PRIMITIVE_TYPE_BOOL  // bool
+#define FUNCTION_OPERATOR_INCREMENT 31 // ++
+#define FUNCTION_OPERATOR_DECREMENT 32 // --
 
-#define NAMESPACE  // namepsace
-#define STRUCT  // struct
-#define CONTRACT  // contract
 
+#define FUNCTION_OPERATOR_INCREMENT_LEFT 33 // ++
+#define FUNCTION_OPERATOR_DECREMENT_LEFT 34 // --
+
+
+#define FUNCTION_OPERATOR_AND 35 // &&
+#define FUNCTION_OPERATOR_OR 36 // ||
+#define FUNCTION_OPERATOR_NOT 37 // !
+
+
+#define FUNCTION_EQUAL_TO 38 // ==
+#define FUNCTION_NOT_EQUAL_TO 39 // !=
+#define FUNCTION_GREATER_THAN 40 // >
+#define FUNCTION_LESS_THAN 41 // <
+#define FUNCTION_GREATER_THAN_EQUAL_TO 42 // >=
+#define FUNCTION_LESS_THAN_EQUAL_TO 43 // <= 
+
+
+#define FUNCTION_BITWISE_AND 44 // &
+#define FUNCTION_BITWISE_OR 45 // |
+#define FUNCTION_BITWISE_XOR 46 // ^
+#define FUNCTION_BITWISE_LEFT_SIHFT 47 // <<
+#define FUNCTION_BITWISE_RIGHT_SHIFT 48 // >>
+
+
+#define FUNCTION_BITWISE_AND_ASSIGN 49 // &=
+#define FUNCTION_BITWISE_OR_ASSIGN 50 // |=
+#define FUNCTION_BITWISE_XOR_ASSIGN 51 // ^=
+#define FUNCTION_BITWISE_LEFT_SIHFT_ASSIGN 52 // <<=
+#define FUNCTION_BITWISE_RIGHT_SHIFT_ASSIGN 53 // >>=
+
+
+#define BINARY_ADDITION 54 // +b
+#define BINARY_SUBTRACTION 55 // -b
+#define BINARY_MULTIPLICATION 56 // *b
+#define BINARY_DIVISION 57 // /b
+#define BINARY_MODULOS 58 // %b
+
+
+#define PRIMITIVE_TYPE_VOID 59 // void
+#define PRIMITIVE_TYPE_BYTE 60 // byte
+#define PRIMITIVE_TYPE_INT 61 // int
+#define PRIMITIVE_TYPE_BOOL 62 // bool
+
+
+#define NAMESPACE 63 // namepsace
+#define STRUCT 64 // struct
+#define CONTRACT 65 // contract

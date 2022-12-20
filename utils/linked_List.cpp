@@ -1,6 +1,6 @@
 #include "./linked_List.h"
 
-#include "./token.h"
+#include "token.h"
 
 #include <iostream>
 #include <string.h>

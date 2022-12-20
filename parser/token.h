@@ -9,7 +9,7 @@ namespace parser {
 
     struct Position_Information {
 
-        int column, line;
+        int column, final_column, line;
 
     };
 
@@ -19,7 +19,7 @@ namespace parser {
         char* identifier;
         Position_Information position_information;
 
-        ~Token(); Token(int_8, int, int); Token(int_8, char*, int, int);
+        ~Token(); Token(int_8, int, int, int); Token(int_8, char*, int, int, int);
 
     };
 

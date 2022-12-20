@@ -10,7 +10,8 @@ namespace parser {
     struct Tokenizer_Control {
 
         utils::Linked_List <Token*>* tokens_collection;
-        char* code_copy;
+        char* code_copy, *inicial_column_address;
+        int current_line;
 
         bool debug_mode;
 
@@ -19,6 +20,14 @@ namespace parser {
         void print(const char*);
 
         void addToken(Token*);
+
+        void setNewToken();
+
+        bool setTokenSymbol();
+
+        bool setTokenKeyWord();
+
+        void setTokenIdentifier();
 
         void generate();
 

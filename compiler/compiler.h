@@ -9,6 +9,8 @@ namespace compiler {
 
     struct Compiler {
 
+        char* code;
+
         ~Compiler(); Compiler(char*);
 
         void generateBuiltIns();

@@ -166,5 +166,7 @@ void parser::handlePointerOrAddress(Token* __token) {
 }
 
 
+// bool parser::isPrimitive(int __token_id) { return  }
+
 bool parser::isImplicitValueOrIdentifier(int __token_id) { return __token_id >= IDENTIFIER && __token_id <= IMPLICIT_VALUE_STRING; }
 

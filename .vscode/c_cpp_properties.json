@@ -6,7 +6,8 @@
                 "${workspaceFolder}/compiler",
                 "${workspaceFolder}/parser",
                 "${workspaceFolder}/test",
-                "${workspaceFolder}/utils"
+                "${workspaceFolder}/utils",
+                "${workspaceFolder}/built_ins"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",

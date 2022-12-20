@@ -1,5 +1,8 @@
 #include "ast.h"
 
+#include "exception_handle.h"
+#include "tokenizer.h"
+
 #include "linked_List.h"
 #include "ast_nodes.h"
 
@@ -108,16 +111,13 @@ parser::Name_Space* parser::Name_Space_Control::getPreviousNameSpace(Name_Space*
 }
 
 
-
-
-
 parser::Ast_Control::~Ast_Control() {
     delete name_space_node_collection; delete implicit_value_collection;
     delete name_space_control; 
     delete name_space_chain; delete code_block_chain;
 }
 
-parser::Ast_Control::Ast_Control(bool __debug_mode) : debug_mode(__debug_mode) {
+parser::Ast_Control::Ast_Control(bool __debug_mode) : debug_mode(__debug_mode), current_token_position(0), debug_information_tab(-1) {
 
     name_space_node_collection = new utils::Linked_List <Ast_Node_Name_Space*>();
     implicit_value_collection = new utils::Linked_List <char*>();
@@ -129,9 +129,20 @@ parser::Ast_Control::Ast_Control(bool __debug_mode) : debug_mode(__debug_mode) {
 
 }
 
+parser::Token* parser::Ast_Control::getToken(int __off) {
+
+    if (current_token_position + __off >= tokenizer_control->tokens_collection->count) 
+        __off = tokenizer_control->tokens_collection->count - 1 - current_token_position;
+
+    return tokenizer_control->tokens_collection->operator[](current_token_position + __off); 
+
+}
+
 void parser::Ast_Control::print(const char* __information) {
     
     if (!debug_mode) return;
+
+    for (int _ = 0; _ < debug_information_tab; _++) std::cout << "\t";
 
     std::cout << "\t" << __information << std::endl;
 
@@ -149,6 +160,8 @@ void parser::Ast_Control::generate() {
 
 void parser::Ast_Control::addNameSpaceNodeToChain(Ast_Node_Name_Space* __node_name_space) { name_space_chain->add(__node_name_space); }
 
+void parser::Ast_Control::addNameSpaceNodeToChain(Name_Space* __name_space) { addNameSpaceNodeToChain(getNodeNameSpace(__name_space)); }
+
 void parser::Ast_Control::popNameSpaceChainFromChain() {
     utils::Data_Linked_List <Ast_Node_Name_Space*>* _data_linked_list = name_space_chain->remove(name_space_chain->count);
     _data_linked_list->destroy_content = 0; delete _data_linked_list;
@@ -161,4 +174,15 @@ void parser::Ast_Control::popCodeBlockChainFromChain() {
     _data_linked_list->destroy_content = 0; delete _data_linked_list;
 }
 
+parser::Ast_Node_Name_Space* parser::Ast_Control::getNodeNameSpace(Name_Space* __name_space) {
+
+    for (int _ = 0; _ < name_space_node_collection->count; _++)
+
+        if (name_space_node_collection->operator[](_)->name_space == __name_space) return name_space_node_collection->operator[](_);
+
+    parser::exception_handle->runException("Cannot find a Name Space Node with given Name Space");
+
+    return NULL;
+
+}
 

@@ -55,9 +55,13 @@ namespace parser {
         utils::Linked_List <Ast_Node_Code_Block*>* code_block_chain;
 
         int current_token_position;
+
+        int debug_information_tab;
         bool debug_mode;
 
         ~Ast_Control(); Ast_Control(bool);
+
+        Token* getToken(int);
 
         void print(const char*);
 
@@ -65,9 +69,11 @@ namespace parser {
 
         void addImplicitValue(char*);
 
-        void addNameSpaceNodeToChain(Ast_Node_Name_Space*); void popNameSpaceChainFromChain();
+        void addNameSpaceNodeToChain(Ast_Node_Name_Space*); void addNameSpaceNodeToChain(Name_Space*); void popNameSpaceChainFromChain();
 
         void addCodeBlockNodeToChain(Ast_Node_Code_Block*); void popCodeBlockChainFromChain();
+
+        Ast_Node_Name_Space* getNodeNameSpace(Name_Space*);
 
     };
 

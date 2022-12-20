@@ -22,6 +22,7 @@ namespace parser {
     void handlePointerOrAddress(Token*);
 
 
+    bool isPrimitive(int);
     bool isImplicitValueOrIdentifier(int);
 
 }

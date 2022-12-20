@@ -2,6 +2,7 @@
 
 #include "token_definitions.h"
 #include "tokenizer_helper.h"
+#include "exception_handle.h"
 #include "linked_List.h"
 #include "token.h"
 
@@ -163,7 +164,5 @@ void parser::Tokenizer_Control::generate() {
         print(_buffer);
 
     }
-
-
 
 }

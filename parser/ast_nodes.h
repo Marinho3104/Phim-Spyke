@@ -33,6 +33,12 @@ namespace parser {
 
     struct Ast_Node_Variable_Declaration : Ast_Node {
 
+        parser::Type_Information* type;
+
+        ~Ast_Node_Variable_Declaration(); Ast_Node_Variable_Declaration(int, parser::Type_Information*);
+
+        static utils::Linked_List <parser::Ast_Node*>* generate();
+
     };
 
     struct Ast_Node_Function_Declaration : Ast_Node {

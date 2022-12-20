@@ -14,7 +14,11 @@ namespace parser {
     // Tokenizer
     struct Tokenizer_Control;
 
+    // Exception Handle
+    struct Exception_Handle;
+
     // Ast 
+    struct Type_Information;
     struct Ast_Control;
     struct Name_Space;
 
@@ -39,9 +43,9 @@ namespace utils {
 namespace parser {
 
     extern Tokenizer_Control* tokenizer_control;
+    extern Exception_Handle* exception_handle;
     extern Ast_Control* ast_control;
     extern char* code;
-
 }
 
 #endif

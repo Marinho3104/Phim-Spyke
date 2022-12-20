@@ -92,10 +92,14 @@
 #define PRIMITIVE_TYPE_INT 61 // int
 #define PRIMITIVE_TYPE_BOOL 62 // bool
 
+#define IDENTIFIER 63 //
 
-#define NAMESPACE 63 // namepsace
-#define STRUCT 64 // struct
-#define CONTRACT 65 // contract
+#define IMPLICIT_VALUE_INT 64
+#define IMPLICIT_VALUE_CHARACTER 65
+#define IMPLICIT_VALUE_STRING 66
 
+#define NAMESPACE 67 // namepsace
+#define STRUCT 68 // struct
+#define CONTRACT 69 // contract
+#define INCLUDE 70 // include
 
-#define IDENTIFIER 66 //

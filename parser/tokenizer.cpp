@@ -40,7 +40,7 @@ void parser::Tokenizer_Control::addToken(Token* __token) {
 
 void parser::Tokenizer_Control::setNewToken() { if (setTokenSymbol()); else if(setTokenKeyWord()); else setTokenIdentifier(); }
 
-bool parser::Tokenizer_Control::setTokenSymbol() { // Handle tokens
+bool parser::Tokenizer_Control::setTokenSymbol() {
 
     char* _backup_state = code_copy;
 
@@ -48,11 +48,31 @@ bool parser::Tokenizer_Control::setTokenSymbol() { // Handle tokens
 
     if (!__token_id) return 0;
 
+    switch (__token_id)
+    {
+    case COMMENT_LINE: parser::handleCommentLine(code_copy); break;
+    case COMMENT: parser::handleComment(code_copy); break;
+    default: goto next;
+    }
+
+    return 1;
+
+next:;
+
     Token* _token = (Token*) malloc(sizeof(Token));
 
     new (_token) Token(
         __token_id, _backup_state - inicial_column_address, code_copy - inicial_column_address, current_line
     );
+
+    switch (__token_id)
+    {
+    case QUOTATION_MARK: parser::handleQuotationMark(_token, code_copy); break;
+    case SINGLE_QUOTATION_MARK: parser::handleSingleQuotationMark(_token, code_copy); break;
+    case POINTER: case ADDRESS: parser::handlePointerOrAddress(_token); break;
+    default: break;
+    }
+
 
     addToken(_token);
 
@@ -100,14 +120,15 @@ void parser::Tokenizer_Control::setTokenIdentifier() {
 
     Token* _token = (Token*) malloc(sizeof(Token));
     new (_token) Token(
-        IDENTIFIER, _data, *_backup_state, *code_copy, current_line
+        IDENTIFIER, _data, _backup_state - inicial_column_address, code_copy - inicial_column_address, current_line
     );
 
     if (_setTokenState) {
 
-        code_copy += tokens_collection->last->object->position_information.final_column - tokens_collection->last->object->position_information.column;
+        code_copy += 
+            tokens_collection->last->object->position_information.final_column - tokens_collection->last->object->position_information.column;
 
-        tokens_collection->insert(_token, tokens_collection->count - 2);
+        tokens_collection->insert(_token, tokens_collection->count - 1);
 
     }
 

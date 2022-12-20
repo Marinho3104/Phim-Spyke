@@ -7,6 +7,7 @@
 namespace parser {
 
     struct Tokenizer_Control;
+    struct Ast_Control;
 
 }
 
@@ -14,6 +15,7 @@ namespace parser {
 namespace parser {
 
     extern Tokenizer_Control* tokenizer_control;
+    extern Ast_Control* ast_control;
     extern char* code;
 
 }

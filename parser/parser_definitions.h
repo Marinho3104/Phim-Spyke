@@ -5,19 +5,26 @@
 
 typedef unsigned char int_8;
 
-
-// Extern variables
-namespace parser {
-
-    extern char* code;
-
-}
-
 // Forward
 namespace parser {
 
-    struct Tokenizer_Control;
+    // Token
     struct Token;
+    
+    // Tokenizer
+    struct Tokenizer_Control;
+
+    // Ast 
+    struct Ast_Control;
+    struct Name_Space;
+
+    // Ast Nodes
+    struct Ast_Node;
+    struct Ast_Node_Name_Space;
+    struct Ast_Node_Code_Block;
+    struct Ast_Node_Variable_Declaration;
+    struct Ast_Node_Function_Declaration;
+    struct Ast_Node_Struct_Declaration;
 
 }
 
@@ -25,6 +32,15 @@ namespace parser {
 namespace utils {
 
     template <typename> struct Linked_List;
+
+}
+
+// Extern variables
+namespace parser {
+
+    extern Tokenizer_Control* tokenizer_control;
+    extern Ast_Control* ast_control;
+    extern char* code;
 
 }
 

@@ -1,6 +1,9 @@
 #include "tokenizer_helper.h"
 
 #include "token_definitions.h"
+#include "linked_List.h"
+#include "tokenizer.h"
+#include "token.h"
 
 #include <iostream>
 #include <string.h>
@@ -11,6 +14,9 @@ int parser::getTokenSymbol(const char*& __current_position) {
     if (!strncmp(__current_position, ">>=", 3)) { __current_position += 3; return FUNCTION_OPERATOR_BITWISE_RIGHT_SHIFT_ASSIGN; }
 
     if (!strncmp(__current_position, "::", 2)) { __current_position += 2; return DOUBLE_COLON; }
+    if (!strncmp(__current_position, "//", 2)) { __current_position += 2; return COMMENT_LINE; }
+    if (!strncmp(__current_position, "/*", 2)) { __current_position += 2; return COMMENT; }
+    if (!strncmp(__current_position, "*/", 2)) { __current_position += 2; return COMMENT_END; }
 
     if (!strncmp(__current_position, "+=", 2)) { __current_position += 2; return FUNCTION_OPERATOR_PLUS_ASSIGN; }
     if (!strncmp(__current_position, "-=", 2)) { __current_position += 2; return FUNCTION_OPERATOR_MINUS_ASSIGN; }
@@ -92,13 +98,73 @@ int parser::getTokenKeyWord(const char*& __current_position) {
     if (!strncmp(__current_position, "namespace", 9)) { __current_position += 9; return NAMESPACE; }
     if (!strncmp(__current_position, "struct", 6)) { __current_position += 6; return STRUCT; }
     if (!strncmp(__current_position, "contract", 8)) { __current_position += 8; return CONTRACT; }
+    if (!strncmp(__current_position, "include", 7)) { __current_position += 7; return INCLUDE; }
+
 
     return 0;
 
 }
 
+void parser::handleCommentLine(char*& __current_position) { while(*(__current_position)++ != '\n'); }
+
+void parser::handleComment(char*& __current_position) { while(*(__current_position)++ != '*' || *(__current_position) != '/'); __current_position++; }
+
+void parser::handleQuotationMark(Token* __token, char*& __current_position) {
+
+    char* _backup_state = __current_position;
+
+    while( *(__current_position - 1) == '\\' || *__current_position != '"' ) __current_position++;
+
+    char* _data = (char*) malloc(__current_position - _backup_state + 1);
+
+    strncpy(_data, _backup_state, __current_position - _backup_state);
+
+    _data[__current_position - _backup_state] = '\0';
+
+    new (__token) Token(
+        IMPLICIT_VALUE_STRING, 
+        _data,
+        _backup_state - tokenizer_control->inicial_column_address, 
+        __current_position - tokenizer_control->inicial_column_address, 
+        tokenizer_control->current_line
+    );
+
+    __current_position++;
+
+}
+
+void parser::handleSingleQuotationMark(Token* __token, char*& __current_position) {
+
+    char* _backup_state = __current_position;
+
+    while( *(__current_position - 1) == '\\' || *__current_position != '\'' ) __current_position++;
+
+    char* _data = (char*) malloc(__current_position - _backup_state + 1);
+
+    strncpy(_data, _backup_state, __current_position - _backup_state);
+
+    _data[__current_position - _backup_state] = '\0';
+
+    new (__token) Token(
+        IMPLICIT_VALUE_CHARACTER,
+        _data, 
+        _backup_state - tokenizer_control->inicial_column_address, 
+        __current_position - tokenizer_control->inicial_column_address, 
+        tokenizer_control->current_line
+    );
+
+    __current_position++;
+
+}
+
+void parser::handlePointerOrAddress(Token* __token) {
+
+    if (parser::isImplicitValueOrIdentifier(parser::tokenizer_control->tokens_collection->last->object->id)) 
+
+        __token->id = __token->id == POINTER ? FUNCTION_OPERATOR_MULTIPLICATION : FUNCTION_OPERATOR_BITWISE_AND;
+
+}
 
 
-
-
+bool parser::isImplicitValueOrIdentifier(int __token_id) { return __token_id >= IDENTIFIER && __token_id <= IMPLICIT_VALUE_STRING; }
 

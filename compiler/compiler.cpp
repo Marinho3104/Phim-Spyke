@@ -3,6 +3,7 @@
 #include "inicializer.h"
 #include "tokenizer.h"
 #include "common.h"
+#include "ast.h"
 
 #include <iostream>
 
@@ -25,6 +26,8 @@ void compiler::Compiler::generateBuiltIns() {
     parser::inicializeVariables();
 
     parser::tokenizer_control->generate();
+
+    parser::ast_control->generate();
 
     parser::deleteVariables();
 

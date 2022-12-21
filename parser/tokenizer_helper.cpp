@@ -99,6 +99,7 @@ int parser::getTokenKeyWord(const char*& __current_position) {
     if (!strncmp(__current_position, "struct", 6)) { __current_position += 6; return STRUCT; }
     if (!strncmp(__current_position, "contract", 8)) { __current_position += 8; return CONTRACT; }
     if (!strncmp(__current_position, "include", 7)) { __current_position += 7; return INCLUDE; }
+    if (!strncmp(__current_position, "static", 6)) { __current_position += 6; return STATIC; }
 
 
     return 0;
@@ -166,7 +167,7 @@ void parser::handlePointerOrAddress(Token* __token) {
 }
 
 
-// bool parser::isPrimitive(int __token_id) { return  }
+bool parser::isPrimitive(int __token_id) { return __token_id >= PRIMITIVE_TYPE_VOID && __token_id <= PRIMITIVE_TYPE_BOOL; }
 
 bool parser::isImplicitValueOrIdentifier(int __token_id) { return __token_id >= IDENTIFIER && __token_id <= IMPLICIT_VALUE_STRING; }
 

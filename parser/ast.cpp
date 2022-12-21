@@ -10,19 +10,71 @@
 #include <string.h>
 
 parser::Declaration_Tracker::~Declaration_Tracker() {
+    delete variable_declarations; delete function_declarations; delete struct_declarations;
+    delete names; delete declaration_ids;
+}
+
+parser::Declaration_Tracker::Declaration_Tracker(int* __off) : off(__off) {
+
+    variable_declarations = new utils::Linked_List <Ast_Node_Variable_Declaration*>(); variable_declarations->destroy_content = 0;
+    function_declarations = new utils::Linked_List <Ast_Node_Function_Declaration*>(); function_declarations->destroy_content = 0;
+    struct_declarations = new utils::Linked_List <Ast_Node_Struct_Declaration*>(); struct_declarations->destroy_content = 0;
+
+    names = new utils::Linked_List <char*>(); declaration_ids = new utils::Linked_List <int>();
 
 }
 
-parser::Declaration_Tracker::Declaration_Tracker() {
+parser::Ast_Node_Variable_Declaration* parser::Declaration_Tracker::getVariableDeclaration(int __declaration_id) {
+
+    for (int _ = 0; _ < variable_declarations->count; _++)
+
+        if (variable_declarations->operator[](_)->declaration_id == __declaration_id) return variable_declarations->operator[](_);
+
+    return NULL;
 
 }
+
+parser::Ast_Node_Function_Declaration* parser::Declaration_Tracker::getFunctionDeclaration(int __declaration_id, utils::Linked_List <Ast_Node*>* __parameters) {
+
+}
+
+parser::Ast_Node_Struct_Declaration* parser::Declaration_Tracker::getStructDeclaration(int __declaration_id) {
+    
+    for (int _ = 0; _ < struct_declarations->count; _++)
+
+        if (struct_declarations->operator[](_)->declaration_id == __declaration_id) return struct_declarations->operator[](_);
+
+    return NULL;
+
+}
+
+int parser::Declaration_Tracker::getDeclarationId(char* __name) {
+
+    int _position = names->getPosition(__name, NULL);
+
+    return _position != -1 ? declaration_ids->operator[](_position) : -1;
+
+}
+
+void parser::Declaration_Tracker::addName(char* __name) {
+
+    if (getDeclarationId(__name) != -1) return;
+
+    char* _name_copy = (char*) malloc(strlen(__name) + 1);
+
+    strcpy(_name_copy, __name);
+
+    names->add(_name_copy); declaration_ids->add((*off)++);
+
+}
+
 
 
 parser::Name_Space::~Name_Space() { delete scope; delete declaration_tracker; }
 
-parser::Name_Space::Name_Space(utils::Linked_List <char*>* __scope) : scope(new utils::Linked_List <char*>()) { 
+parser::Name_Space::Name_Space(utils::Linked_List <char*>* __scope, int* __off) : scope(new utils::Linked_List <char*>()) { 
     
-    declaration_tracker = new Declaration_Tracker(); 
+    declaration_tracker = new Declaration_Tracker(__off); 
     char* _data;
 
     if (__scope)
@@ -48,7 +100,7 @@ parser::Name_Space_Control::Name_Space_Control() : declaration_off(0)
 void parser::Name_Space_Control::loadGlobalNameSpace() {
 
     Name_Space* _name_space = (Name_Space*) malloc(sizeof(Name_Space));
-    new (_name_space) Name_Space(NULL);
+    new (_name_space) Name_Space(NULL, &declaration_off);
 
     addNameSpace(_name_space);
     
@@ -57,8 +109,6 @@ void parser::Name_Space_Control::loadGlobalNameSpace() {
 void parser::Name_Space_Control::addNameSpace(Name_Space* __name_space) {
 
     if (getNameSpace(__name_space->scope)) return;
-
-    // Update declarations off
 
     name_space_collection->add(__name_space);
 
@@ -69,9 +119,7 @@ void parser::Name_Space_Control::addNameSpace(utils::Linked_List <char*>* __scop
     if (getNameSpace(__scope)) return;
 
     Name_Space* _name_space = (Name_Space*) malloc(sizeof(Name_Space));
-    new (_name_space) Name_Space(__scope);
-
-    // Update declarations off
+    new (_name_space) Name_Space(__scope, &declaration_off);
 
     name_space_collection->add(_name_space);
 

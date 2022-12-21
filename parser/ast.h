@@ -9,9 +9,26 @@ namespace parser {
 
     struct Declaration_Tracker {
 
-        // utils::Linked_List <Ast_Node_Variable_Declaration*>* variable_declarations;
+        utils::Linked_List <Ast_Node_Variable_Declaration*>* variable_declarations;
+        utils::Linked_List <Ast_Node_Function_Declaration*>* function_declarations;
+        utils::Linked_List <Ast_Node_Struct_Declaration*>* struct_declarations;
 
-        ~Declaration_Tracker(); Declaration_Tracker();
+        utils::Linked_List <int>* declaration_ids;
+        utils::Linked_List <char*>* names;
+
+        int* off;
+
+        ~Declaration_Tracker(); Declaration_Tracker(int*);
+
+        Ast_Node_Variable_Declaration* getVariableDeclaration(int);
+
+        Ast_Node_Function_Declaration* getFunctionDeclaration(int, utils::Linked_List <Ast_Node*>*);
+        
+        Ast_Node_Struct_Declaration* getStructDeclaration(int);
+
+        int getDeclarationId(char*);
+
+        void addName(char*);
 
     };
 
@@ -20,7 +37,7 @@ namespace parser {
         Declaration_Tracker* declaration_tracker;
         utils::Linked_List <char*>* scope;
 
-        ~Name_Space(); Name_Space(utils::Linked_List <char*>*);
+        ~Name_Space(); Name_Space(utils::Linked_List <char*>*, int*);
 
     };
 

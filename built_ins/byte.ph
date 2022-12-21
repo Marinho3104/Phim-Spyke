@@ -1,7 +1,7 @@
  
 namespace ola::adeus::ola {
  
-    ::ola::adeus::ola::hey;
+    int ola, ola;
     
 }
  

@@ -40,6 +40,8 @@ namespace parser {
 
     parser::Name_Space* getNameSpace();
 
+    parser::Name_Space* getCurrentNameSpace();
+
     int getPrimitveTypeSize(int);
 
 }

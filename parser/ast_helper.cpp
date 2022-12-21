@@ -115,14 +115,16 @@ int parser::Type_Information::getByteSize() {
 
 int parser::getNodeType() {
 
+    int _backup_state;
+
     switch (parser::ast_control->getToken(0)->id)
     {
     case CLOSE_BRACES: return -1; break;
     case NAMESPACE: return AST_NODE_NAME_SPACE; break;
-    default: break;
+    case STATIC: _backup_state = parser::ast_control->current_token_position; parser::ast_control->current_token_position++; break;
+    default: _backup_state = parser::ast_control->current_token_position; break;
     }
 
-    int _backup_state = parser::ast_control->current_token_position;
     
     if (isPrimitive(parser::ast_control->getToken(0)->id)) {
 
@@ -153,7 +155,6 @@ int parser::getNodeType() {
     return -1;
 
 }
-
 
 utils::Linked_List <int>* parser::getPointerOperations() {
 
@@ -197,24 +198,6 @@ utils::Linked_List <char*>* parser::getNameSpaceScope() {
 
 }
 
-parser::Name_Space* parser::getNameSpace() {
-
-    utils::Linked_List <char*>* _name_space_scope = getNameSpaceScope();
-
-    utils::Data_Linked_List <char*>* _data_linked_list = _name_space_scope->remove(_name_space_scope->count);
-
-    _data_linked_list->destroy_content = 0; delete _data_linked_list;
-
-    parser::ast_control->current_token_position--;
-
-    parser::Name_Space* _name_space = parser::ast_control->name_space_control->getNameSpace(_name_space_scope);
-
-    if (!_name_space) exception_handle->runExceptionAstControl("Undefined Name space");
-
-    return _name_space;
-
-}
-
 utils::Linked_List <char*>* parser::getScope() {
 
     utils::Linked_List <char*>* _scope = new utils::Linked_List <char*>();
@@ -240,6 +223,36 @@ utils::Linked_List <char*>* parser::getScope() {
     if (_expected == IDENTIFIER) exception_handle->runExceptionAstControl("Expected token identifier");
 
     return _scope;
+
+}
+
+parser::Name_Space* parser::getNameSpace() {
+
+    utils::Linked_List <char*>* _name_space_scope = getNameSpaceScope();
+
+    if (!_name_space_scope) return NULL;
+
+    utils::Data_Linked_List <char*>* _data_linked_list = _name_space_scope->remove(_name_space_scope->count);
+
+    _data_linked_list->destroy_content = 0; delete _data_linked_list;
+
+    parser::ast_control->current_token_position--;
+
+    parser::Name_Space* _name_space = parser::ast_control->name_space_control->getNameSpace(_name_space_scope);
+
+    if (!_name_space) exception_handle->runExceptionAstControl("Undefined Name space");
+
+    return _name_space;
+
+}
+
+parser::Name_Space* parser::getCurrentNameSpace() {
+
+    if (parser::ast_control->code_block_chain->last && parser::ast_control->code_block_chain->last->object)
+
+        return NULL; // parser::ast_control->code_block_chain->last->object->
+
+    return parser::ast_control->name_space_chain->last->object->name_space;
 
 }
 

@@ -28,6 +28,19 @@ namespace parser {
     };
 
     struct Ast_Node_Code_Block : Ast_Node {
+
+        Ast_Node_Code_Block* previous_code_block;
+        utils::Linked_List <Ast_Node*>* code;
+        Name_Space* name_space;
+        int declaration_off;
+
+        ~Ast_Node_Code_Block(); Ast_Node_Code_Block(Ast_Node_Code_Block*, Name_Space*);
+
+        static void generate();
+
+        static void setUp();
+
+        void setCode();
         
     };
 

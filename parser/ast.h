@@ -30,6 +30,8 @@ namespace parser {
 
         void addName(char*);
 
+        void addStaticName(char*, int);
+
     };
 
     struct Name_Space {

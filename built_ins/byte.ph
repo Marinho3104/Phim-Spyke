@@ -1,7 +1,7 @@
  
 namespace ola::adeus::ola {
  
-    int ola, ola;
+    static int ola, ola_adeus;
     
 }
  

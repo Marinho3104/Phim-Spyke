@@ -68,6 +68,18 @@ void parser::Declaration_Tracker::addName(char* __name) {
 
 }
 
+void parser::Declaration_Tracker::addStaticName(char* __name, int __declaration_id) {
+
+    if (getDeclarationId(__name) != -1) return;
+
+    char* _name_copy = (char*) malloc(strlen(__name) + 1);
+
+    strcpy(_name_copy, __name);
+
+    names->add(_name_copy); declaration_ids->add(__declaration_id);
+
+}
+
 
 
 parser::Name_Space::~Name_Space() { delete scope; delete declaration_tracker; }

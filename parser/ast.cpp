@@ -3,7 +3,9 @@
 #include "exception_handle.h"
 #include "tokenizer.h"
 
+#include "ast_definitions.h"
 #include "linked_List.h"
+#include "ast_helper.h"
 #include "ast_nodes.h"
 
 #include <iostream>
@@ -35,6 +37,9 @@ parser::Ast_Node_Variable_Declaration* parser::Declaration_Tracker::getVariableD
 }
 
 parser::Ast_Node_Function_Declaration* parser::Declaration_Tracker::getFunctionDeclaration(int __declaration_id, utils::Linked_List <Ast_Node*>* __parameters) {
+
+    utils::Linked_List <Ast_Node_Variable_Declaration*>* _given_variable_declarations = 
+        getSpecificNodesFromLinkedList<Ast_Node_Variable_Declaration>(__parameters, AST_NODE_VARIABLE_DECLARATION);
 
 }
 

@@ -30,6 +30,7 @@ namespace parser {
     struct Ast_Node_Code_Block : Ast_Node {
 
         Ast_Node_Code_Block* previous_code_block;
+        Declaration_Tracker* declaration_tracker;
         utils::Linked_List <Ast_Node*>* code;
         Name_Space* name_space;
         int declaration_off;
@@ -52,9 +53,24 @@ namespace parser {
 
         static utils::Linked_List <parser::Ast_Node*>* generate();
 
+        static utils::Linked_List <parser::Ast_Node*>* generateFunctionParameter();
+
     };
 
     struct Ast_Node_Function_Declaration : Ast_Node {
+
+        utils::Linked_List <Ast_Node*>* parameters;
+        parser::Type_Information* return_type;
+        Ast_Node_Code_Block* body;
+        Name_Space* name_space;
+
+        ~Ast_Node_Function_Declaration(); Ast_Node_Function_Declaration(int, utils::Linked_List <Ast_Node*>*, parser::Type_Information*, Ast_Node_Code_Block*, Name_Space*);
+
+        static Ast_Node_Function_Declaration* generate();
+
+        static utils::Linked_List <Ast_Node*>* getParameters();
+
+        int getByteSize();
 
     };
 

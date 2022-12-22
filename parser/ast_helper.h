@@ -40,9 +40,12 @@ namespace parser {
 
     parser::Name_Space* getNameSpace();
 
-    parser::Name_Space* getCurrentNameSpace();
+    parser::Declaration_Tracker* getDeclarationTracker();
 
     int getPrimitveTypeSize(int);
+
+    template <typename type>
+    utils::Linked_List <type*>* getSpecificNodesFromLinkedList(utils::Linked_List <Ast_Node*>*, int);
 
 }
 

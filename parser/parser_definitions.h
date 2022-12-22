@@ -18,6 +18,7 @@ namespace parser {
     struct Exception_Handle;
 
     // Ast 
+    struct Declaration_Tracker;
     struct Type_Information;
     struct Ast_Control;
     struct Name_Space;

@@ -136,7 +136,7 @@ int parser::getNodeType() {
         switch (parser::ast_control->getToken(1)->id)
         {
         case FUNCTION_OPERATOR_EQUAL: case COMMA: case END_INSTRUCTION: _node_type = AST_NODE_VARIABLE_DECLARATION; break;
-        // case OPEN_PARENTHESES: _node_type = AST_NODE_FUNCTION_DECLARATION; break;
+        case OPEN_PARENTHESIS: _node_type = AST_NODE_FUNCTION_DECLARATION; break;
         default: exception_handle->runExceptionAstControl("Unexpected token"); break;
         }
 
@@ -246,13 +246,13 @@ parser::Name_Space* parser::getNameSpace() {
 
 }
 
-parser::Name_Space* parser::getCurrentNameSpace() {
+parser::Declaration_Tracker* parser::getDeclarationTracker() {
 
     if (parser::ast_control->code_block_chain->last && parser::ast_control->code_block_chain->last->object)
 
-        return NULL; // parser::ast_control->code_block_chain->last->object->
+        return parser::ast_control->code_block_chain->last->object->declaration_tracker;
 
-    return parser::ast_control->name_space_chain->last->object->name_space;
+    return parser::ast_control->name_space_chain->last->object->name_space->declaration_tracker;
 
 }
 
@@ -271,3 +271,26 @@ int parser::getPrimitveTypeSize(int __primitive_type_id) {
     return -1;
 
 }
+
+template <typename type>
+utils::Linked_List <type*>* parser::getSpecificNodesFromLinkedList(utils::Linked_List <Ast_Node*>* __linked_list, int __node_type_id) {
+
+    utils::Linked_List <type*>* _nodes = new utils::Linked_List <type*>();
+
+    for (int _  = 0; _ < __linked_list->count; _++)
+
+        if (__linked_list->operator[](_)->node_type == __node_type_id)
+
+            _nodes->add(
+                (type*) __linked_list->operator[](_)
+            );
+
+    return _nodes;
+
+}
+
+template 
+    utils::Linked_List <parser::Ast_Node_Variable_Declaration*>* 
+        parser::getSpecificNodesFromLinkedList<parser::Ast_Node_Variable_Declaration>(utils::Linked_List <Ast_Node*>*, int);
+
+

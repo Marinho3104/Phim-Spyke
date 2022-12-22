@@ -1,7 +1,15 @@
  
 namespace ola::adeus::ola {
  
-    static int ola, ola_adeus;
+    int j(int ola, byte adeus) {
+        
+        static int ola1;
+
+    }
+
+    
+
+    int marinho;
     
 }
  

@@ -39,7 +39,40 @@ parser::Ast_Node_Variable_Declaration* parser::Declaration_Tracker::getVariableD
 parser::Ast_Node_Function_Declaration* parser::Declaration_Tracker::getFunctionDeclaration(int __declaration_id, utils::Linked_List <Ast_Node*>* __parameters) {
 
     utils::Linked_List <Ast_Node_Variable_Declaration*>* _given_variable_declarations = 
-        getSpecificNodesFromLinkedList<Ast_Node_Variable_Declaration>(__parameters, AST_NODE_VARIABLE_DECLARATION);
+        getSpecificNodesFromLinkedList<Ast_Node_Variable_Declaration>(__parameters, AST_NODE_VARIABLE_DECLARATION), *_founded_variable_declarations;
+    Ast_Node_Function_Declaration* _function_declaration = NULL;
+
+    for (int _ = 0; _ < function_declarations->count; _++)
+
+        if (
+            function_declarations->operator[](_)->declaration_id == __declaration_id
+        ) {
+
+            _function_declaration = function_declarations->operator[](_);
+
+            _founded_variable_declarations = 
+                getSpecificNodesFromLinkedList<Ast_Node_Variable_Declaration>(_function_declaration->parameters, AST_NODE_VARIABLE_DECLARATION);
+
+            if (_founded_variable_declarations->count != _given_variable_declarations->count) _function_declaration = NULL;
+
+            for (int _ = 0; _ < _given_variable_declarations->count && _function_declaration; _++)
+
+                if (
+                    _given_variable_declarations->operator[](_)->type->operator!=(
+                        _founded_variable_declarations->operator[](_)->type
+                    )
+                ) _function_declaration = NULL;
+
+            delete _founded_variable_declarations;
+
+            if (_function_declaration) break;
+
+        }
+
+    delete _given_variable_declarations;
+
+    return _function_declaration;
+
 
 }
 

@@ -75,6 +75,7 @@ void parser::Ast_Node_Name_Space::setDeclarations() {
         {
         case -1: parser::ast_control->current_token_position++; goto out; break;
         case AST_NODE_NAME_SPACE: Ast_Node_Name_Space::generate(); break;
+        case AST_NODE_STRUCT_DECLARATION: declarations->add(Ast_Node_Struct_Declaration::generate()); break;
         case AST_NODE_VARIABLE_DECLARATION: 
             _temp = Ast_Node_Variable_Declaration::generate(); 
             declarations->join(
@@ -92,8 +93,6 @@ void parser::Ast_Node_Name_Space::setDeclarations() {
 
         default: exception_handle->runExceptionAstControl("Node not supported in Name Space Node"); break;
         }
-
-        
 
     }
 
@@ -369,7 +368,7 @@ parser::Ast_Node_Function_Declaration* parser::Ast_Node_Function_Declaration::ge
 
             ast_control->current_token_position = _backup_state;
         
-            exception_handle->runExceptionAstControl("Redefenition of variable name");
+            exception_handle->runExceptionAstControl("Redefenition of function name");
 
         }
 
@@ -443,4 +442,240 @@ utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Function_Declaration::g
 
 int parser::Ast_Node_Function_Declaration::getByteSize() { return return_type->getByteSize(); }
 
+
+parser::Ast_Node_Struct_Declaration::~Ast_Node_Struct_Declaration() {
+    if (fields) fields->~Ast_Node_Code_Block(); free(fields);
+}
+
+parser::Ast_Node_Struct_Declaration::Ast_Node_Struct_Declaration(int __declaration_id, Ast_Node_Name_Space* __functions, Ast_Node_Code_Block* __fields) 
+    : Ast_Node(AST_NODE_STRUCT_DECLARATION, __declaration_id), fields(__fields), functions(__functions) {}
+
+parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Struct_Declaration::generate() {
+
+    ast_control->debug_information_tab++;
+    parser::ast_control->print("Ast Node Struct Declaration\n");
+
+    parser::ast_control->current_token_position++;
+
+    int _declaration_id;
+    char* _struct_name;
+
+    switch (parser::ast_control->getToken(0)->id)
+    {
+    case IDENTIFIER:
+
+        _struct_name = parser::ast_control->getToken(0)->identifier;
+
+        if ((_declaration_id = getDeclarationTracker()->getDeclarationId(parser::ast_control->getToken(0)->identifier)) != -1) {
+
+            parser::Ast_Node_Struct_Declaration* _struct_declaration = getDeclarationTracker()->getStructDeclaration(_declaration_id);
+
+            if (!_struct_declaration || _struct_declaration->functions) 
+
+                exception_handle->runExceptionAstControl("Redefenition of name"); 
+
+        }
+        
+        else { 
+            
+            getDeclarationTracker()->addName(parser::ast_control->getToken(0)->identifier); 
+            _declaration_id = getDeclarationTracker()->getDeclarationId(parser::ast_control->getToken(0)->identifier); 
+        
+        }
+
+        parser::ast_control->current_token_position++;
+
+        break;
+    case OPEN_BRACES: exception_handle->runExceptionAstControl("Not done struct declaration of variable"); break;
+    default: exception_handle->runExceptionAstControl("Unexpected token"); break;
+    }
+
+    Ast_Node_Name_Space* _functions = NULL;
+    Ast_Node_Code_Block* _fields = NULL;
+
+    if (parser::ast_control->getToken(0)->id == OPEN_BRACES) {
+
+        utils::Linked_List <char*>* _scope_name_space = new utils::Linked_List <char*>(); 
+        _scope_name_space->destroy_content = 0;
+
+        _scope_name_space->join(
+            parser::ast_control->name_space_chain->last->object->name_space->scope
+        );
+
+        _scope_name_space->add(
+            _struct_name
+        );
+
+        Name_Space* _struct_name_space = (Name_Space*) malloc(sizeof(Name_Space));
+        new (_struct_name_space) Name_Space(_scope_name_space, getDeclarationTracker()->off);
+
+        delete _scope_name_space;
+
+        _functions = (Ast_Node_Name_Space*) malloc(sizeof(Ast_Node_Name_Space));
+        new (_functions) Ast_Node_Name_Space(_struct_name_space);
+
+        _fields = (Ast_Node_Code_Block*) malloc(sizeof(Ast_Node_Code_Block));
+        new (_fields) Ast_Node_Code_Block(
+            ast_control->code_block_chain->last ? ast_control->code_block_chain->last->object : NULL,
+            ast_control->name_space_chain->last->object->name_space
+        );
+
+        parser::ast_control->name_space_node_collection->add(
+            _functions
+        );
+
+        parser::ast_control->name_space_control->addNameSpace(
+            _struct_name_space
+        );
+
+    }
+
+    parser::Ast_Node_Struct_Declaration* _struct_declaration = (parser::Ast_Node_Struct_Declaration*) malloc(sizeof(parser::Ast_Node_Struct_Declaration));
+    new (_struct_declaration) parser::Ast_Node_Struct_Declaration(_declaration_id, _functions, _fields);
+
+    getDeclarationTracker()->struct_declarations->add(
+        _struct_declaration
+    );
+
+    switch (parser::ast_control->getToken(0)->id)
+    {
+    case OPEN_BRACES: _struct_declaration->set(); break;
+    case END_INSTRUCTION: goto out; break;
+    default: exception_handle->runExceptionAstControl("Unexpected token"); break;
+    }
+
+    switch (parser::ast_control->getToken(0)->id)
+    {
+    case IDENTIFIER: exception_handle->runExceptionAstControl("Not done"); break;
+    case END_INSTRUCTION: parser::ast_control->current_token_position++; break;
+    default: exception_handle->runExceptionAstControl("Expected token ';'");
+    }
+
+out:;
+
+    ast_control->debug_information_tab++;
+
+    char buffer[100];
+
+    sprintf(buffer, "Struct Functions and Static Variables count -> %d\n", _struct_declaration->functions->declarations->count);
+    parser::ast_control->print(buffer);
+
+    sprintf(buffer, "Struct Fields count -> %d\n", _struct_declaration->fields->code->count);
+    parser::ast_control->print(buffer);
+
+    ast_control->debug_information_tab--;
+
+    parser::ast_control->print("Ast Node Struct Declaration End\n");
+    ast_control->debug_information_tab--;
+
+    return _struct_declaration;
+
+}
+
+void parser::Ast_Node_Struct_Declaration::set() {
+
+    int _backup_state = ++parser::ast_control->current_token_position;
+
+    setFields(0);
+
+    parser::ast_control->current_token_position = _backup_state;
+
+    setFields(1);
+
+    parser::ast_control->current_token_position = _backup_state;
+
+    setFunctions();
+
+    parser::ast_control->current_token_position++;
+
+}
+
+void parser::Ast_Node_Struct_Declaration::setFunctions() {
+
+    utils::Linked_List <Ast_Node*>* _temp;
+
+    ast_control->addNameSpaceNodeToChain(functions);
+
+    while(parser::ast_control->getToken(0)->id != CLOSE_BRACES) {
+
+        switch (getNodeType())
+        {
+        case AST_NODE_VARIABLE_DECLARATION: 
+        
+            while(ast_control->getToken(0)->id != END_INSTRUCTION) ast_control->current_token_position++;
+
+            ast_control->current_token_position++; 
+
+            break;
+
+        case AST_NODE_FUNCTION_DECLARATION: 
+
+            functions->declarations->add(
+                parser::Ast_Node_Function_Declaration::generate()
+            );
+            
+            break;
+
+        default: exception_handle->runExceptionAstControl("Unexpected Node type"); break;
+        }
+
+    }
+
+    ast_control->popNameSpaceChainFromChain();
+
+}
+
+void parser::Ast_Node_Struct_Declaration::setFields(bool __static) {
+
+    utils::Linked_List <Ast_Node*>* _temp;
+
+    if (__static) ast_control->addNameSpaceNodeToChain(functions);
+    else ast_control->addCodeBlockNodeToChain(fields);
+
+    while(parser::ast_control->getToken(0)->id != CLOSE_BRACES) {
+
+        switch (getNodeType())
+        {
+        case AST_NODE_VARIABLE_DECLARATION:
+
+            if (parser::ast_control->getToken(0)->id == STATIC && !__static || parser::ast_control->getToken(0)->id != STATIC && __static) {
+
+                while(ast_control->getToken(0)->id != END_INSTRUCTION) ast_control->current_token_position++;
+
+                ast_control->current_token_position++; 
+
+                break;
+
+            } 
+        
+            _temp = Ast_Node_Variable_Declaration::generate();
+
+            fields->code->join(
+                _temp
+            );
+
+            _temp->destroy_content = 0; delete _temp;
+
+            break;
+
+        case AST_NODE_FUNCTION_DECLARATION: 
+        
+            while(ast_control->getToken(0)->id != END_INSTRUCTION && ast_control->getToken(0)->id != OPEN_BRACES) 
+            
+                parser::ast_control->current_token_position++;
+
+            if (ast_control->getToken(0)->id == END_INSTRUCTION) parser::ast_control->current_token_position++;
+        
+            else ignoreCodeBlock();
+
+            break;
+        default: exception_handle->runExceptionAstControl("Unexpected Node type"); break;
+        }
+
+    }
+
+    if (__static) ast_control->popNameSpaceChainFromChain(); 
+    else ast_control->popCodeBlockChainFromChain();
+
+}
 

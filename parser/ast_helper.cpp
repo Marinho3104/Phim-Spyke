@@ -121,6 +121,7 @@ int parser::getNodeType() {
     {
     case CLOSE_BRACES: return -1; break;
     case NAMESPACE: return AST_NODE_NAME_SPACE; break;
+    case STRUCT: return AST_NODE_STRUCT_DECLARATION; break;
     case STATIC: _backup_state = parser::ast_control->current_token_position; parser::ast_control->current_token_position++; break;
     default: _backup_state = parser::ast_control->current_token_position; break;
     }
@@ -272,10 +273,25 @@ int parser::getPrimitveTypeSize(int __primitive_type_id) {
 
 }
 
+void parser::ignoreCodeBlock() {
+
+    while(ast_control->getToken(0)->id != CLOSE_BRACES) {
+
+        ast_control->current_token_position++;
+    
+        if (ast_control->getToken(0)->id == OPEN_BRACES) ignoreCodeBlock();
+
+    }
+
+    ast_control->current_token_position++;
+
+}
+
 template <typename type>
 utils::Linked_List <type*>* parser::getSpecificNodesFromLinkedList(utils::Linked_List <Ast_Node*>* __linked_list, int __node_type_id) {
 
     utils::Linked_List <type*>* _nodes = new utils::Linked_List <type*>();
+    _nodes->destroy_content = 0;
 
     for (int _  = 0; _ < __linked_list->count; _++)
 

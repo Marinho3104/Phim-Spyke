@@ -44,6 +44,8 @@ namespace parser {
 
     int getPrimitveTypeSize(int);
 
+    void ignoreCodeBlock();
+
     template <typename type>
     utils::Linked_List <type*>* getSpecificNodesFromLinkedList(utils::Linked_List <Ast_Node*>*, int);
 

@@ -76,6 +76,19 @@ namespace parser {
 
     struct Ast_Node_Struct_Declaration : Ast_Node {
 
+        Ast_Node_Name_Space* functions;
+        Ast_Node_Code_Block* fields;
+
+        ~Ast_Node_Struct_Declaration(); Ast_Node_Struct_Declaration(int, Ast_Node_Name_Space*, Ast_Node_Code_Block*);
+
+        static Ast_Node_Struct_Declaration* generate();
+
+        void set();
+
+        void setFunctions();
+
+        void setFields(bool);
+
     };
 
 

@@ -1,13 +1,19 @@
  
 namespace ola::adeus::ola {
- 
-    int j(int ola, byte adeus) {
-        
-        static int ola1;
 
-    }
+    struct ola_meu {
 
-    
+        static int l;
+
+        int l;
+
+        void hh() {
+
+            int marinho;
+            
+        }
+
+    };
 
     int marinho;
     

@@ -104,7 +104,7 @@ bool parser::Tokenizer_Control::setTokenKeyWord() {
 void parser::Tokenizer_Control::setTokenIdentifier() {
 
     char* _backup_state = code_copy;
-    bool _setTokenState;
+    bool _setTokenState = 0;
 
     do code_copy++;
     while(*code_copy > 32 && !(_setTokenState = setTokenSymbol()));
@@ -121,7 +121,7 @@ void parser::Tokenizer_Control::setTokenIdentifier() {
 
     Token* _token = (Token*) malloc(sizeof(Token));
     new (_token) Token(
-        IDENTIFIER, _data, _backup_state - inicial_column_address, code_copy - inicial_column_address, current_line
+        getImplicitValueTypeOrIdentifier(_data), _data, _backup_state - inicial_column_address, code_copy - inicial_column_address, current_line
     );
 
     if (_setTokenState) {

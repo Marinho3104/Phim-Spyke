@@ -21,9 +21,13 @@ namespace parser {
 
     void handlePointerOrAddress(Token*);
 
+    int getImplicitValueTypeOrIdentifier(char*);
 
     bool isPrimitive(int);
     bool isImplicitValueOrIdentifier(int);
+    bool isFunctionOperator(int);
+
+    bool isInt(char*);
 
 }
 

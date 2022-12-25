@@ -13,7 +13,7 @@ namespace parser {
         int pointer_level, reference_level, token_id;
         parser::Name_Space* name_space;
 
-        ~Type_Information(); Type_Information(parser::Ast_Node_Struct_Declaration*, int, parser::Name_Space*, utils::Linked_List <int>*);
+        ~Type_Information(); Type_Information(parser::Ast_Node_Struct_Declaration*, int, parser::Name_Space*, utils::Linked_List <int>*); Type_Information(int);
 
         bool operator==(Type_Information*); bool operator!=(Type_Information*);
 
@@ -27,6 +27,14 @@ namespace parser {
 
     };
 
+    struct Representation {
+
+        parser::Ast_Node_Variable_Declaration* declaration;
+        int priority_level;
+
+        Representation(parser::Ast_Node_Variable_Declaration* __declaration, int __priority_level);
+
+    };
 
     int getNodeType();
 
@@ -44,7 +52,17 @@ namespace parser {
 
     int getPrimitveTypeSize(int);
 
+    int getPrimitiveTypeOfImplicitValue(int);
+
     void ignoreCodeBlock();
+
+    int getDeclarationId(char*);
+
+    Ast_Node_Variable_Declaration* getVariableDeclaration(int);
+
+    Ast_Node_Function_Declaration* getFunctionDeclaration(int, utils::Linked_List <Ast_Node*>*);
+
+    Ast_Node_Struct_Declaration* getStructDeclaration(int);
 
     template <typename type>
     utils::Linked_List <type*>* getSpecificNodesFromLinkedList(utils::Linked_List <Ast_Node*>*, int);

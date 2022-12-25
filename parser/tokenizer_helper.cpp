@@ -166,8 +166,35 @@ void parser::handlePointerOrAddress(Token* __token) {
 
 }
 
+int parser::getImplicitValueTypeOrIdentifier(char* __data) {
+
+    if (isInt(__data)) return IMPLICIT_VALUE_INT;
+
+
+    return IDENTIFIER;
+
+}
+
 
 bool parser::isPrimitive(int __token_id) { return __token_id >= PRIMITIVE_TYPE_VOID && __token_id <= PRIMITIVE_TYPE_BOOL; }
 
 bool parser::isImplicitValueOrIdentifier(int __token_id) { return __token_id >= IDENTIFIER && __token_id <= IMPLICIT_VALUE_STRING; }
 
+bool parser::isFunctionOperator(int __token_id) { return __token_id >= FUNCTION_OPERATOR_PLUS && __token_id <= FUNCTION_OPERATOR_BITWISE_RIGHT_SHIFT_ASSIGN; }
+
+
+bool parser::isInt(char* __data) {
+
+    while(*__data) {
+
+        if (
+            (*__data < 48 || *__data > 57) && *(__data) != 95
+        ) return 0;
+
+        __data++;
+        
+    }
+
+    return 1;
+
+}

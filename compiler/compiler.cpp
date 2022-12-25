@@ -11,17 +11,29 @@ compiler::Compiler::~Compiler() {
 
 }
 
-compiler::Compiler::Compiler(char* __code) : code(__code) {
-    
+compiler::Compiler::Compiler(char* __code) : code(__code) { generateBuiltIns(); generate(); }
+
+void compiler::Compiler::generateBuiltIns() {
+
     parser::code = utils::getFileContent((char*) "./built_ins/byte.ph");
 
-    generateBuiltIns();
+    parser::inicializeVariablesBuiltIns();
+
+    parser::tokenizer_control->generate();
+
+    parser::ast_control->generate();
+
+    parser::deleteVariablesBuiltIns();
 
     free(parser::code);
 
 }
 
-void compiler::Compiler::generateBuiltIns() {
+void compiler::Compiler::generate() {
+
+    std::cout << "------------- Code Compiler -------------" << std::endl;
+
+    parser::code = code;
 
     parser::inicializeVariables();
 

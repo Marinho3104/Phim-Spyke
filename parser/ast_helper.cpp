@@ -37,6 +37,9 @@ parser::Type_Information::Type_Information(
 
 }
 
+parser::Type_Information::Type_Information(int __implicit_value_id) 
+    : user_defined_declaration(0), token_id(getPrimitiveTypeOfImplicitValue(__implicit_value_id)), name_space(0), pointer_level(0), reference_level(0) {}
+
 bool parser::Type_Information::operator==(Type_Information* __to_compare) {
 
     return (
@@ -72,11 +75,31 @@ parser::Type_Information* parser::Type_Information::generate() {
 
     parser::Ast_Node_Struct_Declaration* _user_defined_declaration = NULL;
 
-    int _id = parser::ast_control->getToken(0)->id;
+    int _id = parser::ast_control->getToken(0)->id, _backup_state = parser::ast_control->current_token_position;
     parser::ast_control->current_token_position++;
 
     if (isPrimitive(_id));
-    else if (_id == IDENTIFIER) { parser::exception_handle->runException("Not implemented yet"); } // Need to change Multiplication and bitwise and
+    else if (_id == IDENTIFIER) {
+
+        int _declaration_id = parser::getDeclarationId(parser::ast_control->getToken(-1)->identifier);
+
+        _user_defined_declaration = parser::getStructDeclaration(_declaration_id);
+
+        if (_declaration_id == -1 || !_user_defined_declaration) {
+
+            parser::ast_control->current_token_position--;
+        
+            if (_name_space) { parser::ast_control->popNameSpaceChainFromChain(); parser::ast_control->popCodeBlockChainFromChain(); }
+
+            exception_handle->runExceptionAstControl("Undefined type");
+
+        }
+
+        if (parser::ast_control->getToken(0)->id == FUNCTION_OPERATOR_MULTIPLICATION || parser::ast_control->getToken(0)->id == FUNCTION_OPERATOR_BITWISE_AND)
+
+            parser::ast_control->getToken(0)->id = parser::ast_control->getToken(0)->id == FUNCTION_OPERATOR_MULTIPLICATION ? POINTER : ADDRESS;
+
+    }
     else parser::exception_handle->runExceptionAstControl("Unexpected token");
 
     utils::Linked_List <int>* _pointer_operations = getPointerOperations();
@@ -86,6 +109,8 @@ parser::Type_Information* parser::Type_Information::generate() {
     );
 
     delete _pointer_operations;
+
+    if (_name_space) { parser::ast_control->popNameSpaceChainFromChain(); parser::ast_control->popCodeBlockChainFromChain(); }
 
     return _type_information;
 
@@ -113,9 +138,16 @@ int parser::Type_Information::getByteSize() {
 
 }
 
+
+parser::Representation::Representation(parser::Ast_Node_Variable_Declaration* __declaration, int __priority_level) 
+            : declaration(__declaration), priority_level(__priority_level) {}
+
+
 int parser::getNodeType() {
 
     int _backup_state;
+
+    // std::cout << "Id -> "  << (int) parser::ast_control->getToken(0)->id << std::endl;
 
     switch (parser::ast_control->getToken(0)->id)
     {
@@ -138,7 +170,7 @@ int parser::getNodeType() {
         {
         case FUNCTION_OPERATOR_EQUAL: case COMMA: case END_INSTRUCTION: _node_type = AST_NODE_VARIABLE_DECLARATION; break;
         case OPEN_PARENTHESIS: _node_type = AST_NODE_FUNCTION_DECLARATION; break;
-        default: exception_handle->runExceptionAstControl("Unexpected token"); break;
+        default: exception_handle->runExceptionAstControl("Unexpected token here"); break;
         }
 
         delete _type;
@@ -149,7 +181,33 @@ int parser::getNodeType() {
 
     }
 
-    Name_Space* _name_space = getNameSpace();
+    if (parser::ast_control->getToken(0)->id == IDENTIFIER || parser::ast_control->getToken(0)->id == DOUBLE_COLON) {
+
+        int _node_type;
+
+        try { delete Type_Information::generate(); }
+        catch(...) { _node_type = (parser::ast_control->getToken(1)->id == OPEN_PARENTHESIS) ? AST_NODE_FUNCTION_CALL : AST_NODE_VARIABLE; goto reset_return; }
+
+        getNameSpace();
+
+        switch (parser::ast_control->getToken(1)->id)
+        {
+        case FUNCTION_OPERATOR_EQUAL: case COMMA: case END_INSTRUCTION: _node_type = AST_NODE_VARIABLE_DECLARATION; break;
+        case OPEN_PARENTHESIS: _node_type = AST_NODE_FUNCTION_DECLARATION; break;
+        default: exception_handle->runExceptionAstControl("Unexpected token hehre"); break;
+        }
+
+    reset_return:
+
+        parser::ast_control->current_token_position = _backup_state;
+
+        return _node_type;
+
+    }
+
+    if (isFunctionOperator(parser::ast_control->getToken(0)->id)) return AST_NODE_EXPRESSION;
+
+    if (isImplicitValueOrIdentifier(parser::ast_control->getToken(0)->id)) return AST_NODE_VALUE;
 
     exception_handle->runExceptionAstControl("Error getting node type");
 
@@ -161,9 +219,13 @@ utils::Linked_List <int>* parser::getPointerOperations() {
 
     utils::Linked_List <int>* __pointer_operations = new utils::Linked_List <int>();
 
-    while(parser::ast_control->getToken(0)->id == POINTER || parser::ast_control->getToken(0)->id == ADDRESS)
+    while(parser::ast_control->getToken(0)->id == POINTER || parser::ast_control->getToken(0)->id == ADDRESS) {
 
         __pointer_operations->add(parser::ast_control->getToken(0)->id);
+
+        parser::ast_control->current_token_position++;
+
+    }
 
     return __pointer_operations;
 
@@ -186,8 +248,11 @@ utils::Linked_List <char*>* parser::getNameSpaceScopeFromKeyWord() {
 
 utils::Linked_List <char*>* parser::getNameSpaceScope() {
 
-    if (parser::ast_control->getToken(0)->id != DOUBLE_COLON && parser::ast_control->getToken(1)->id != DOUBLE_COLON) return NULL;
-    if (parser::ast_control->getToken(0)->id != IDENTIFIER && parser::ast_control->getToken(1)->id != IDENTIFIER) return NULL;
+    if ((parser::ast_control->getToken(0)->id != DOUBLE_COLON || parser::ast_control->getToken(1)->id != IDENTIFIER) &&
+        (parser::ast_control->getToken(0)->id != IDENTIFIER || parser::ast_control->getToken(1)->id != DOUBLE_COLON)) return NULL;
+
+    // if (parser::ast_control->getToken(0)->id != DOUBLE_COLON && parser::ast_control->getToken(1)->id != DOUBLE_COLON) return NULL;
+    // if (parser::ast_control->getToken(0)->id != IDENTIFIER && parser::ast_control->getToken(1)->id != IDENTIFIER) return NULL;
 
     bool _is_global = parser::ast_control->getToken(0)->id == DOUBLE_COLON;
 
@@ -232,6 +297,8 @@ parser::Name_Space* parser::getNameSpace() {
     utils::Linked_List <char*>* _name_space_scope = getNameSpaceScope();
 
     if (!_name_space_scope) return NULL;
+    
+    _name_space_scope->destroy_content = 0;
 
     utils::Data_Linked_List <char*>* _data_linked_list = _name_space_scope->remove(_name_space_scope->count);
 
@@ -242,6 +309,8 @@ parser::Name_Space* parser::getNameSpace() {
     parser::Name_Space* _name_space = parser::ast_control->name_space_control->getNameSpace(_name_space_scope);
 
     if (!_name_space) exception_handle->runExceptionAstControl("Undefined Name space");
+
+    delete _name_space_scope;
 
     return _name_space;
 
@@ -273,6 +342,23 @@ int parser::getPrimitveTypeSize(int __primitive_type_id) {
 
 }
 
+int parser::getPrimitiveTypeOfImplicitValue(int __implicit_value_type_id) {
+
+    switch (__implicit_value_type_id)
+    {
+    case IMPLICIT_VALUE_INT: return PRIMITIVE_TYPE_INT; break;
+    // case IMPLICIT_VALUE_CHARACTER: return PRIMIk; break;
+    // case IMPLICIT_VALUE_STRING: return PRIMITVE_; break;
+    default: break;
+    }
+
+    exception_handle->runException("Error getting primitive type of implicit value");
+
+    return -1;
+
+}
+
+
 void parser::ignoreCodeBlock() {
 
     while(ast_control->getToken(0)->id != CLOSE_BRACES) {
@@ -284,6 +370,46 @@ void parser::ignoreCodeBlock() {
     }
 
     ast_control->current_token_position++;
+
+}
+
+int parser::getDeclarationId(char* __name) {
+
+    if (parser::ast_control->code_block_chain->last && parser::ast_control->code_block_chain->last->object)
+
+        return parser::ast_control->code_block_chain->last->object->getDeclarationId(__name);
+
+    return parser::ast_control->name_space_chain->last->object->getDeclarationId(__name);
+
+}
+
+parser::Ast_Node_Variable_Declaration* parser::getVariableDeclaration(int __declaration_id) {
+
+    if (parser::ast_control->code_block_chain->last && parser::ast_control->code_block_chain->last->object)
+
+        return parser::ast_control->code_block_chain->last->object->getVariableDeclaration(__declaration_id);
+
+    return parser::ast_control->name_space_chain->last->object->getVariableDeclaration(__declaration_id);
+
+}
+
+parser::Ast_Node_Function_Declaration* parser::getFunctionDeclaration(int __declaration_id, utils::Linked_List <Ast_Node*>* __parameters) {
+
+    if (parser::ast_control->code_block_chain->last && parser::ast_control->code_block_chain->last->object)
+
+        return parser::ast_control->code_block_chain->last->object->getFunctionDeclaration(__declaration_id, __parameters);
+
+    return parser::ast_control->name_space_chain->last->object->getFunctionDeclaration(__declaration_id, __parameters);
+
+}
+
+parser::Ast_Node_Struct_Declaration* parser::getStructDeclaration(int __declaration_id) {
+
+    if (parser::ast_control->code_block_chain->last && parser::ast_control->code_block_chain->last->object)
+
+        return parser::ast_control->code_block_chain->last->object->getStructDeclaration(__declaration_id);
+
+    return parser::ast_control->name_space_chain->last->object->getStructDeclaration(__declaration_id);
 
 }
 

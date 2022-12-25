@@ -197,12 +197,14 @@ parser::Name_Space* parser::Name_Space_Control::getNameSpaceOrAdd(utils::Linked_
 
 parser::Name_Space* parser::Name_Space_Control::getPreviousNameSpace(Name_Space* __name_space) {
 
-    int _original_name_space_scope_length = __name_space->scope->count;
-    parser::Name_Space* _name_space = NULL;
+    utils::Linked_List <char*>* _name_space_scope = new utils::Linked_List <char*>(); _name_space_scope->destroy_content = 0;
+    _name_space_scope->join(__name_space->scope);
+    
+    Name_Space* _name_space = NULL;
 
-    while(__name_space->scope->count-- && !_name_space) _name_space = getNameSpace(__name_space->scope);
+    while(!_name_space && _name_space_scope->count--) _name_space = getNameSpace(_name_space_scope);
 
-    __name_space->scope->count = _original_name_space_scope_length;    
+    delete _name_space_scope;
 
     return _name_space;
 
@@ -213,9 +215,11 @@ parser::Ast_Control::~Ast_Control() {
     delete name_space_node_collection; delete implicit_value_collection;
     delete name_space_control; 
     delete name_space_chain; delete code_block_chain;
+
+    if (built_ins_ast_control) delete built_ins_ast_control;
 }
 
-parser::Ast_Control::Ast_Control(bool __debug_mode) : debug_mode(__debug_mode), current_token_position(0), debug_information_tab(-1) {
+parser::Ast_Control::Ast_Control(bool __debug_mode) : debug_mode(__debug_mode), current_token_position(0), debug_information_tab(-1), built_ins_ast_control(NULL) {
 
     name_space_node_collection = new utils::Linked_List <Ast_Node_Name_Space*>();
     implicit_value_collection = new utils::Linked_List <char*>();
@@ -224,6 +228,35 @@ parser::Ast_Control::Ast_Control(bool __debug_mode) : debug_mode(__debug_mode), 
 
     name_space_chain = new utils::Linked_List <Ast_Node_Name_Space*>();
     code_block_chain = new utils::Linked_List <Ast_Node_Code_Block*>();
+
+}
+
+parser::Ast_Control::Ast_Control(Ast_Control* __built_ins_ast_control, bool __debug_mode) 
+    : debug_mode(__debug_mode), current_token_position(0), debug_information_tab(-1), built_ins_ast_control(__built_ins_ast_control) {
+
+        name_space_node_collection = new utils::Linked_List <Ast_Node_Name_Space*>();
+        implicit_value_collection = new utils::Linked_List <char*>();
+
+        name_space_control = new Name_Space_Control();
+
+        name_space_chain = new utils::Linked_List <Ast_Node_Name_Space*>();
+        code_block_chain = new utils::Linked_List <Ast_Node_Code_Block*>();
+
+        built_ins_ast_control->name_space_control->name_space_collection->operator[](0)->~Name_Space();
+
+        free(built_ins_ast_control->name_space_control->name_space_collection->operator[](0));
+
+        built_ins_ast_control->name_space_control->name_space_collection->destroy_content = 0;
+
+        for (int _ = 1; _ < built_ins_ast_control->name_space_control->name_space_collection->count; _++) {
+
+            built_ins_ast_control->name_space_control->name_space_collection->operator[](_)->declaration_tracker->off = &name_space_control->declaration_off;
+
+            name_space_control->addNameSpace(
+                built_ins_ast_control->name_space_control->name_space_collection->operator[](_)
+            );
+
+        }
 
 }
 
@@ -256,6 +289,20 @@ void parser::Ast_Control::generate() {
 
 }
 
+int parser::Ast_Control::addImplicitValue(char* __implicit_value) {
+
+    int _position;
+
+    if ((_position = implicit_value_collection->getPosition(__implicit_value, NULL)) != -1) return _position;
+
+    char* _value_copy = (char*) malloc(strlen(__implicit_value) + 1);
+
+    strcpy(_value_copy, __implicit_value);
+
+    return implicit_value_collection->add(_value_copy);
+
+}
+
 void parser::Ast_Control::addNameSpaceNodeToChain(Ast_Node_Name_Space* __node_name_space) { name_space_chain->add(__node_name_space); }
 
 void parser::Ast_Control::addNameSpaceNodeToChain(Name_Space* __name_space) { addNameSpaceNodeToChain(getNodeNameSpace(__name_space)); }
@@ -277,6 +324,13 @@ parser::Ast_Node_Name_Space* parser::Ast_Control::getNodeNameSpace(Name_Space* _
     for (int _ = 0; _ < name_space_node_collection->count; _++)
 
         if (name_space_node_collection->operator[](_)->name_space == __name_space) return name_space_node_collection->operator[](_);
+
+    for (int _ = 0; _ < built_ins_ast_control->name_space_node_collection->count; _++)
+
+        if (built_ins_ast_control->name_space_node_collection->operator[](_)->name_space == __name_space) 
+        
+            return built_ins_ast_control->name_space_node_collection->operator[](_);
+
 
     parser::exception_handle->runException("Cannot find a Name Space Node with given Name Space");
 

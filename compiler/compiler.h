@@ -15,6 +15,8 @@ namespace compiler {
 
         void generateBuiltIns();
 
+        void generate();
+
     };
 
 }

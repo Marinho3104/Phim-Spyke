@@ -39,7 +39,7 @@ void parser::Exception_Handle::runException(const char* __information) {
 
     std::cout << __information << std::endl;
 
-    exit(1);
+    throw "";
 
 }
 
@@ -67,7 +67,7 @@ void parser::Exception_Handle::runExceptionAstControl(const char* __information)
 
     std::cout << std::endl;
 
-    exit(1);
+    throw "";
 
 }
 

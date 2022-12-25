@@ -69,6 +69,7 @@ namespace parser {
         utils::Linked_List <Ast_Node_Name_Space*>* name_space_node_collection;
         utils::Linked_List <char*>* implicit_value_collection;
         Name_Space_Control* name_space_control;
+        Ast_Control* built_ins_ast_control;
 
         utils::Linked_List <Ast_Node_Name_Space*>* name_space_chain;
         utils::Linked_List <Ast_Node_Code_Block*>* code_block_chain;
@@ -78,15 +79,15 @@ namespace parser {
         int debug_information_tab;
         bool debug_mode;
 
-        ~Ast_Control(); Ast_Control(bool);
-
+        ~Ast_Control(); Ast_Control(bool); Ast_Control(Ast_Control*, bool);
+ 
         Token* getToken(int);
 
         void print(const char*);
 
         void generate();
 
-        void addImplicitValue(char*);
+        int addImplicitValue(char*);
 
         void addNameSpaceNodeToChain(Ast_Node_Name_Space*); void addNameSpaceNodeToChain(Name_Space*); void popNameSpaceChainFromChain();
 

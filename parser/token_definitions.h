@@ -102,5 +102,8 @@
 #define STRUCT 68 // struct
 #define CONTRACT 69 // contract
 #define INCLUDE 70 // include
-#define STATIC 72
+#define STATIC 72 // static 
+
+#define ACCESSING 73 // .
+#define ACCESSING_POINTER 74 // ->
 

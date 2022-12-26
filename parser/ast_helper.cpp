@@ -93,9 +93,9 @@ bool parser::Type_Information::operator==(Type_Information* __to_compare) {
     return (
         user_defined_declaration == __to_compare->user_defined_declaration &&
         pointer_level == __to_compare->pointer_level && 
-        reference_level == __to_compare->reference_level && 
+        reference_level == __to_compare->reference_level
         // token_id == __to_compare->token_id &&
-        name_space == __to_compare->name_space
+        // name_space == __to_compare->name_space
     );
 
 } 
@@ -213,7 +213,7 @@ parser::Type_Information* parser::Type_Information::generate() {
     utils::Linked_List <int>* _pointer_operations = getPointerOperations();
 
     parser::Type_Information* _type_information = new parser::Type_Information(
-        _user_defined_declaration, _id, _name_space, _pointer_operations
+        _user_defined_declaration, _id, _name_space ? _name_space : parser::ast_control->name_space_chain->last->object->name_space, _pointer_operations
     );
 
     delete _pointer_operations;
@@ -254,14 +254,18 @@ int parser::getNodeType() {
 
     int _backup_state;
 
-    // std::cout << "Id -> "  << (int) parser::ast_control->getToken(0)->id << std::endl;
+    std::cout << "Id -> "  << (int) parser::ast_control->getToken(0)->id << std::endl;
 
     switch (parser::ast_control->getToken(0)->id)
     {
     case CLOSE_BRACES: return -1; break;
+    case END_INSTRUCTION: return -2; break;
     case NAMESPACE: return AST_NODE_NAME_SPACE; break;
     case STRUCT: return AST_NODE_STRUCT_DECLARATION; break;
     case STATIC: _backup_state = parser::ast_control->current_token_position; parser::ast_control->current_token_position++; break;
+    case POINTER: case ADDRESS: return AST_NODE_POINTER_OPERATOR; break;
+    case OPEN_PARENTHESIS: return  AST_NODE_PARENTHESIS; break;
+    case ACCESSING: case ACCESSING_POINTER: return AST_NODE_ACCESSING; break;
     default: _backup_state = parser::ast_control->current_token_position; break;
     }
 

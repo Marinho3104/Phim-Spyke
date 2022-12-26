@@ -48,6 +48,8 @@ int parser::getTokenSymbol(const char*& __current_position) {
     if (!strncmp(__current_position, "b/", 2)) { __current_position += 2; return BINARY_DIVISION; }
     if (!strncmp(__current_position, "b%", 2)) { __current_position += 2; return BINARY_MODULOS; }
 
+    if (!strncmp(__current_position, "->", 2)) { __current_position += 2; return ACCESSING_POINTER; }
+
     if (!strncmp(__current_position, ";", 1)) { __current_position += 1; return END_INSTRUCTION; }
 
     if (!strncmp(__current_position, "(", 1)) { __current_position += 1; return OPEN_PARENTHESIS; }
@@ -83,6 +85,8 @@ int parser::getTokenSymbol(const char*& __current_position) {
     if (!strncmp(__current_position, "&", 1)) { __current_position += 1; return FUNCTION_OPERATOR_BITWISE_AND; } // Never reatch
     if (!strncmp(__current_position, "|", 1)) { __current_position += 1; return FUNCTION_OPERATOR_BITWISE_OR; }
     if (!strncmp(__current_position, "^", 1)) { __current_position += 1; return FUNCTION_OPERATOR_BITWISE_XOR; }
+
+    if (!strncmp(__current_position, ".", 1)) { __current_position += 1; return ACCESSING; }
 
     return 0;
 

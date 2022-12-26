@@ -3,7 +3,7 @@ namespace built_ins {
    
     struct Byte {
 
-        Byte* add(Byte);
+        Byte* add(Byte*);
 
     };
 

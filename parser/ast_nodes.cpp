@@ -220,7 +220,7 @@ void parser::Ast_Node_Code_Block::setCode() {
             );
             _temp->destroy_content = 0; delete _temp;
             break;
-        case AST_NODE_VARIABLE: case AST_NODE_VALUE: case AST_NODE_FUNCTION_CALL:
+        case AST_NODE_VARIABLE: case AST_NODE_VALUE: case AST_NODE_FUNCTION_CALL: case AST_NODE_POINTER_OPERATOR: case AST_NODE_PARENTHESIS:
 
             code->add(
                 Ast_Node_Expression::generate(_node_type)
@@ -893,6 +893,9 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getVariableD
     {
     case AST_NODE_VARIABLE: return ((Ast_Node_Variable*) value)->declaration; break;
     case AST_NODE_VALUE: return ((Ast_Node_Value*) value)->declaration; break;
+    case AST_NODE_POINTER_OPERATOR: return ((Ast_Node_Pointer_Operator*) value)->declaration; break;
+    case AST_NODE_PARENTHESIS: return ((Ast_Node_Parenthesis*) value)->declaration; break;
+    // case AST_NODE_ACCESSING: return ((Ast_Node_Accessing*) value)->; break;
     default: break;
     }
 
@@ -938,9 +941,13 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultTyp
             utils::Linked_List <Ast_Node*>* _params = new utils::Linked_List <Ast_Node*>();
             _params->destroy_content = 0;
 
+            _declaration->type->pointer_level++;
+
             _params->add(
                 _declaration
             );
+
+            std::cout << _expressions->operator[](_ + 1)->declaration->type->pointer_level << std::endl;
 
             _params->add(
                 _expressions->operator[](_ + 1)->declaration
@@ -955,11 +962,13 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultTyp
                 _params
             );
 
+            _declaration->type->pointer_level--;
+
             delete _params;
 
             free(_function_name);
 
-            if (!_function_declaration) exception_handle->runExceptionAstControl("No function declaration with given parameters");
+            if (!_function_declaration) exception_handle->runExceptionAstControl("No function declaration with given parameters - here");
 
             _function_declaration->return_type->setDeclarationVariable();
 
@@ -1009,6 +1018,14 @@ parser::Ast_Node_Expression* parser::Ast_Node_Expression::generate(int __value_n
 
     if (_token_id != -1) parser::ast_control->current_token_position++;
 
+    else {
+
+        if (parser::ast_control->getToken(0)->id == ACCESSING || parser::ast_control->getToken(0)->id == ACCESSING_POINTER)
+
+            _value = Ast_Node_Accessing::generate(_value);
+
+    }
+            
     parser::Ast_Node_Expression* _expression_node = (parser::Ast_Node_Expression*) malloc(sizeof(parser::Ast_Node_Expression));
     new (_expression_node) parser::Ast_Node_Expression(
         _token_id != -1 ? Ast_Node_Expression::generate(getNodeType()) : NULL,
@@ -1025,11 +1042,15 @@ parser::Ast_Node_Expression* parser::Ast_Node_Expression::generate(int __value_n
 
 parser::Ast_Node* parser::Ast_Node_Expression::getValue(int __value_node_type) {
 
+    std::cout << __value_node_type << std::endl;
+
     switch (__value_node_type)
     {
     case AST_NODE_VARIABLE: return Ast_Node_Variable::generate(); break;
     case AST_NODE_VALUE: return Ast_Node_Value::generate(); break;
-    case AST_NODE_FUNCTION_CALL: return Ast_Node_Function_Call::generate(); break;
+    case AST_NODE_FUNCTION_CALL: return Ast_Node_Function_Call::generate(NULL); break;
+    case AST_NODE_POINTER_OPERATOR: return Ast_Node_Pointer_Operator::generate(); break;
+    case AST_NODE_PARENTHESIS: return Ast_Node_Parenthesis::generate(); break;
     default: break;
     }
 
@@ -1049,9 +1070,6 @@ int parser::Ast_Node_Expression::getPriorityLevel(int __token_id) {
     return 5;
 
 }
-
-
-
 
 
 parser::Ast_Node_Variable::~Ast_Node_Variable() {}
@@ -1146,7 +1164,7 @@ parser::Ast_Node_Function_Call::Ast_Node_Function_Call(
     utils::Linked_List <Ast_Node_Expression*>* __parameters, Ast_Node_Function_Declaration* __declaration) 
         : Ast_Node(AST_NODE_FUNCTION_CALL, -1), parameters(__parameters), declaration(__declaration) {}
 
-parser::Ast_Node_Function_Call* parser::Ast_Node_Function_Call::generate() {
+parser::Ast_Node_Function_Call* parser::Ast_Node_Function_Call::generate(Ast_Node_Expression* _param) {
 
     ast_control->debug_information_tab++;
     parser::ast_control->print("Ast Node Function Call\n");
@@ -1163,6 +1181,8 @@ parser::Ast_Node_Function_Call* parser::Ast_Node_Function_Call::generate() {
     parser::ast_control->current_token_position++;
 
     utils::Linked_List <Ast_Node_Expression*>* _parameters = getParameters();
+
+    if (_param) _parameters->insert(_param, 0);
 
     utils::Linked_List <Ast_Node*>* _parameters_results = getParametersResults(_parameters);
 
@@ -1229,3 +1249,284 @@ utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Function_Call::getParam
 
 }
 
+
+parser::Ast_Node_Pointer_Operator::~Ast_Node_Pointer_Operator() { if (value) value->~Ast_Node(); free(value); delete declaration; }
+
+parser::Ast_Node_Pointer_Operator::Ast_Node_Pointer_Operator(int __pointer_level, Ast_Node* __value) 
+    : Ast_Node(AST_NODE_POINTER_OPERATOR, -1), pointer_level(__pointer_level), value(__value) {
+
+        switch (value->node_type)
+        {
+        case AST_NODE_VARIABLE:
+
+            declaration = new Ast_Node_Variable_Declaration(
+                -1, 
+                ((Ast_Node_Variable*) value)->declaration->type->getCopy(),
+                0
+            );
+
+            declaration->type->pointer_level += __pointer_level;
+
+            std::cout << "Level -> " << declaration->type->pointer_level << std::endl;
+
+            break;
+
+        case AST_NODE_VALUE:
+
+            declaration = new Ast_Node_Variable_Declaration(
+                -1, 
+                ((Ast_Node_Value*) value)->declaration->type->getCopy(),
+                0
+            );
+
+            declaration->type->pointer_level += __pointer_level;
+
+            break;
+        case AST_NODE_PARENTHESIS:
+
+            declaration = new Ast_Node_Variable_Declaration(
+                -1, 
+                ((Ast_Node_Parenthesis*) value)->expression->getResultType()->type->getCopy(),
+                0
+            );
+
+            declaration->type->pointer_level += __pointer_level;
+
+            break;
+
+        default: exception_handle->runExceptionAstControl("Error getting declaration of pointer operation constructor");  break;
+        }
+
+
+
+    }
+
+parser::Ast_Node_Pointer_Operator* parser::Ast_Node_Pointer_Operator::generate() {
+
+    ast_control->debug_information_tab++;
+    parser::ast_control->print("Ast Node Pointer Operator\n");
+
+    int _pointer_level = 0;
+    Ast_Node* _value;
+
+    while(parser::ast_control->getToken(0)->id == POINTER || parser::ast_control->getToken(0)->id == ADDRESS)
+        { _pointer_level += parser::ast_control->getToken(0)->id == POINTER ? -1 : 1; parser::ast_control->current_token_position++; }
+
+    switch (getNodeType())
+    {
+    case AST_NODE_VARIABLE: 
+        _value = Ast_Node_Variable::generate(); 
+        
+        if (((Ast_Node_Variable*)_value)->declaration->type->pointer_level + _pointer_level < 0) break;
+        
+        goto next; break;
+
+    case AST_NODE_VALUE: 
+    
+        _value = Ast_Node_Value::generate();
+
+        if (((Ast_Node_Value*)_value)->declaration->type->pointer_level + _pointer_level < 0) break;
+        
+        goto next; break;    
+
+    case AST_NODE_PARENTHESIS:
+    
+        _value = Ast_Node_Parenthesis::generate();
+
+        if (((Ast_Node_Parenthesis*)_value)->declaration->type->pointer_level + _pointer_level < 0) break;
+        
+        goto next; break; 
+
+    default: exception_handle->runExceptionAstControl("Error getting Pointer operator value"); break;
+    }
+
+    exception_handle->runExceptionAstControl("Error setting pointer operation");
+
+next:
+
+    parser::Ast_Node_Pointer_Operator* _pointer_operator_node = (parser::Ast_Node_Pointer_Operator*) malloc(sizeof(parser::Ast_Node_Pointer_Operator));
+    new (_pointer_operator_node) parser::Ast_Node_Pointer_Operator(
+        _pointer_level, _value
+    );
+
+    parser::ast_control->print("Ast Node Pointer Operator End\n");
+    ast_control->debug_information_tab--;
+
+    return _pointer_operator_node;
+
+}
+
+
+parser::Ast_Node_Parenthesis::~Ast_Node_Parenthesis() { if (expression) expression->~Ast_Node_Expression(); free(expression); delete declaration; }
+
+parser::Ast_Node_Parenthesis::Ast_Node_Parenthesis(Ast_Node_Expression* __expression) : Ast_Node(AST_NODE_PARENTHESIS, -1), expression(__expression) 
+    { declaration = expression->getResultType(); }
+
+parser::Ast_Node_Parenthesis* parser::Ast_Node_Parenthesis::generate() {
+
+    ast_control->debug_information_tab++;
+    parser::ast_control->print("Ast Node Parenthesis\n");
+
+    parser::ast_control->current_token_position++;
+
+    parser::Ast_Node_Parenthesis* _parenthesis_node = (parser::Ast_Node_Parenthesis*) malloc(sizeof(parser::Ast_Node_Parenthesis));
+
+    new (_parenthesis_node) parser::Ast_Node_Parenthesis(
+        Ast_Node_Expression::generate(
+            getNodeType()
+        )
+    );
+
+    parser::ast_control->current_token_position++;
+
+    parser::ast_control->print("Ast Node Parenthesis End\n");
+    ast_control->debug_information_tab--;
+
+    return _parenthesis_node;
+
+}
+
+
+parser::Ast_Node_Accessing::~Ast_Node_Accessing() {
+    if (value) value->~Ast_Node(); free(value);
+    if (next_accessing) next_accessing->~Ast_Node_Accessing(); free(next_accessing);
+}
+
+parser::Ast_Node_Accessing::Ast_Node_Accessing(Ast_Node_Accessing* __next_accessing, Ast_Node* __value, parser::Ast_Node_Variable_Declaration* __declaration) 
+    : Ast_Node(AST_NODE_ACCESSING, -1), next_accessing(__next_accessing), value(__value), declaration(__declaration) {}
+
+parser::Ast_Node_Accessing* parser::Ast_Node_Accessing::generate(parser::Ast_Node* _value) {
+
+    ast_control->debug_information_tab++;
+    parser::ast_control->print("Ast Node Accessing\n");
+
+    if (parser::ast_control->getToken(0)->id != ACCESSING && parser::ast_control->getToken(0)->id != ACCESSING_POINTER) {
+        
+        Ast_Node_Accessing* _accessing = (Ast_Node_Accessing*) malloc(sizeof(Ast_Node_Accessing));
+
+        new (_accessing) Ast_Node_Accessing(
+            NULL, _value, NULL
+        );
+
+        parser::ast_control->print("Ast Node Accessing End\n");
+        ast_control->debug_information_tab--;
+
+        return _accessing;
+
+    }
+
+    bool _operator_is_pointer = parser::ast_control->getToken(0)->id == ACCESSING_POINTER;
+
+    Ast_Node_Variable_Declaration* declaration;
+    Ast_Node* _value_accessed = NULL;
+
+    switch (_value->node_type)
+    {
+    case AST_NODE_VARIABLE:
+
+        declaration = new Ast_Node_Variable_Declaration(
+            -1, 
+            ((Ast_Node_Variable*) _value)->declaration->type->getCopy(),
+            0
+        );
+
+        break;
+
+    case AST_NODE_VALUE:
+
+        declaration = new Ast_Node_Variable_Declaration(
+            -1, 
+            ((Ast_Node_Value*) _value)->declaration->type->getCopy(),
+            0
+        );
+
+        break;
+    case AST_NODE_PARENTHESIS:
+
+        declaration = new Ast_Node_Variable_Declaration(
+            -1, 
+            ((Ast_Node_Parenthesis*) _value)->expression->getResultType()->type->getCopy(),
+            0
+        );
+
+        break;
+    case AST_NODE_FUNCTION_CALL:
+
+        declaration = new Ast_Node_Variable_Declaration(
+            -1, 
+            ((Ast_Node_Function_Call*) _value)->declaration->return_type->getCopy(),
+            0
+        );
+
+        break;
+    default: exception_handle->runExceptionAstControl("Error getting declaration of pointer operation constructor");  break;
+    }
+
+    if (_operator_is_pointer && !declaration->type->pointer_level || !_operator_is_pointer && declaration->type->pointer_level)
+
+        exception_handle->runExceptionAstControl("Not correct accessing token");
+
+    parser::ast_control->current_token_position++;
+
+    switch (getNodeType())
+    {
+    case AST_NODE_VARIABLE:
+
+        break;
+    case AST_NODE_FUNCTION_CALL:
+        {
+            parser::ast_control->addNameSpaceNodeToChain(declaration->type->user_defined_declaration->functions);
+            parser::ast_control->addCodeBlockNodeToChain(NULL);
+
+            Ast_Node_Variable* _param = (Ast_Node_Variable*) malloc(sizeof(Ast_Node_Variable));
+            Ast_Node* _param_to_expression;
+
+            new (_param) Ast_Node_Variable(
+                declaration
+            );
+
+            if (!_operator_is_pointer) {
+
+                _param_to_expression = (Ast_Node_Pointer_Operator*) malloc(sizeof(Ast_Node_Pointer_Operator));
+
+                new (_param_to_expression) Ast_Node_Pointer_Operator(
+                    1, _param
+                );
+
+
+            } else _param_to_expression = _param;
+
+            Ast_Node_Expression* _expression_param = (Ast_Node_Expression*) malloc(sizeof(Ast_Node_Expression));
+
+            new (_expression_param) Ast_Node_Expression(
+                NULL, _param_to_expression, -1
+            );
+
+            _value_accessed = Ast_Node_Function_Call::generate(_expression_param);
+
+            parser::ast_control->popNameSpaceChainFromChain();
+            parser::ast_control->popCodeBlockChainFromChain();
+
+            break;
+        }
+    default: break;
+    }
+
+    delete declaration;
+
+    Ast_Node_Accessing* _next_accessing = NULL;
+
+    _next_accessing = Ast_Node_Accessing::generate(_value_accessed);
+
+    Ast_Node_Accessing* _accessing = (Ast_Node_Accessing*) malloc(sizeof(Ast_Node_Accessing));
+
+    new (_accessing) Ast_Node_Accessing(
+        _next_accessing, _value, declaration
+    );
+
+    parser::ast_control->print("Ast Node Accessing End\n");
+    ast_control->debug_information_tab--;
+
+    return _accessing;
+
+}

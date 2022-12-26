@@ -158,11 +158,51 @@ namespace parser {
 
         ~Ast_Node_Function_Call(); Ast_Node_Function_Call(utils::Linked_List <Ast_Node_Expression*>*, Ast_Node_Function_Declaration*);
 
-        static Ast_Node_Function_Call* generate();
+        static Ast_Node_Function_Call* generate(Ast_Node_Expression*);
 
         static utils::Linked_List <Ast_Node_Expression*>* getParameters();
 
         static utils::Linked_List <Ast_Node*>* getParametersResults(utils::Linked_List <Ast_Node_Expression*>*);
+
+    };
+
+    struct Ast_Node_Pointer_Operator : public Ast_Node {
+
+        int pointer_level;
+        Ast_Node* value;
+
+        Ast_Node_Variable_Declaration* declaration;
+
+        ~Ast_Node_Pointer_Operator(); Ast_Node_Pointer_Operator(int, Ast_Node*);
+
+        static Ast_Node_Pointer_Operator* generate();
+
+    };
+
+    struct Ast_Node_Parenthesis : public Ast_Node {
+
+        Ast_Node_Expression* expression;
+
+        Ast_Node_Variable_Declaration* declaration;
+
+        ~Ast_Node_Parenthesis(); Ast_Node_Parenthesis(Ast_Node_Expression*);
+
+        static Ast_Node_Parenthesis* generate();
+
+    };
+
+    struct Ast_Node_Accessing : public Ast_Node {
+
+        Ast_Node_Accessing* next_accessing;
+        Ast_Node* value;
+
+        Ast_Node_Variable_Declaration* declaration;
+
+        ~Ast_Node_Accessing(); Ast_Node_Accessing(Ast_Node_Accessing*, Ast_Node*, Ast_Node_Variable_Declaration*);
+
+        static Ast_Node_Accessing* generate(Ast_Node*);
+
+        Ast_Node_Variable_Declaration* getFinalResultDeclaration();
 
     };
 

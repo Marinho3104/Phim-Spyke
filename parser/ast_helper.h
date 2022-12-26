@@ -10,12 +10,15 @@ namespace parser {
     struct Type_Information {
 
         parser::Ast_Node_Struct_Declaration* user_defined_declaration;
+        parser::Ast_Node_Variable_Declaration* declaration;
         int pointer_level, reference_level, token_id;
         parser::Name_Space* name_space;
 
         ~Type_Information(); Type_Information(parser::Ast_Node_Struct_Declaration*, int, parser::Name_Space*, utils::Linked_List <int>*); Type_Information(int);
 
         bool operator==(Type_Information*); bool operator!=(Type_Information*);
+
+        void setDeclarationVariable();
 
         Type_Information* getCopy();
 
@@ -30,13 +33,15 @@ namespace parser {
     struct Representation {
 
         parser::Ast_Node_Variable_Declaration* declaration;
-        int priority_level;
+        int priority_level, token_id;
 
-        Representation(parser::Ast_Node_Variable_Declaration* __declaration, int __priority_level);
+        Representation(parser::Ast_Node_Variable_Declaration*, int, int);
 
     };
 
     int getNodeType();
+
+    char* getPrimitiveTypeStructName(int);
 
     utils::Linked_List <int>* getPointerOperations();
 

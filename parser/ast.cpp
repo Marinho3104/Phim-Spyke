@@ -42,7 +42,7 @@ parser::Ast_Node_Function_Declaration* parser::Declaration_Tracker::getFunctionD
         getSpecificNodesFromLinkedList<Ast_Node_Variable_Declaration>(__parameters, AST_NODE_VARIABLE_DECLARATION), *_founded_variable_declarations;
     Ast_Node_Function_Declaration* _function_declaration = NULL;
 
-    for (int _ = 0; _ < function_declarations->count; _++)
+    for (int _ = 0; _ < function_declarations->count; _++) 
 
         if (
             function_declarations->operator[](_)->declaration_id == __declaration_id

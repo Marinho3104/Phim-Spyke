@@ -5,6 +5,7 @@
 
 #include "token_definitions.h"
 #include "tokenizer_helper.h"
+#include "built_ins_helper.h"
 #include "ast_definitions.h"
 #include "linked_List.h"
 #include "ast_helper.h"
@@ -796,7 +797,10 @@ void parser::Ast_Node_Struct_Declaration::setFunctions() {
                 new (_struct_variable_declaration) Ast_Node_Variable_Declaration(
                     -1,
                     new Type_Information(
-                        this, IDENTIFIER, NULL, NULL
+                        this, 
+                        IDENTIFIER, 
+                        parser::ast_control->name_space_control->getPreviousNameSpace(this->functions->name_space), 
+                        NULL
                     ),
                     0
                 );
@@ -908,7 +912,7 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultTyp
         Representation* _representation = (Representation*) malloc(sizeof(Representation));
 
         new (_representation) Representation(
-            _current_expression->getVariableDeclaration(), _current_expression->getPriorityLevel()
+            _current_expression->getVariableDeclaration(), _current_expression->getPriorityLevel(), _current_expression->token_id
         );
 
         _expressions->add(_representation);
@@ -925,8 +929,51 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultTyp
 
             if (_expressions->operator[](_)->priority_level != _priority_level) continue;
 
-            
+            Ast_Node_Variable_Declaration* _declaration = _expressions->operator[](_)->declaration;
 
+            parser::ast_control->addCodeBlockNodeToChain(NULL);
+
+            parser::ast_control->addNameSpaceNodeToChain(_declaration->type->user_defined_declaration->functions);
+
+            utils::Linked_List <Ast_Node*>* _params = new utils::Linked_List <Ast_Node*>();
+            _params->destroy_content = 0;
+
+            _params->add(
+                _declaration
+            );
+
+            _params->add(
+                _expressions->operator[](_ + 1)->declaration
+            );
+
+            char* _function_name = built_ins::getFunctionNameFromFunctionOperatorId(
+                _expressions->operator[](_)->token_id
+            );
+
+            Ast_Node_Function_Declaration* _function_declaration =  parser::getFunctionDeclaration(
+                parser::getDeclarationId(_function_name),
+                _params
+            );
+
+            delete _params;
+
+            free(_function_name);
+
+            if (!_function_declaration) exception_handle->runExceptionAstControl("No function declaration with given parameters");
+
+            _function_declaration->return_type->setDeclarationVariable();
+
+            _expressions->operator[](_)->declaration = _function_declaration->return_type->declaration;
+            _expressions->operator[](_)->token_id = _expressions->operator[](_ + 1)->token_id;
+            _expressions->operator[](_)->priority_level = parser::Ast_Node_Expression::getPriorityLevel(_expressions->operator[](_)->token_id);
+
+            delete _expressions->remove(_ + 1);
+
+            parser::ast_control->popCodeBlockChainFromChain();
+
+            parser::ast_control->popNameSpaceChainFromChain();
+
+ 
         }
 
         _priority_level++;
@@ -949,13 +996,6 @@ int parser::Ast_Node_Expression::getPriorityLevel() {
     if (token_id >= FUNCTION_OPERATOR_AND && token_id <= FUNCTION_OPERATOR_OR) return 4;
 
     return 5;
-
-    //     if (__token_id >= TOKEN_MULTIPLICATION && __token_id <= TOKEN_MODULUS) return 2;
-    // if (__token_id >= TOKEN_ADDITION && __token_id <= TOKEN_SUBTRACTION) return 3;
-    // if (__token_id >= TOKEN_BITWISEAND && __token_id <= TOKEN_BITWISERIGHTSHIFT) return 4;
-    // if (__token_id >= TOKEN_AND && __token_id <= TOKEN_NOT) return 5;
-
-    // return 6;
 
 }
 
@@ -998,6 +1038,18 @@ parser::Ast_Node* parser::Ast_Node_Expression::getValue(int __value_node_type) {
     return 0;
 
 }
+
+int parser::Ast_Node_Expression::getPriorityLevel(int __token_id) {
+
+    if (__token_id >= FUNCTION_OPERATOR_MULTIPLICATION && __token_id <= FUNCTION_OPERATOR_MODULOS) return 1;
+    if (__token_id >= FUNCTION_OPERATOR_PLUS && __token_id <= FUNCTION_OPERATOR_MINUS) return 2;
+    if (__token_id >= FUNCTION_OPERATOR_BITWISE_AND && __token_id <= FUNCTION_OPERATOR_BITWISE_RIGHT_SHIFT) return 3;
+    if (__token_id >= FUNCTION_OPERATOR_AND && __token_id <= FUNCTION_OPERATOR_OR) return 4;
+
+    return 5;
+
+}
+
 
 
 

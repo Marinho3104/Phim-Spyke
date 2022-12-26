@@ -5,3 +5,4 @@ root_path := ./../
 all: 
 
 	cp $(own_path)*.h $(root_path)
+	cp $(own_path)*.cpp $(root_path)

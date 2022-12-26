@@ -126,6 +126,8 @@ namespace parser {
 
         static Ast_Node* getValue(int);
 
+        static int getPriorityLevel(int);
+
     };
 
     struct Ast_Node_Variable : Ast_Node {

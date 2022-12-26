@@ -2,6 +2,7 @@
 
 #include "built_ins_definitions.h"
 #include "token_definitions.h"
+#include "built_ins_helper.h"
 #include "exception_handle.h"
 #include "tokenizer_helper.h"
 #include "ast_definitions.h"
@@ -11,13 +12,14 @@
 #include "ast.h"
 
 #include <iostream>
+#include <string.h> 
 
 
-parser::Type_Information::~Type_Information() {} 
+parser::Type_Information::~Type_Information() { if (declaration) delete declaration; } 
 
 parser::Type_Information::Type_Information(
     parser::Ast_Node_Struct_Declaration* __user_defined_declaration, int __token_id, parser::Name_Space* __name_space, utils::Linked_List <int>* __pointer_operations) 
-        : user_defined_declaration(__user_defined_declaration), token_id(__token_id), name_space(__name_space), pointer_level(0), reference_level(0) {
+        : user_defined_declaration(__user_defined_declaration), token_id(__token_id), name_space(__name_space), pointer_level(0), reference_level(0), declaration(NULL) {
 
             if (!__pointer_operations) return;
 
@@ -37,22 +39,76 @@ parser::Type_Information::Type_Information(
 
 }
 
-parser::Type_Information::Type_Information(int __implicit_value_id) 
-    : user_defined_declaration(0), token_id(getPrimitiveTypeOfImplicitValue(__implicit_value_id)), name_space(0), pointer_level(0), reference_level(0) {}
+parser::Type_Information::Type_Information(int __implicit_value_id)
+    : user_defined_declaration(0), token_id(getPrimitiveTypeOfImplicitValue(__implicit_value_id)), name_space(0), pointer_level(0), reference_level(0), declaration(NULL) {
+
+        utils::Linked_List <char*>* _built_ins_scope = new utils::Linked_List <char*>();
+        _built_ins_scope->destroy_content = 0;
+        _built_ins_scope->add(
+            (char*) "built_ins"
+        );
+
+        Name_Space* _name_space = parser::ast_control->name_space_control->getNameSpace(_built_ins_scope);
+
+        if (_name_space) { parser::ast_control->addNameSpaceNodeToChain(_name_space); parser::ast_control->addCodeBlockNodeToChain(NULL); }
+
+        delete _built_ins_scope;
+
+        char* _struct_name = getPrimitiveTypeStructName(token_id);
+
+        int _declaration_id = parser::getDeclarationId(_struct_name);
+
+        user_defined_declaration = parser::getStructDeclaration(_declaration_id);
+
+        if (_declaration_id == -1 || !user_defined_declaration) {
+
+            parser::ast_control->current_token_position--;
+        
+            if (_name_space) { parser::ast_control->popNameSpaceChainFromChain(); parser::ast_control->popCodeBlockChainFromChain(); }
+
+            exception_handle->runExceptionAstControl("Undefined type");
+
+        }
+
+        if (parser::ast_control->getToken(0)->id == FUNCTION_OPERATOR_MULTIPLICATION || parser::ast_control->getToken(0)->id == FUNCTION_OPERATOR_BITWISE_AND)
+
+            parser::ast_control->getToken(0)->id = parser::ast_control->getToken(0)->id == FUNCTION_OPERATOR_MULTIPLICATION ? POINTER : ADDRESS;
+
+        free(_struct_name);
+
+        if (_name_space) { parser::ast_control->popNameSpaceChainFromChain(); parser::ast_control->popCodeBlockChainFromChain(); }
+
+}
 
 bool parser::Type_Information::operator==(Type_Information* __to_compare) {
+
+    // std::cout << "-------- Compare -------" << std::endl;
+    // std::cout <<(user_defined_declaration == __to_compare->user_defined_declaration)  << std::endl;
+    // std::cout <<(pointer_level == __to_compare->pointer_level)  << std::endl;
+    // std::cout <<(reference_level == __to_compare->reference_level)  << std::endl;
+    // std::cout <<(token_id == __to_compare->token_id)  << std::endl;
+    // std::cout <<(name_space == __to_compare->name_space)  << std::endl;
+    // std::cout << "--------       -------" << std::endl;
 
     return (
         user_defined_declaration == __to_compare->user_defined_declaration &&
         pointer_level == __to_compare->pointer_level && 
         reference_level == __to_compare->reference_level && 
-        token_id == __to_compare->token_id && 
+        // token_id == __to_compare->token_id &&
         name_space == __to_compare->name_space
     );
 
 } 
 
 bool parser::Type_Information::operator!=(Type_Information* __to_compare) { return !operator==(__to_compare); }
+
+void parser::Type_Information::setDeclarationVariable() {
+
+    declaration  = new Ast_Node_Variable_Declaration(
+        -1, this->getCopy(), 0
+    );
+
+}
 
 parser::Type_Information* parser::Type_Information::getCopy() {
 
@@ -78,8 +134,60 @@ parser::Type_Information* parser::Type_Information::generate() {
     int _id = parser::ast_control->getToken(0)->id, _backup_state = parser::ast_control->current_token_position;
     parser::ast_control->current_token_position++;
 
-    if (isPrimitive(_id));
+    if (isPrimitive(_id) && !_name_space) {
+
+        utils::Linked_List <char*>* _built_ins_scope = new utils::Linked_List <char*>();
+        _built_ins_scope->destroy_content = 0;
+        _built_ins_scope->add(
+            (char*) "built_ins"
+        );
+
+        _name_space = parser::ast_control->name_space_control->getNameSpace(_built_ins_scope);
+
+        if (_name_space) { parser::ast_control->addNameSpaceNodeToChain(_name_space); parser::ast_control->addCodeBlockNodeToChain(NULL); }
+
+        delete _built_ins_scope;
+
+        char* _struct_name = getPrimitiveTypeStructName(_id);
+
+        int _declaration_id = parser::getDeclarationId(_struct_name);
+
+        _user_defined_declaration = parser::getStructDeclaration(_declaration_id);
+
+        if (_declaration_id == -1 || !_user_defined_declaration) {
+
+            parser::ast_control->current_token_position--;
+        
+            if (_name_space) { parser::ast_control->popNameSpaceChainFromChain(); parser::ast_control->popCodeBlockChainFromChain(); }
+
+            exception_handle->runExceptionAstControl("Undefined type");
+
+        }
+
+        if (parser::ast_control->getToken(0)->id == FUNCTION_OPERATOR_MULTIPLICATION || parser::ast_control->getToken(0)->id == FUNCTION_OPERATOR_BITWISE_AND)
+
+            parser::ast_control->getToken(0)->id = parser::ast_control->getToken(0)->id == FUNCTION_OPERATOR_MULTIPLICATION ? POINTER : ADDRESS;
+
+        free(_struct_name);
+
+    }
     else if (_id == IDENTIFIER) {
+
+        if (built_ins::isPrimitiveTypeName( (const char*) parser::ast_control->getToken(-1)->identifier) && !_name_space) {
+
+            utils::Linked_List <char*>* _built_ins_scope = new utils::Linked_List <char*>();
+            _built_ins_scope->destroy_content = 0;
+            _built_ins_scope->add(
+                (char*) "built_ins"
+            );
+
+            _name_space = parser::ast_control->name_space_control->getNameSpace(_built_ins_scope);
+
+            if (_name_space) { parser::ast_control->addNameSpaceNodeToChain(_name_space); parser::ast_control->addCodeBlockNodeToChain(NULL); }
+
+            delete _built_ins_scope;
+
+        }
 
         int _declaration_id = parser::getDeclarationId(parser::ast_control->getToken(-1)->identifier);
 
@@ -139,9 +247,8 @@ int parser::Type_Information::getByteSize() {
 }
 
 
-parser::Representation::Representation(parser::Ast_Node_Variable_Declaration* __declaration, int __priority_level) 
-            : declaration(__declaration), priority_level(__priority_level) {}
-
+parser::Representation::Representation(parser::Ast_Node_Variable_Declaration* __declaration, int __priority_level, int __token_id) 
+            : declaration(__declaration), priority_level(__priority_level), token_id(__token_id) {}
 
 int parser::getNodeType() {
 
@@ -212,6 +319,41 @@ int parser::getNodeType() {
     exception_handle->runExceptionAstControl("Error getting node type");
 
     return -1;
+
+}
+
+char* parser::getPrimitiveTypeStructName(int __primitive_type) {
+
+    char* _;
+
+    switch (__primitive_type)
+    {
+    case PRIMITIVE_TYPE_BYTE:
+        
+        _ = (char*) malloc(5);
+
+        strcpy(_, "Byte");
+
+        return _;
+
+        break;
+
+    case PRIMITIVE_TYPE_INT:
+        
+        _ = (char*) malloc(4);
+
+        strcpy(_, "Int");
+
+        return _;
+
+        break;   
+
+    default: break;
+    }
+
+    exception_handle->runException("Error getting primitive type");
+
+    return 0;
 
 }
 

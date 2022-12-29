@@ -8,3 +8,6 @@
 #define PRIMITIVE_TYPE_BOOL_SIZE 1
 
 
+/* Function Name for operators */
+
+#define FUNCTION_NAME_FUNCTION_OPERATOR_PLUS "add"

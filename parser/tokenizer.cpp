@@ -131,6 +131,10 @@ void parser::Tokenizer_Control::setTokenIdentifier() {
 
         tokens_collection->insert(_token, tokens_collection->count - 1);
 
+        if (parser::tokenizer_control->tokens_collection->last->object->id == POINTER || parser::tokenizer_control->tokens_collection->last->object->id == ADDRESS)
+            
+            parser::tokenizer_control->tokens_collection->last->object->id = parser::tokenizer_control->tokens_collection->last->object->id == POINTER ? FUNCTION_OPERATOR_MULTIPLICATION : FUNCTION_OPERATOR_BITWISE_AND;
+
     }
 
     else addToken(_token);

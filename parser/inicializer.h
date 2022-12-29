@@ -9,11 +9,7 @@ namespace parser {
 
     void inicializeVariables();
 
-    void inicializeVariablesBuiltIns();
-
     void deleteVariables();
-
-    void deleteVariablesBuiltIns();
 
 }
 

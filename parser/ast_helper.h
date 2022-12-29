@@ -9,65 +9,70 @@ namespace parser {
 
     struct Type_Information {
 
-        parser::Ast_Node_Struct_Declaration* user_defined_declaration;
-        parser::Ast_Node_Variable_Declaration* declaration;
-        int pointer_level, reference_level, token_id;
-        parser::Name_Space* name_space;
+        parser::Ast_Node_Struct_Declaration* declaration;
+        int pointer_level, reference_level;
 
-        ~Type_Information(); Type_Information(parser::Ast_Node_Struct_Declaration*, int, parser::Name_Space*, utils::Linked_List <int>*); Type_Information(int);
+        ~Type_Information(); Type_Information(parser::Ast_Node_Struct_Declaration*, utils::Linked_List <int>*);
 
         bool operator==(Type_Information*); bool operator!=(Type_Information*);
 
-        void setDeclarationVariable();
+        static Type_Information* generate(Type_Information*);
 
-        Type_Information* getCopy();
+        static Type_Information* generate(int);
 
         static Type_Information* generate();
 
-        static Type_Information* generate(Type_Information*);
-
-        int getByteSize();
+        Type_Information* getCopy();
 
     };
 
-    struct Representation {
+    struct Expression_Result_Helper {
 
-        parser::Ast_Node_Variable_Declaration* declaration;
-        int priority_level, token_id;
+        Ast_Node_Variable_Declaration* declaration;
+        int token_id;
 
-        Representation(parser::Ast_Node_Variable_Declaration*, int, int);
+        ~Expression_Result_Helper(); Expression_Result_Helper(Ast_Node_Expression*);
 
     };
-
+    
     int getNodeType();
 
-    char* getPrimitiveTypeStructName(int);
-
-    utils::Linked_List <int>* getPointerOperations();
-
-    utils::Linked_List <char*>* getNameSpaceScopeFromKeyWord();
-
-    utils::Linked_List <char*>* getNameSpaceScope();
 
     utils::Linked_List <char*>* getScope();
 
+    utils::Linked_List <char*>* getNameSpaceScope();
+
     parser::Name_Space* getNameSpace();
 
-    parser::Declaration_Tracker* getDeclarationTracker();
 
-    int getPrimitveTypeSize(int);
-
-    int getPrimitiveTypeOfImplicitValue(int);
+    utils::Linked_List <int>* getPointerOperations();  
 
     void ignoreCodeBlock();
 
+
+    Name_Space* getCurrentNameSpace();
+
+    utils::Linked_List <char*>* getCurrentScope();
+
+    parser::Declarations_Tracker* getCurrentDeclarationTracker();
+
+
     int getDeclarationId(char*);
 
-    Ast_Node_Variable_Declaration* getVariableDeclaration(int);
+    parser::Ast_Node_Variable_Declaration* getVariableDeclaration(int);
 
-    Ast_Node_Function_Declaration* getFunctionDeclaration(int, utils::Linked_List <Ast_Node*>*);
+    parser::Ast_Node_Function_Declaration* getFunctionDeclaration(int, utils::Linked_List <Ast_Node*>*);
+    
+    parser::Ast_Node_Struct_Declaration* getStructDeclaration(int);
 
-    Ast_Node_Struct_Declaration* getStructDeclaration(int);
+
+    bool isNameSpaceScope();
+
+    bool isGlobalDeclaration();
+
+
+    int getOperatorPriority(int);
+
 
     template <typename type>
     utils::Linked_List <type*>* getSpecificNodesFromLinkedList(utils::Linked_List <Ast_Node*>*, int);

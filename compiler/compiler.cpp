@@ -11,19 +11,19 @@ compiler::Compiler::~Compiler() {
 
 }
 
-compiler::Compiler::Compiler(char* __code) : code(__code) { generateBuiltIns(); generate(); }
+compiler::Compiler::Compiler(char* __code) : code(__code) { generateBuiltIns(); /* generate(); */ }
 
 void compiler::Compiler::generateBuiltIns() {
 
     parser::code = utils::getFileContent((char*) "./built_ins/byte.ph");
 
-    parser::inicializeVariablesBuiltIns();
+    parser::inicializeVariables();
 
     parser::tokenizer_control->generate();
 
     parser::ast_control->generate();
 
-    parser::deleteVariablesBuiltIns();
+    parser::deleteVariables();
 
     free(parser::code);
 

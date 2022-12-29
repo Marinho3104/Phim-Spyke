@@ -18,19 +18,11 @@ namespace parser {
 }
 
 
-void parser::inicializeVariablesBuiltIns() {
-
-    tokenizer_control = new Tokenizer_Control(1);
-    exception_handle = new Exception_Handle();
-    ast_control = new Ast_Control(1);
-
-}
-
 void parser::inicializeVariables() {
 
     tokenizer_control = new Tokenizer_Control(1);
     exception_handle = new Exception_Handle();
-    ast_control = new Ast_Control(ast_control, 1);
+    ast_control = new Ast_Control(1);
 
 }
 
@@ -39,13 +31,6 @@ void parser::deleteVariables() {
     delete tokenizer_control;
     delete exception_handle;
     delete ast_control;
-
-}
-
-void parser::deleteVariablesBuiltIns() {
-
-    delete tokenizer_control;
-    delete exception_handle;
 
 }
 

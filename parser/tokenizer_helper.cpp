@@ -184,6 +184,8 @@ bool parser::isPrimitive(int __token_id) { return __token_id >= PRIMITIVE_TYPE_V
 
 bool parser::isImplicitValueOrIdentifier(int __token_id) { return __token_id >= IDENTIFIER && __token_id <= IMPLICIT_VALUE_STRING; }
 
+bool parser::isAccessingOperator(int __token_id) { return __token_id == ACCESSING || __token_id == ACCESSING_POINTER; }
+
 bool parser::isFunctionOperator(int __token_id) { return __token_id >= FUNCTION_OPERATOR_PLUS && __token_id <= FUNCTION_OPERATOR_BITWISE_RIGHT_SHIFT_ASSIGN; }
 
 

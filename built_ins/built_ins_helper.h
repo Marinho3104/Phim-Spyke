@@ -5,9 +5,9 @@
 
 namespace built_ins {
 
-    bool isPrimitiveTypeName(const char*);
+    char* getStructNameOfTokenId(int);
 
-    char* getFunctionNameFromFunctionOperatorId(int);
+    char* getFunctionNameFromTokenId(int);    
 
 }
 

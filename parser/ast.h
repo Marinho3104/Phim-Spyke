@@ -7,18 +7,18 @@
 
 namespace parser {
 
-    struct Declaration_Tracker {
+    struct Declarations_Tracker {
 
-        utils::Linked_List <Ast_Node_Variable_Declaration*>* variable_declarations;
-        utils::Linked_List <Ast_Node_Function_Declaration*>* function_declarations;
-        utils::Linked_List <Ast_Node_Struct_Declaration*>* struct_declarations;
+        utils::Linked_List <parser::Ast_Node_Variable_Declaration*>* variable_declaration;
+        utils::Linked_List <parser::Ast_Node_Function_Declaration*>* function_declaration;
+        utils::Linked_List <parser::Ast_Node_Struct_Declaration*>* struct_declaration;
 
         utils::Linked_List <int>* declaration_ids;
         utils::Linked_List <char*>* names;
 
         int* off;
 
-        ~Declaration_Tracker(); Declaration_Tracker(int*);
+        ~Declarations_Tracker(); Declarations_Tracker(int*);
 
         Ast_Node_Variable_Declaration* getVariableDeclaration(int);
 
@@ -28,72 +28,71 @@ namespace parser {
 
         int getDeclarationId(char*);
 
-        void addName(char*);
+        void addName(char*, int);
 
-        void addStaticName(char*, int);
+        void addName(char*);
 
     };
 
     struct Name_Space {
 
-        Declaration_Tracker* declaration_tracker;
+        Declarations_Tracker* declarations_tracker;
+        Ast_Node_Name_Space* name_space_node;
         utils::Linked_List <char*>* scope;
 
-        ~Name_Space(); Name_Space(utils::Linked_List <char*>*, int*);
+        ~Name_Space(); 
+        
+        Name_Space(utils::Linked_List <char*>*, int*); Name_Space(utils::Linked_List <char*>*, parser::Ast_Node_Name_Space*, int*);
 
     };
 
     struct Name_Space_Control {
 
         utils::Linked_List <Name_Space*>* name_space_collection;
-        int declaration_off;
+        int off;
 
         ~Name_Space_Control(); Name_Space_Control();
 
-        void loadGlobalNameSpace();
-
-        void addNameSpace(Name_Space*);
+        void setGlobalNameSpace();
 
         void addNameSpace(utils::Linked_List <char*>*);
 
         Name_Space* getNameSpace(utils::Linked_List <char*>*);
 
+        Name_Space* getNameSpace(Ast_Node_Name_Space*);
+
         Name_Space* getNameSpaceOrAdd(utils::Linked_List <char*>*);
 
         Name_Space* getPreviousNameSpace(Name_Space*);
-
+        
     };
 
     struct Ast_Control {
 
-        utils::Linked_List <Ast_Node_Name_Space*>* name_space_node_collection;
-        utils::Linked_List <char*>* implicit_value_collection;
-        Name_Space_Control* name_space_control;
-        Ast_Control* built_ins_ast_control;
+        utils::Linked_List <char*>* implicit_values_collection;
+        parser::Ast_Node_Name_Space* global_name_space;
 
-        utils::Linked_List <Ast_Node_Name_Space*>* name_space_chain;
+        Name_Space_Control* name_space_control;
+
+        utils::Linked_List <Name_Space*>* name_space_chain;
         utils::Linked_List <Ast_Node_Code_Block*>* code_block_chain;
 
-        int current_token_position;
+        int current_position;
 
-        int debug_information_tab;
+        int debug_mode_tab;
         bool debug_mode;
 
-        ~Ast_Control(); Ast_Control(bool); Ast_Control(Ast_Control*, bool);
- 
+        ~Ast_Control(); Ast_Control(bool);
+
         Token* getToken(int);
 
-        void print(const char*);
+        void print(const char*, int);
 
         void generate();
 
         int addImplicitValue(char*);
 
-        void addNameSpaceNodeToChain(Ast_Node_Name_Space*); void addNameSpaceNodeToChain(Name_Space*); void popNameSpaceChainFromChain();
-
-        void addCodeBlockNodeToChain(Ast_Node_Code_Block*); void popCodeBlockChainFromChain();
-
-        Ast_Node_Name_Space* getNodeNameSpace(Name_Space*);
+        void addToChain(Name_Space*, Ast_Node_Code_Block*); void popFromChain();
 
     };
 

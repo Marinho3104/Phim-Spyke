@@ -1,0 +1,7 @@
+#pragma once
+
+#ifndef PARSER_CONVERTOR_DEFINITIONS_H
+#define PARSER_CONVERTOR_DEFINITIONS_H
+
+
+#endif

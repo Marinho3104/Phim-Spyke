@@ -17,7 +17,7 @@ char* built_ins::getStructNameOfTokenId(int __token_id) {
 
         _struct_name = (char*) malloc(5);
 
-        strcpy(_struct_name, "Byte");
+        strcpy(_struct_name, PRIMITIVE_TYPE_BYTE_NAME);
 
         break;
 
@@ -25,7 +25,7 @@ char* built_ins::getStructNameOfTokenId(int __token_id) {
 
         _struct_name = (char*) malloc(4);
 
-        strcpy(_struct_name, "Int");
+        strcpy(_struct_name, PRIMITIVE_TYPE_INT_NAME);
         
         break;
 
@@ -35,6 +35,15 @@ char* built_ins::getStructNameOfTokenId(int __token_id) {
     return _struct_name;
 
 }
+
+int built_ins::getPrimitiveTypeSize(char* __name) {
+
+    if (!strcmp((const char*) __name, PRIMITIVE_TYPE_BYTE_NAME)) return PRIMITIVE_TYPE_BYTE_SIZE;
+    if (!strcmp((const char*) __name, PRIMITIVE_TYPE_INT_NAME)) return PRIMITIVE_TYPE_INT_SIZE;
+
+    return -1;
+
+} 
 
 char* built_ins::getFunctionNameFromTokenId(int __token_id) {
 
@@ -56,6 +65,7 @@ char* built_ins::getFunctionNameFromTokenId(int __token_id) {
     return _function_name;
 
 }    
+
 
 
 

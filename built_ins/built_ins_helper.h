@@ -7,7 +7,9 @@ namespace built_ins {
 
     char* getStructNameOfTokenId(int);
 
-    char* getFunctionNameFromTokenId(int);    
+    int getPrimitiveTypeSize(char*);
+
+    char* getFunctionNameFromTokenId(int);
 
 }
 

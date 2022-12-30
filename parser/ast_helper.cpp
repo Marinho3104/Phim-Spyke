@@ -2,6 +2,7 @@
 
 #include "ast.h"
 
+#include "built_ins_definitions.h"
 #include "token_definitions.h"
 #include "built_ins_helper.h"
 #include "exception_handle.h"
@@ -205,6 +206,15 @@ parser::Type_Information* parser::Type_Information::getCopy() {
 
 }
 
+int parser::Type_Information::getSize() {
+
+    if (!pointer_level) return declaration->getSize();
+
+    return PRIMITIVE_TYPE_POINTER_SIZE;
+
+}
+
+
 
 parser::Expression_Result_Helper::~Expression_Result_Helper() {}
 
@@ -221,6 +231,7 @@ int parser::getNodeType() {
     case CLOSE_BRACES: return -1; break;
     case END_INSTRUCTION: return -2; break;
     case CLOSE_PARENTHESIS: return -3; break;
+    case COMMA: return -4; break;
     case NAMESPACE: return AST_NODE_NAME_SPACE; break;
     case STRUCT: return AST_NODE_STRUCT_DECLARATION; break;
     case OPEN_PARENTHESIS: return AST_NODE_PARENTHESIS; break;
@@ -243,6 +254,9 @@ int parser::getNodeType() {
 
             try { delete Type_Information::generate(); }
             catch(...) { 
+
+                getNameSpace();
+
                 _node_type = (parser::ast_control->getToken(1)->id == OPEN_PARENTHESIS) ? AST_NODE_FUNCTION_CALL : AST_NODE_VARIABLE; 
                 goto reset_return;
             }

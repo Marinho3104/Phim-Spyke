@@ -1,5 +1,7 @@
 #include "./linked_List.h"
 
+#include "pre_compiler.h"
+#include "byte_code.h"
 #include "ast_helper.h"
 #include "tokenizer.h"
 #include "ast_nodes.h"
@@ -202,9 +204,12 @@ template class utils::Linked_List <parser::Ast_Node_Function_Declaration*>;
 template class utils::Linked_List <parser::Ast_Node_Variable_Declaration*>;
 template class utils::Linked_List <parser::Ast_Node_Struct_Declaration*>;
 template class utils::Linked_List <parser::Expression_Result_Helper*>;
+template class utils::Linked_List <parser::Pre_Compiler_Instruction*>;
 template class utils::Linked_List <parser::Ast_Node_Expression*>;
 template class utils::Linked_List <parser::Ast_Node_Code_Block*>;
 template class utils::Linked_List <parser::Ast_Node_Name_Space*>;
+template class utils::Linked_List <byte_code::Byte_Code_Block*>;
+template class utils::Linked_List <byte_code::Byte_Code*>;
 template class utils::Linked_List <parser::Name_Space*>;
 template class utils::Linked_List <parser::Ast_Node*>;
 template class utils::Linked_List <parser::Token*>;
@@ -215,9 +220,12 @@ template class utils::Data_Linked_List <parser::Ast_Node_Function_Declaration*>;
 template class utils::Data_Linked_List <parser::Ast_Node_Variable_Declaration*>;
 template class utils::Data_Linked_List <parser::Ast_Node_Struct_Declaration*>;
 template class utils::Data_Linked_List <parser::Expression_Result_Helper*>;
+template class utils::Data_Linked_List <parser::Pre_Compiler_Instruction*>;
 template class utils::Data_Linked_List <parser::Ast_Node_Expression*>;
 template class utils::Data_Linked_List <parser::Ast_Node_Code_Block*>;
 template class utils::Data_Linked_List <parser::Ast_Node_Name_Space*>;
+template class utils::Data_Linked_List <byte_code::Byte_Code_Block*>;
+template class utils::Data_Linked_List <byte_code::Byte_Code*>;
 template class utils::Data_Linked_List <parser::Name_Space*>;
 template class utils::Data_Linked_List <parser::Ast_Node*>;
 template class utils::Data_Linked_List <parser::Token*>;

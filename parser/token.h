@@ -21,6 +21,8 @@ namespace parser {
 
         ~Token(); Token(int_8, int, int, int); Token(int_8, char*, int, int, int);
 
+        Token* getCopy();
+
     };
 
 

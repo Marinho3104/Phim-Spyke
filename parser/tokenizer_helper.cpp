@@ -102,7 +102,6 @@ int parser::getTokenKeyWord(const char*& __current_position) {
     if (!strncmp(__current_position, "namespace", 9)) { __current_position += 9; return NAMESPACE; }
     if (!strncmp(__current_position, "struct", 6)) { __current_position += 6; return STRUCT; }
     if (!strncmp(__current_position, "contract", 8)) { __current_position += 8; return CONTRACT; }
-    if (!strncmp(__current_position, "include", 7)) { __current_position += 7; return INCLUDE; }
     if (!strncmp(__current_position, "static", 6)) { __current_position += 6; return STATIC; }
 
 

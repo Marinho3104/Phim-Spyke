@@ -1,5 +1,7 @@
 
-#include "common.h"
+#define COMMON "common.h"
+
+#include COMMON
 
 #include <iostream>
 

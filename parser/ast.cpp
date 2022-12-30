@@ -257,7 +257,7 @@ parser::Ast_Control::~Ast_Control() {
     delete name_space_control;
     delete name_space_chain; delete code_block_chain;
 
-    delete implicit_values_collection;
+    // delete implicit_values_collection;
     
 }
 

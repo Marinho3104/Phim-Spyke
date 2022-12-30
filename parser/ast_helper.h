@@ -24,6 +24,8 @@ namespace parser {
 
         Type_Information* getCopy();
 
+        int getSize();
+
     };
 
     struct Expression_Result_Helper {

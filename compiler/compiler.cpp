@@ -1,9 +1,12 @@
 #include "./compiler.h"
 
-#include "inicializer.h"
+#include "pre_compiler.h"
 #include "tokenizer.h"
-#include "common.h"
+#include "convertor.h"
 #include "ast.h"
+
+#include "inicializer.h"
+#include "common.h"
 
 #include <iostream>
 
@@ -21,7 +24,13 @@ void compiler::Compiler::generateBuiltIns() {
 
     parser::tokenizer_control->generate();
 
+    parser::pre_compiler_control->preCompile();
+
     parser::ast_control->generate();
+
+    parser::convertor_control->generate();
+
+    parser::convertor_control->getCompiledByteCode();
 
     parser::deleteVariables();
 

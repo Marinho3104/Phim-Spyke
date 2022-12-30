@@ -1,39 +1,50 @@
- 
+
+#define BYTE_NAME byte
+
 namespace built_ins {
 
-    struct Byte {
+    struct Byte {};
 
-    };
+    BYTE_NAME ola;
+
     
     struct Int {
 
-        static int marinho;
+        int* add(int*);
 
-        int j, l;
+        int* add(int);
 
-        int add(int) {}
+        int test_func(int) {
 
-        int* add(int*) {}
-        
+            this;
+
+        }
+
     };
-
-
-
-    
 
 }
 
+int ola, *k;
+
+byte adeus, *kk;
+ 
+#define to_replace 50
+ 
+ 
 namespace ola {
 
-    int* ola;
-    
-    int* test_func(int) {
-        
-        ola->add(*ola).j;
+    int var, *var2;
+ 
+    int func_test(int*) {
 
+        int *var, *var2;
+        int _var, _var2;
+ 
+        //(&var)->add(to_replace) + 12;
+ 
     }
-
-
+ 
+ 
 }
  
 

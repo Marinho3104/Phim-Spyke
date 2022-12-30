@@ -238,8 +238,9 @@ void parser::Ast_Node_Code_Block::setCode() {
         {
             case -1: parser::ast_control->current_position++; goto out; break;
             case AST_NODE_VARIABLE: case AST_NODE_VALUE: case AST_NODE_FUNCTION_CALL: case AST_NODE_POINTER_OPERATION: case AST_NODE_PARENTHESIS:
-                code->add(Ast_Node_Expression::generate(_node_type)); 
-                if (parser::ast_control->getToken(0)->id != END_INSTRUCTION) parser::exception_handle->runExceptionAstControl("Excpected token ';'");
+                code->add(Ast_Node_Expression::generate(_node_type));
+                std::cout << (int) parser::ast_control->getToken(0)->id << std::endl; 
+                if (parser::ast_control->getToken(0)->id != END_INSTRUCTION) parser::exception_handle->runExceptionAstControl("Excpected token ';' aqui");
                 parser::ast_control->current_position++;
                 break;
             case AST_NODE_VARIABLE_DECLARATION:
@@ -880,6 +881,29 @@ void parser::Ast_Node_Struct_Declaration::setFields() {
 
 }
 
+int parser::Ast_Node_Struct_Declaration::getSize() {
+
+    int _size = built_ins::getPrimitiveTypeSize(
+        parser::ast_control->name_space_control->getNameSpace(
+            functions
+        )->scope->last->object
+    );
+
+    if (_size != -1) return _size;
+
+    _size = 0;
+
+    for (int _ = 0; _ < fields->code->count; _++)
+
+        if (fields->code->operator[](_)->node_type == AST_NODE_VARIABLE_DECLARATION)
+
+            _size += fields->code->operator[](_)->representive_declaration->type->getSize();
+
+    return _size;
+
+}
+
+
 
 parser::Ast_Node_Expression::~Ast_Node_Expression() {
     if (expression) expression->~Ast_Node_Expression(); free(expression);
@@ -993,6 +1017,9 @@ parser::Ast_Node_Expression* parser::Ast_Node_Expression::generate(int __value_n
 
     Ast_Node* _value = getValue(__value_node_type);
 
+    std::cout << (int) parser::ast_control->getToken(0)->id << std::endl;
+
+second_operator_check:
     int _token_id = isFunctionOperator(parser::ast_control->getToken(0)->id) ? parser::ast_control->getToken(0)->id : -1;
 
     if (_token_id != -1) parser::ast_control->current_position++;
@@ -1001,7 +1028,7 @@ parser::Ast_Node_Expression* parser::Ast_Node_Expression::generate(int __value_n
 
         switch (getNodeType())
         {
-        case AST_NODE_ACCESSING: _value = Ast_Node_Accessing::generate(_value); break;
+        case AST_NODE_ACCESSING: _value = Ast_Node_Accessing::generate(_value); goto second_operator_check; break;
         default: break;
         }
 
@@ -1104,6 +1131,8 @@ parser::Ast_Node_Value* parser::Ast_Node_Value::generate() {
     );
 
     parser::Ast_Node_Value* _value_node = (parser::Ast_Node_Value*) malloc(sizeof(parser::Ast_Node_Value));
+
+    std::cout << "Node value -> " << parser::ast_control->getToken(0)->identifier << std::endl;
 
     new (_value_node) parser::Ast_Node_Value(
         _node_variable_declaration,

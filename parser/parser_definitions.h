@@ -17,6 +17,12 @@ namespace parser {
     // Exception Handle
     struct Exception_Handle;
 
+    // Pre Compiler
+    struct Pre_Compiler_Control;
+
+    // Convertor 
+    struct Convertor_Control;
+
     // Ast 
     struct Expression_Result_Helper;
     struct Declarations_Tracker;
@@ -42,10 +48,21 @@ namespace utils {
 
 }
 
+// Forward
+namespace byte_code {
+
+    struct Byte_Code;
+    struct Compiled_Code;
+    struct Byte_Code_Block;
+
+}
+
 // Extern variables
 namespace parser {
 
+    extern Pre_Compiler_Control* pre_compiler_control;
     extern Tokenizer_Control* tokenizer_control;
+    extern Convertor_Control* convertor_control;
     extern Exception_Handle* exception_handle;
     extern Ast_Control* ast_control;
     extern char* code;

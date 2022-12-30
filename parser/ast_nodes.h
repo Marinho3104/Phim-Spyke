@@ -110,6 +110,8 @@ namespace parser {
 
         void setFields();
 
+        int getSize();
+
     };
 
     struct Ast_Node_Expression : Ast_Node {

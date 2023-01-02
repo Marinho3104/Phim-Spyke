@@ -163,7 +163,8 @@ void parser::handleSingleQuotationMark(Token* __token, char*& __current_position
 
 void parser::handlePointerOrAddress(Token* __token) {
 
-    if (parser::isImplicitValueOrIdentifier(parser::tokenizer_control->tokens_collection->last->object->id)) 
+    if (parser::isImplicitValueOrIdentifier(parser::tokenizer_control->tokens_collection->last->object->id) || 
+        parser::tokenizer_control->tokens_collection->last->object->id == CLOSE_PARENTHESIS) // Not best way
 
         __token->id = __token->id == POINTER ? FUNCTION_OPERATOR_MULTIPLICATION : FUNCTION_OPERATOR_BITWISE_AND;
 

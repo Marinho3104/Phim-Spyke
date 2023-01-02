@@ -17,7 +17,7 @@ void parser::Convertor_Control::print(const char* __information) {
 
     if (!debug_mode) return;
 
-    std::cout << "\t" << __information << std::endl;
+    std::cout << "\t" << __information << "\n" << std::endl;
 
 }
 
@@ -27,14 +27,16 @@ void parser::Convertor_Control::generate() {
     print("\t---> Convertor Control <---");
     print("");
 
+    allocBlock();
+
     setBlock(parser::ast_control->global_name_space->declarations);
 
 }
 
 void parser::Convertor_Control::setBlock(utils::Linked_List<Ast_Node*>* __declarations) {
 
-    byte_code::Byte_Code_Block* _byte_code_block = (byte_code::Byte_Code_Block*) malloc(sizeof(byte_code::Byte_Code_Block));
-    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>(), *_temp;
+    byte_code::Byte_Code_Block* _byte_code_block = byte_code_blocks->last->object;
+    utils::Linked_List <byte_code::Byte_Code*>* _temp;
 
     for (int _ = 0; _ < __declarations->count; _++) {
 
@@ -42,7 +44,7 @@ void parser::Convertor_Control::setBlock(utils::Linked_List<Ast_Node*>* __declar
             __declarations->operator[](_)
         );
 
-        _byte_code->join(
+        _byte_code_block->block->join(
             _temp
         );
 
@@ -51,15 +53,23 @@ void parser::Convertor_Control::setBlock(utils::Linked_List<Ast_Node*>* __declar
 
     }
 
+}
+
+int parser::Convertor_Control::allocBlock() {
+
+    byte_code::Byte_Code_Block* _byte_code_block = (byte_code::Byte_Code_Block*) malloc(sizeof(byte_code::Byte_Code_Block));
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>(), *_temp;
+
     new (_byte_code_block) byte_code::Byte_Code_Block(
         _byte_code
     );
 
-    byte_code_blocks->add(
+    return byte_code_blocks->add(
         _byte_code_block
     );
 
 }
+
 
 byte_code::Compiled_Code* parser::Convertor_Control::getCompiledByteCode() {
 

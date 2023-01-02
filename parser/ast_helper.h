@@ -31,6 +31,8 @@ namespace parser {
     struct Expression_Result_Helper {
 
         Ast_Node_Variable_Declaration* declaration;
+        Ast_Node_Expression* expression;
+        bool function_result_value;
         int token_id;
 
         ~Expression_Result_Helper(); Expression_Result_Helper(Ast_Node_Expression*);

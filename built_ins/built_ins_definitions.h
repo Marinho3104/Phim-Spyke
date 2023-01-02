@@ -18,3 +18,4 @@
 /* Function Name for operators */
 
 #define FUNCTION_NAME_FUNCTION_OPERATOR_PLUS "add"
+#define FUNCTION_NAME_FUNCTION_OPERATOR_NULTIPLICATION "mul"

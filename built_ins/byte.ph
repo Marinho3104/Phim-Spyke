@@ -10,13 +10,27 @@ namespace built_ins {
     
     struct Int {
 
-        int* add(int*);
+        //int add(int*) {
+        //}
 
-        int* add(int);
+        int add(int) {
+
+            int l,ll,lll,llll;
+
+        }
+
+        int mul(int*) {
+            int l,ll,lll,llll, lllll, llllll;
+
+        }
+
+        int mul(int) {
+
+        }
 
         int test_func(int) {
 
-            this;
+            // this;
 
         }
 
@@ -24,23 +38,29 @@ namespace built_ins {
 
 }
 
-int ola, *k;
+int j;
 
-byte adeus, *kk;
- 
-#define to_replace 50
- 
  
 namespace ola {
 
-    int var, *var2;
+    struct Test_Struct {
+
+        int jojo, jojojo;
+
+    };
+ 
+    int var, var2;
+    Test_Struct* _test_struct;
  
     int func_test(int*) {
-
-        int *var, *var2;
-        int _var, _var2;
  
-        //(&var)->add(to_replace) + 12;
+        (var2 + var2) * var;
+
+        func_test(&var);
+ 
+        // var.add(var);
+
+        _test_struct->jojojo;
  
     }
  

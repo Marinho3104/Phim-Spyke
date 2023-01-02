@@ -58,6 +58,13 @@ char* built_ins::getFunctionNameFromTokenId(int __token_id) {
         strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_PLUS);
 
         break;
+    case FUNCTION_OPERATOR_MULTIPLICATION:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_NULTIPLICATION) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_NULTIPLICATION);
+
+        break;
     
     default: std::cout << "Error getting Function Name for token -> " << __token_id << std::endl; exit(1); break;
     }

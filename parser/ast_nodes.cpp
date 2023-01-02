@@ -482,6 +482,20 @@ utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Variable_Declaration::g
 
 }
 
+parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Variable_Declaration::getCopy() {
+
+    parser::Ast_Node_Variable_Declaration* _variable_declaration_copy = 
+        (parser::Ast_Node_Variable_Declaration*) malloc(sizeof(parser::Ast_Node_Variable_Declaration));
+
+    new (_variable_declaration_copy) parser::Ast_Node_Variable_Declaration(
+        type->getCopy(), declaration_id, global
+    );
+
+    return _variable_declaration_copy;
+
+}
+
+
 
 
 parser::Ast_Node_Function_Declaration::~Ast_Node_Function_Declaration() { 
@@ -903,6 +917,27 @@ int parser::Ast_Node_Struct_Declaration::getSize() {
 
 }
 
+int parser::Ast_Node_Struct_Declaration::getVariablesOff(Ast_Node_Variable* __variable_declaration) {
+
+    int _off = 0;
+
+    for(int _  = 0; _ < fields->code->count; _++) {
+
+        if (fields->code->operator[](_)->node_type != AST_NODE_VARIABLE_DECLARATION) continue;
+
+        if (fields->code->operator[](_) == __variable_declaration->representive_declaration) return _off;
+
+        _off += fields->code->operator[](_)->representive_declaration->type->getSize();
+
+    }
+
+    exception_handle->runException("Struct dont have given variable declaration");
+
+    return -1;
+
+}
+
+
 
 
 parser::Ast_Node_Expression::~Ast_Node_Expression() {
@@ -910,24 +945,18 @@ parser::Ast_Node_Expression::~Ast_Node_Expression() {
     if (value && destroy_value) { 
         value->~Ast_Node(); 
         free(value); }
+    delete organized_set;
 }
 
 parser::Ast_Node_Expression::Ast_Node_Expression(Ast_Node_Expression* __expression, Ast_Node* __value, int __token_id)
-    : Ast_Node(__value->representive_declaration, AST_NODE_EXPRESSION), expression(__expression), value(__value), token_id(__token_id), destroy_value(1) {}
+    : Ast_Node(__value->representive_declaration, AST_NODE_EXPRESSION), expression(__expression), value(__value), token_id(__token_id), 
+        destroy_value(1) { organized_set = new utils::Linked_List <Ast_Node*>(); organized_set->destroy_content = 0;     }
 
 parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDeclaration() {
 
     utils::Linked_List <Expression_Result_Helper*>* _expressions_result_helper = new utils::Linked_List <Expression_Result_Helper*>();
     Ast_Node_Expression* _expression = this;
     Expression_Result_Helper* _temp;
-    int _current_priority = 1;
-
-    Ast_Node_Variable_Declaration* _first_argument, *_second_argument;
-    Ast_Node_Function_Declaration* _function_declaration;
-    Ast_Node_Name_Space* _struct_node_name_space;
-    utils::Linked_List <Ast_Node*>* _parameters;
-    int _token_id, _declaration_id;
-    char* _function_name;
 
     while(_expression) {
 
@@ -944,35 +973,38 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
         _expression = _expression->expression;
 
     }
-    
-    while(_expressions_result_helper->count != 1) {
 
-        for (int _ = 0; _ < _expressions_result_helper->count; _++)
+    utils::Linked_List <Ast_Node*>* _parameters = new utils::Linked_List <Ast_Node*>(); _parameters->destroy_content = 0;
+    Ast_Node_Variable_Declaration* _first_argument, *_second_argument;
+    Ast_Node_Function_Declaration* _function_declaration;
+    Ast_Node_Name_Space* _struct_node_name_space;
+    int _token_id, _declaration_id;
+    char* _function_name;
+
+    int _current_priority = 1;
+
+    while (_expressions_result_helper->count != 1) {
+
+        for (int _ = 0; _ < _expressions_result_helper->count; _++) {
 
             if (
                 getOperatorPriority(_expressions_result_helper->operator[](_)->token_id) == _current_priority
             ) {
 
-                _second_argument = _expressions_result_helper->operator[](_ + 1)->declaration;
-                _first_argument = _expressions_result_helper->operator[](_)->declaration;
+                _second_argument = _expressions_result_helper->operator[](_ + 1)->declaration->getCopy();
+                _first_argument = _expressions_result_helper->operator[](_)->declaration->getCopy();
                 _token_id = _expressions_result_helper->operator[](_)->token_id;
-
-                _struct_node_name_space = _first_argument->type->declaration->functions;
 
                 parser::ast_control->addToChain(
                     parser::ast_control->name_space_control->getNameSpace(
-                        _struct_node_name_space
+                        _first_argument->type->declaration->functions
                     ),
                     NULL
                 );
 
                 _function_name = built_ins::getFunctionNameFromTokenId(_token_id);
-
                 _declaration_id = getDeclarationId(_function_name);
-
                 free(_function_name);
-
-                _parameters = new utils::Linked_List <Ast_Node*>(); _parameters->destroy_content = 0;
 
                 _first_argument->type->pointer_level++;
 
@@ -981,7 +1013,7 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
 
                 _function_declaration = getFunctionDeclaration(_declaration_id, _parameters);
 
-                delete _parameters;
+                _parameters->clean();
 
                 if (!_function_declaration || _declaration_id == -1) 
 
@@ -989,23 +1021,67 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
 
                 _first_argument->type->pointer_level--;
 
-                delete _expressions_result_helper->remove(_ + 1);
+                if (!_expressions_result_helper->operator[](_)->function_result_value) 
 
+                    this->organized_set->add(
+                        _expressions_result_helper->operator[](_)->expression->value
+                    );
+
+                if (!_expressions_result_helper->operator[](_ + 1)->function_result_value)
+
+                    this->organized_set->add(
+                        _expressions_result_helper->operator[](_ + 1)->expression->value
+                    );    
+                
+
+                this->organized_set->add(
+                    _function_declaration
+                );
+
+                _expressions_result_helper->operator[](_)->token_id = _expressions_result_helper->operator[](_ + 1)->token_id;
                 _expressions_result_helper->operator[](_)->declaration = _function_declaration->representive_declaration;
+                _expressions_result_helper->operator[](_)->function_result_value = 1;
 
+                delete _expressions_result_helper->remove(_ + 1);
+    
                 parser::ast_control->popFromChain();
 
                 if (_expressions_result_helper->count != 1) _--;
 
+                _first_argument->~Ast_Node_Variable_Declaration(); free(_first_argument);
+                _second_argument->~Ast_Node_Variable_Declaration(); free(_second_argument);
+
             }
 
-        _current_priority++;
+            else {
+
+                if (!_expressions_result_helper->operator[](_)->function_result_value) 
+
+                    this->organized_set->add(
+                        _expressions_result_helper->operator[](_)->expression->value
+                    );
+
+                _expressions_result_helper->operator[](_)->function_result_value = 1;
+
+            }
+
+        }
+
+        _current_priority++;    
 
     }
+
+    if (!this->organized_set->count)
+
+        this->organized_set->add(
+            _expressions_result_helper->operator[](0)->expression->value
+        );
 
     Ast_Node_Variable_Declaration* _result = _expressions_result_helper->operator[](0)->declaration;
 
     delete _expressions_result_helper;
+
+    delete _parameters;
 
     return _result;
 

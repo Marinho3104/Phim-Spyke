@@ -77,6 +77,8 @@ namespace parser {
 
         static utils::Linked_List <Ast_Node*>* generate();
 
+        Ast_Node_Variable_Declaration* getCopy();
+
     };
 
     struct Ast_Node_Function_Declaration : Ast_Node {
@@ -85,6 +87,8 @@ namespace parser {
         Ast_Node_Code_Block* body;
         Name_Space* name_space;
         int declaration_id;
+
+        int body_position;
 
         ~Ast_Node_Function_Declaration(); Ast_Node_Function_Declaration(parser::Ast_Node_Variable_Declaration*, utils::Linked_List <Ast_Node*>*, Ast_Node_Code_Block*, Name_Space*, int);
         
@@ -112,6 +116,8 @@ namespace parser {
 
         int getSize();
 
+        int getVariablesOff(Ast_Node_Variable*);
+
     };
 
     struct Ast_Node_Expression : Ast_Node {
@@ -120,6 +126,8 @@ namespace parser {
         bool destroy_value;
         Ast_Node* value;
         int token_id;
+
+        utils::Linked_List <Ast_Node*>* organized_set;
 
         ~Ast_Node_Expression(); Ast_Node_Expression(Ast_Node_Expression*, Ast_Node*, int);
 

@@ -219,7 +219,7 @@ int parser::Type_Information::getSize() {
 parser::Expression_Result_Helper::~Expression_Result_Helper() {}
 
 parser::Expression_Result_Helper::Expression_Result_Helper(Ast_Node_Expression* __expression) 
-    : declaration(__expression->representive_declaration), token_id(__expression->token_id) {}
+    : declaration(__expression->representive_declaration), expression(__expression), function_result_value(0), token_id(__expression->token_id) {}
 
 
 int parser::getNodeType() { 
@@ -478,7 +478,7 @@ int parser::getOperatorPriority(int __token_id) {
     if (__token_id >= FUNCTION_OPERATOR_BITWISE_AND && __token_id <= FUNCTION_OPERATOR_BITWISE_RIGHT_SHIFT) return 3;
     if (__token_id >= FUNCTION_OPERATOR_AND && __token_id <= FUNCTION_OPERATOR_OR) return 4;
 
-    return -1;
+    return 5;
 
 }
 

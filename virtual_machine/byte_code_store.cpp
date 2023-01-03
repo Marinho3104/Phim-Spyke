@@ -7,33 +7,43 @@
 #include <iostream>
 
 
-virtual_machine::Byte_Code_Store::~Byte_Code_Store() {}
+virtual_machine::Byte_Code_Store::~Byte_Code_Store() { 
+    
+    byte_code::Byte_Code** _current_block = blocks;
+
+    while(*_current_block) { free(*_current_block); _current_block = _current_block + 1; }
+    
+    free(blocks); 
+    
+}
 
 virtual_machine::Byte_Code_Store::Byte_Code_Store(byte_code::Compiled_Code* __compiled_code) {
 
-    blocks = (void**) malloc(8 * __compiled_code->blocks->count);
-
-    void* _current_block;
-    int _argument;
-    char _code;
+    blocks = (byte_code::Byte_Code**) malloc(8 * (__compiled_code->blocks->count + 1));
+    blocks[__compiled_code->blocks->count] = NULL;
+    byte_code::Byte_Code* _current_block;
 
     for (int _ = 0; _ < __compiled_code->blocks->count; _++) {
 
-        blocks[_] = malloc(BYTE_CODE_LENGTH * __compiled_code->blocks->operator[](_)->block->count);
+        blocks[_] = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code) * __compiled_code->blocks->operator[](_)->block->count);
 
         _current_block = blocks[_];
 
         for (int __ = 0; __ < __compiled_code->blocks->operator[](_)->block->count; __++) {
 
-            *((char*) (&_current_block)) = __compiled_code->blocks->operator[](_)->block->operator[](__)->code;
-            *((int*) (&_current_block)) = __compiled_code->blocks->operator[](_)->block->operator[](__)->argument;
-           
-            _current_block = _current_block + 5;
+            new (_current_block) byte_code::Byte_Code(
+                __compiled_code->blocks->operator[](_)->block->operator[](__)->code,
+                __compiled_code->blocks->operator[](_)->block->operator[](__)->argument
+            );
 
-        } 
+            _current_block ++;
+
+        }
 
     }
 
 }
+
+byte_code::Byte_Code* virtual_machine::Byte_Code_Store::getByteCode(int __block_index, int __index) { return &blocks[__block_index][__index]; }
 
 

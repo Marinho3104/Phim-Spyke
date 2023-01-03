@@ -7,7 +7,10 @@
 namespace virtual_machine {
 
     struct Byte_Code_Store;
+    struct Execution;
+    struct Program;
     struct Memory;
+    struct Stack;
 
 }
 

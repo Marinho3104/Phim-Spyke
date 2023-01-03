@@ -1,6 +1,7 @@
 #include "byte_code.h"
 
 #include "linked_List.h"
+#include "opcodes.h"
 
 #include <iostream>
 
@@ -24,7 +25,10 @@ byte_code::Compiled_Code* byte_code::Compiled_Code::getByFile() {
 
     FILE* _file = fopen("byte_code.marinho", "rb");
 
-    byte_code::Byte_Code_Block* _byte_code_block;
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code_linked_list = new utils::Linked_List <byte_code::Byte_Code*>();
+    utils::Linked_List <Byte_Code_Block*>* _blocks = new utils::Linked_List <Byte_Code_Block*>();
+
+    byte_code::Byte_Code_Block* _byte_code_block; // 
     byte_code::Byte_Code* _current_byte_code;
 
     int _argument;
@@ -32,15 +36,43 @@ byte_code::Compiled_Code* byte_code::Compiled_Code::getByFile() {
 
     while(fread(&_code, 1, 1, _file)) {
 
-        std::cout << "Code -> " << (int) _code;
-
         fread(&_argument, 4, 1, _file);
 
-        std::cout << " || Argument -> " << _argument << std::endl;
+        _current_byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+        new (_current_byte_code) byte_code::Byte_Code(
+            _code, _argument
+        );
+
+        _byte_code_linked_list->add(
+            _current_byte_code
+        );
+
+        if (_current_byte_code->code == BYTE_CODE_END_CODE_BLOCK) {
+
+            _byte_code_block = (byte_code::Byte_Code_Block*) malloc(sizeof(byte_code::Byte_Code_Block));
+
+            new (_byte_code_block) byte_code::Byte_Code_Block(
+                _byte_code_linked_list
+            );
+
+            _blocks->add(
+                _byte_code_block
+            );
+
+            _byte_code_linked_list = new utils::Linked_List <byte_code::Byte_Code*>();
+
+        }
 
     }
 
+    delete _byte_code_linked_list;
+
     fclose(_file);
+
+    byte_code::Compiled_Code* _compiled_code = new byte_code::Compiled_Code(_blocks, NULL);
+
+    return _compiled_code;
 
 }
 

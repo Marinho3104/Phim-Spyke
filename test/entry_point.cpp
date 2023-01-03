@@ -10,6 +10,9 @@
 #include "memory.h"
 
 #include "byte_code.h"
+ 
+#include "byte_code_store.h"
+#include "program.h"
 
 
 int main() {
@@ -22,8 +25,20 @@ int main() {
 
     free(_contract_data);
 
-    std::cout << "Reading back:" << std::endl;
+    std::cout << "Vm:" << std::endl;
 
     byte_code::Compiled_Code* _compiled_code_readed = byte_code::Compiled_Code::getByFile();
+
+    // _compiled_code_readed->print();
+
+    virtual_machine::Program* _program = new virtual_machine::Program(_compiled_code_readed, 3);
+
+    _program->execute();
+
+    delete _compiled_code_readed;
+
+    
+
+    delete _program;
 
 }

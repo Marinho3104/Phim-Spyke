@@ -30,6 +30,7 @@ namespace built_ins {
 namespace test {
 
     ::built_ins::Test_Struct _test_;
+    ::built_ins::Test_Struct _test_1;
 
     int test_func() {
 
@@ -38,6 +39,8 @@ namespace test {
         _test;
 
         _test_;
+
+        // test_func();
 
     }
 

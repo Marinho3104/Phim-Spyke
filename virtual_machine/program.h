@@ -10,9 +10,13 @@ namespace virtual_machine {
     struct Program {
 
         Byte_Code_Store* byte_code;
+        Execution* execution;
+        int entry_point;
         Memory* memory;
 
-        ~Program(); Program(byte_code::Compiled_Code*);
+        ~Program(); Program(byte_code::Compiled_Code*, int);
+
+        void execute();
 
     };
 

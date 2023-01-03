@@ -12,7 +12,7 @@ byte_code::Byte_Code::Byte_Code(char __code, int __argument) : code(__code), arg
 
 byte_code::Byte_Code_Block::~Byte_Code_Block() { delete block; }
 
-byte_code::Byte_Code_Block::Byte_Code_Block(utils::Linked_List <Byte_Code*>* __block) : block(__block) {}
+byte_code::Byte_Code_Block::Byte_Code_Block(utils::Linked_List <Byte_Code*>* __block) : block(__block), current_allocation_size(0) {}
 
 
 byte_code::Compiled_Code::~Compiled_Code() { delete blocks; delete implicit_values; }

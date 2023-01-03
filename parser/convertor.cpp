@@ -29,13 +29,17 @@ void parser::Convertor_Control::generate() {
 
     allocBlock();
 
-    setBlock(parser::ast_control->global_name_space->declarations);
+    setBlock(parser::ast_control->global_name_space->declarations, NULL);
 
 }
 
-void parser::Convertor_Control::setBlock(utils::Linked_List<Ast_Node*>* __declarations) {
+void parser::Convertor_Control::setBlock(utils::Linked_List<Ast_Node*>* __declarations, byte_code::Byte_Code_Block* __block) {
 
-    byte_code::Byte_Code_Block* _byte_code_block = byte_code_blocks->last->object;
+    byte_code::Byte_Code_Block* _byte_code_block = 
+        __block ? __block : byte_code_blocks->last->object;
+
+    block_in_set = _byte_code_block;
+
     utils::Linked_List <byte_code::Byte_Code*>* _temp;
 
     for (int _ = 0; _ < __declarations->count; _++) {

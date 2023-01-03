@@ -22,10 +22,11 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
     {
     case AST_NODE_NAME_SPACE:
 
-        parser::convertor_control->allocBlock();
+        // parser::convertor_control->allocBlock();
         
         parser::convertor_control->setBlock(
-            ((Ast_Node_Name_Space*) __node)->declarations
+            ((Ast_Node_Name_Space*) __node)->declarations,
+            convertor_control->byte_code_blocks->first->object
         );
     
         goto return_; break;
@@ -144,6 +145,10 @@ byte_code::Byte_Code* parser::getByteCodeOfNodeVariableDeclaration(Ast_Node_Vari
         __node_variable_declaration->type->getSize()
     );
 
+    __node_variable_declaration->address = convertor_control->block_in_set->current_allocation_size;
+
+    convertor_control->block_in_set->current_allocation_size += _byte_code->argument;
+
     return _byte_code;
 
 
@@ -156,7 +161,8 @@ void parser::getByteCodeOfNodeFunctionDeclaration(Ast_Node_Function_Declaration*
     __node_function_declaration->body_position = parser::convertor_control->allocBlock();
 
     parser::convertor_control->setBlock(
-        __node_function_declaration->body->code
+        __node_function_declaration->body->code,
+        0
     );
 
 }
@@ -165,11 +171,9 @@ void parser::getByteCodeOfNodeStructDeclaration(Ast_Node_Struct_Declaration* __n
 
     parser::convertor_control->print("Node Struct Declaration - Byte Code");
 
-    parser::convertor_control->allocBlock();
+    for (int _ = 0; _ < __node_struct_declaration->functions->declarations->count; _++)
 
-    parser::convertor_control->setBlock(
-        __node_struct_declaration->functions->declarations
-    );
+        delete getByteCodeOfNode(__node_struct_declaration->functions->declarations->operator[](_));
 
 }
 
@@ -231,8 +235,8 @@ byte_code::Byte_Code* parser::getByteCodeOfNodeVariable(Ast_Node_Variable* __nod
     byte_code::Byte_Code* _byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
     new (_byte_code) byte_code::Byte_Code(
-        __node_variable->representive_declaration->global ? BYTE_CODE_LOAD_GLOBAL_VARIABLE : BYTE_CODE_LOAD_VARIABLE,
-        __node_variable->declaration_id
+        __node_variable->representive_declaration->global ? BYTE_CODE_LOAD_GLOBAL : BYTE_CODE_LOAD,
+        __node_variable->representive_declaration->address
     );
 
     return _byte_code;

@@ -19,6 +19,7 @@ namespace byte_code {
     struct Byte_Code_Block {
 
         utils::Linked_List <Byte_Code*>* block;
+        int current_allocation_size;
 
         ~Byte_Code_Block(); Byte_Code_Block(utils::Linked_List <Byte_Code*>*);
 

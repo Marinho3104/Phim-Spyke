@@ -8,7 +8,8 @@
                 "${workspaceFolder}/test",
                 "${workspaceFolder}/utils",
                 "${workspaceFolder}/built_ins",
-                "${workspaceFolder}/byte_code"
+                "${workspaceFolder}/byte_code",
+                "${workspaceFolder}/virtual_machine"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",

@@ -1,0 +1,20 @@
+Information
+
+Others:
+
+    Memory Page Size: 4096 
+
+
+Memory:
+
+    Memory to contract data store (20_480 bytes):  
+        
+        16_384 for heap Memory
+        4_096 for stack Memory 
+
+    Memory ranges:
+
+        Stack: 0x0000 - 0x1387 (4_096 bytes)
+        Heap: 0x1388 - 0x4E1F (16_384 bytes)
+
+

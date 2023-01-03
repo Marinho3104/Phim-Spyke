@@ -70,6 +70,8 @@ namespace parser {
         parser::Type_Information* type;
         int declaration_id;
         bool global;
+
+        int address;
         
         ~Ast_Node_Variable_Declaration(); Ast_Node_Variable_Declaration(parser::Type_Information*, int, bool);
 

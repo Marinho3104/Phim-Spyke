@@ -1,0 +1,11 @@
+#pragma once
+
+#ifndef VIRTUAL_MACHINE_MEMORY_SETTINGS_H
+#define VIRTUAL_MACHINE_MEMORY_SETTINGS_H
+
+#define ADDRESS_LENGTH 2 // bytes
+
+#define STACK_MEMORY_SIZE 4096
+#define HEAP_MEMORY_SIZE 16384
+
+#endif

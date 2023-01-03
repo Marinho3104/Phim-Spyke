@@ -15,7 +15,7 @@ namespace parser {
 
     };
 
-    struct Pre_Compiler_Define {
+    struct Pre_Compiler_Define { // not corrected
 
         utils::Linked_List <Token*>* names_to_find, *name_to_replace;
 

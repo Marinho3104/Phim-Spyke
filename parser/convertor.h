@@ -13,6 +13,8 @@ namespace parser {
 
         utils::Linked_List <byte_code::Byte_Code_Block*>* byte_code_blocks;
 
+        byte_code::Byte_Code_Block* block_in_set;
+
         bool debug_mode;
 
         ~Convertor_Control(); Convertor_Control(bool);
@@ -21,7 +23,7 @@ namespace parser {
 
         void generate();
 
-        void setBlock(utils::Linked_List<Ast_Node*>*);
+        void setBlock(utils::Linked_List<Ast_Node*>*, byte_code::Byte_Code_Block*);
 
         int allocBlock();
 

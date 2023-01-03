@@ -1,0 +1,10 @@
+#pragma once
+
+#ifndef VIRTUAL_MACHINE_SETTINGS_H
+#define VIRTUAL_MACHINE_SETTINGS_H
+
+#define PAGE_MEMORY_SIZE 4096
+
+
+
+#endif

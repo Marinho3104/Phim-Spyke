@@ -4,6 +4,7 @@
 #include "linked_List.h"
 #include "ast_nodes.h"
 #include "byte_code.h"
+#include "opcodes.h"
 #include "ast.h"
 
 #include <iostream>
@@ -30,6 +31,8 @@ void parser::Convertor_Control::generate() {
     allocBlock();
 
     setBlock(parser::ast_control->global_name_space->declarations, NULL);
+
+    setEndByteCode();
 
 }
 
@@ -86,5 +89,44 @@ byte_code::Compiled_Code* parser::Convertor_Control::getCompiledByteCode() {
     delete _compiled_code;
 
     return NULL;
+
+}
+
+void parser::Convertor_Control::setEndByteCode() {
+
+    byte_code::Byte_Code* _end_code_block;
+
+    for (int _ = 0; _ < byte_code_blocks->count; _++) {
+
+        _end_code_block = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+        new (_end_code_block) byte_code::Byte_Code(
+            BYTE_CODE_END_CODE_BLOCK, 0
+        );
+
+        byte_code_blocks->operator[](_)->block->add(
+            _end_code_block
+        );
+
+    }
+
+}
+
+void parser::Convertor_Control::saveByteCode() {
+
+    FILE* _file;
+
+    _file = fopen("byte_code.marinho", "wb");
+
+    for (int _ = 0; _ < byte_code_blocks->count; _++)
+
+        for (int __ = 0;__ < byte_code_blocks->operator[](_)->block->count; __++) {
+
+            fwrite(&byte_code_blocks->operator[](_)->block->operator[](__)->code, 1, 1, _file);
+            fwrite(&byte_code_blocks->operator[](_)->block->operator[](__)->argument, 4, 1, _file);
+
+        }
+
+    fclose(_file);
 
 }

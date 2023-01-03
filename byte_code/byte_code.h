@@ -32,6 +32,8 @@ namespace byte_code {
 
         ~Compiled_Code(); Compiled_Code(utils::Linked_List <Byte_Code_Block*>*, utils::Linked_List <char*>*);
 
+        static Compiled_Code* getByFile();
+
         void print();
 
     };

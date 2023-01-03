@@ -2,10 +2,20 @@ Information
 
 Others:
 
-    Memory Page Size: 4096 
+    Memory Page Size: 4_096 
+
+    Byte Code: 1 byte + 4 byte (code | argument) | 5 bytes
 
 
-Memory:
+Memory (byte code store):
+
+    Max size (20_480 bytes):
+
+        20_480 / 5 = 4_096
+
+        Byte Code max count -> 4_096
+
+Memory (contract execution):
 
     Memory to contract data store (20_480 bytes):  
         

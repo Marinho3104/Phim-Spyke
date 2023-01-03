@@ -20,6 +20,30 @@ byte_code::Compiled_Code::~Compiled_Code() { delete blocks; delete implicit_valu
 byte_code::Compiled_Code::Compiled_Code(utils::Linked_List <Byte_Code_Block*>* __blocks, utils::Linked_List <char*>* __implicit_values) 
     : blocks(__blocks), implicit_values(__implicit_values) {}
 
+byte_code::Compiled_Code* byte_code::Compiled_Code::getByFile() {
+
+    FILE* _file = fopen("byte_code.marinho", "rb");
+
+    byte_code::Byte_Code_Block* _byte_code_block;
+    byte_code::Byte_Code* _current_byte_code;
+
+    int _argument;
+    char _code;
+
+    while(fread(&_code, 1, 1, _file)) {
+
+        std::cout << "Code -> " << (int) _code;
+
+        fread(&_argument, 4, 1, _file);
+
+        std::cout << " || Argument -> " << _argument << std::endl;
+
+    }
+
+    fclose(_file);
+
+}
+
 void byte_code::Compiled_Code::print() {
 
     std::cout << "\n\nCompiled Byte Code:\n" << std::endl;

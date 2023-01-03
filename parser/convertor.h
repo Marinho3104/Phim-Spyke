@@ -29,6 +29,10 @@ namespace parser {
 
         byte_code::Compiled_Code* getCompiledByteCode();
 
+        void setEndByteCode();
+
+        void saveByteCode();
+
 
     };
 

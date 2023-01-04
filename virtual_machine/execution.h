@@ -12,14 +12,15 @@ namespace virtual_machine {
     struct Execution {
 
         utils::Linked_List <Stack*>* stacks; 
-        int current_block, current_index;
         Program* program;
 
         ~Execution(); Execution(Program*);
 
-        void addStack(int);
+        void addStack();
 
         void popStack();
+
+        void executeBlock(int, bool);
         
         void execute();
 

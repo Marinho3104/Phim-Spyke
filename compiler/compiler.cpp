@@ -32,7 +32,7 @@ void compiler::Compiler::generateBuiltIns() {
 
     parser::convertor_control->saveByteCode();
 
-    parser::convertor_control->getCompiledByteCode();
+    // parser::convertor_control->getCompiledByteCode();
 
     parser::deleteVariables();
 

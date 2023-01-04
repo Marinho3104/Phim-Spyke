@@ -28,9 +28,9 @@ namespace byte_code {
     struct Compiled_Code {
 
         utils::Linked_List <Byte_Code_Block*>* blocks;
-        utils::Linked_List <char*>* implicit_values;
+        void* implicit_values_data;
 
-        ~Compiled_Code(); Compiled_Code(utils::Linked_List <Byte_Code_Block*>*, utils::Linked_List <char*>*);
+        ~Compiled_Code(); Compiled_Code(utils::Linked_List <Byte_Code_Block*>*, void*);
 
         static Compiled_Code* getByFile();
 

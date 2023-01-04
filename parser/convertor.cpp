@@ -1,5 +1,6 @@
 #include "convertor.h"
 
+#include "tokenizer_helper.h"
 #include "convertor_helper.h"
 #include "linked_List.h"
 #include "ast_nodes.h"
@@ -8,8 +9,9 @@
 #include "ast.h"
 
 #include <iostream>
+#include <string.h>
 
-parser::Convertor_Control::~Convertor_Control() {}
+parser::Convertor_Control::~Convertor_Control() { delete byte_code_blocks; }
 
 parser::Convertor_Control::Convertor_Control(bool __debug_mode) : debug_mode(__debug_mode) 
     { byte_code_blocks = new utils::Linked_List <byte_code::Byte_Code_Block*>(); }
@@ -80,15 +82,15 @@ int parser::Convertor_Control::allocBlock() {
 
 byte_code::Compiled_Code* parser::Convertor_Control::getCompiledByteCode() {
 
-    byte_code::Compiled_Code* _compiled_code = new byte_code::Compiled_Code(
-        byte_code_blocks, ast_control->implicit_values_collection
-    );
+    // byte_code::Compiled_Code* _compiled_code = new byte_code::Compiled_Code(
+    //     byte_code_blocks, ast_control->implicit_values_collection
+    // );
 
-    _compiled_code->print();
+    // _compiled_code->print();
 
-    delete _compiled_code;
+    // delete _compiled_code;
 
-    return NULL;
+    // return NULL;
 
 }
 
@@ -126,6 +128,28 @@ void parser::Convertor_Control::saveByteCode() {
             fwrite(&byte_code_blocks->operator[](_)->block->operator[](__)->argument, 4, 1, _file);
 
         }
+
+    char* _temp;
+
+    for (int _ = 0; _ < ast_control->implicit_values_collection->count; _++) {
+
+        _temp = ast_control->implicit_values_collection->operator[](_);
+
+        while (_temp)
+
+            fwrite(_temp++, 1, 1, _file);
+
+    }
+
+    // for (int _ = 0; _ < ast_control->implicit_values_collection->count; _++) {
+
+    //     if (parser::isInt(ast_control->implicit_values_collection->operator[](_))) 
+
+    //         fwrite(ast_control->implicit_values_collection->operator[](_), 4, 1, _file);
+
+    //     else fwrite(ast_control->implicit_values_collection->operator[](_), strlen(ast_control->implicit_values_collection->operator[](_)), 1, _file);
+
+    // }
 
     fclose(_file);
 

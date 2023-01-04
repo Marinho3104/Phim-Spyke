@@ -62,7 +62,9 @@ void virtual_machine::execute_BYTE_CODE_LOAD_GLOBAL(int __arg, Execution* __exec
 
 }
 
-void virtual_machine::execute_BYTE_CODE_CALL(int __arg, Execution* __execution) { __execution->addStack(__arg); }
+void virtual_machine::execute_BYTE_CODE_CALL(int __arg, Execution* __execution) { 
+    std::cout << "Call" << std::endl;
+    __execution->executeBlock(__arg, 1); }
 
 
 

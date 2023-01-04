@@ -16,10 +16,10 @@ byte_code::Byte_Code_Block::~Byte_Code_Block() { delete block; }
 byte_code::Byte_Code_Block::Byte_Code_Block(utils::Linked_List <Byte_Code*>* __block) : block(__block), current_allocation_size(0) {}
 
 
-byte_code::Compiled_Code::~Compiled_Code() { delete blocks; delete implicit_values; }
+byte_code::Compiled_Code::~Compiled_Code() { delete blocks; free(implicit_values_data); }
 
-byte_code::Compiled_Code::Compiled_Code(utils::Linked_List <Byte_Code_Block*>* __blocks, utils::Linked_List <char*>* __implicit_values) 
-    : blocks(__blocks), implicit_values(__implicit_values) {}
+byte_code::Compiled_Code::Compiled_Code(utils::Linked_List <Byte_Code_Block*>* __blocks, void* __implicit_values_data) 
+    : blocks(__blocks), implicit_values_data(__implicit_values_data) {}
 
 byte_code::Compiled_Code* byte_code::Compiled_Code::getByFile() {
 
@@ -31,12 +31,18 @@ byte_code::Compiled_Code* byte_code::Compiled_Code::getByFile() {
     byte_code::Byte_Code_Block* _byte_code_block; // 
     byte_code::Byte_Code* _current_byte_code;
 
-    int _argument;
+    void* _implicit_values_data;
+
+    int _argument, _backup, _current_count = 0;
     char _code;
 
     while(fread(&_code, 1, 1, _file)) {
 
+        _current_count++;
+
         fread(&_argument, 4, 1, _file);
+
+        _current_count += 4;
 
         _current_byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
@@ -49,6 +55,8 @@ byte_code::Compiled_Code* byte_code::Compiled_Code::getByFile() {
         );
 
         if (_current_byte_code->code == BYTE_CODE_END_CODE_BLOCK) {
+
+            _backup = _current_count;
 
             _byte_code_block = (byte_code::Byte_Code_Block*) malloc(sizeof(byte_code::Byte_Code_Block));
 
@@ -68,9 +76,13 @@ byte_code::Compiled_Code* byte_code::Compiled_Code::getByFile() {
 
     delete _byte_code_linked_list;
 
+    _implicit_values_data = malloc(_current_count - _backup + 1);
+
+    fread(&_implicit_values_data, 1, _current_count - _backup + 1, _file);
+
     fclose(_file);
 
-    byte_code::Compiled_Code* _compiled_code = new byte_code::Compiled_Code(_blocks, NULL);
+    byte_code::Compiled_Code* _compiled_code = new byte_code::Compiled_Code(_blocks, _implicit_values_data);
 
     return _compiled_code;
 

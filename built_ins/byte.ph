@@ -32,6 +32,14 @@ namespace test {
     ::built_ins::Test_Struct _test_;
     ::built_ins::Test_Struct _test_1;
 
+    int test_func_call() {
+
+        int ff;
+
+        ff;
+        
+    }
+
     int test_func() {
 
         ::built_ins::Test_Struct _test;
@@ -40,9 +48,11 @@ namespace test {
 
         _test_;
 
-        // test_func();
+        test_func_call();
 
     }
+
+
 
 }
 

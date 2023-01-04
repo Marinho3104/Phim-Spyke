@@ -11,11 +11,11 @@ namespace virtual_machine {
 
     struct Stack {
 
-        int inicial_position, previous_block_index, previous_index;
+        int inicial_position;
 
         utils::Linked_List <int>* stack;
 
-        ~Stack(); Stack(int, int, int);
+        ~Stack(); Stack(int);
 
         void addToStack(int);
 

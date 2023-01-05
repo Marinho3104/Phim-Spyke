@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+#include "linked_List.h"
 #include "./compiler.h"
 
 #include "memory.h"
@@ -31,7 +32,7 @@ int main() {
 
     // _compiled_code_readed->print();
 
-    virtual_machine::Program* _program = new virtual_machine::Program(_compiled_code_readed, 4);
+    virtual_machine::Program* _program = new virtual_machine::Program(_compiled_code_readed, _compiled_code_readed->blocks->count - 1);
 
     _program->execute();
 

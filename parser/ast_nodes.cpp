@@ -987,14 +987,14 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
 
     while (_expressions_result_helper->count != 1) {
 
-        for (int _ = 0; _ < _expressions_result_helper->count; _++) {
+        for (int _ = 0; _ < _expressions_result_helper->count; _++) { // Wrong TODO
 
             if (
                 getOperatorPriority(_expressions_result_helper->operator[](_)->token_id) == _current_priority
             ) {
 
-                _second_argument = _expressions_result_helper->operator[](_ + 1)->declaration->getCopy();
-                _first_argument = _expressions_result_helper->operator[](_)->declaration->getCopy();
+                _second_argument = _expressions_result_helper->operator[](_ + 1)->declaration;
+                _first_argument = _expressions_result_helper->operator[](_)->declaration;
                 _token_id = _expressions_result_helper->operator[](_)->token_id;
 
                 parser::ast_control->addToChain(
@@ -1008,9 +1008,22 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
                 _declaration_id = getDeclarationId(_function_name);
                 free(_function_name);
 
-                _first_argument->type->pointer_level++;
+                Ast_Node_Variable_Declaration* _node_variable_declaration = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
 
-                _parameters->add(_first_argument);
+                new (_node_variable_declaration) Ast_Node_Variable_Declaration(
+                    _first_argument->type->getCopy(), -1, 0
+                );
+
+                _node_variable_declaration->type->pointer_level++;
+
+                Ast_Node_Pointer_Operation* _node_pointer_operation = (Ast_Node_Pointer_Operation*) malloc(sizeof(Ast_Node_Pointer_Operation));
+
+                new (_node_pointer_operation) Ast_Node_Pointer_Operation(
+                    _node_variable_declaration, 1, _first_argument
+                );
+                _node_pointer_operation->destroy_value = 0;
+
+                _parameters->add(_node_variable_declaration);
                 _parameters->add(_second_argument);
 
                 _function_declaration = getFunctionDeclaration(_declaration_id, _parameters);
@@ -1026,8 +1039,10 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
                 if (!_expressions_result_helper->operator[](_)->function_result_value) 
 
                     this->organized_set->add(
-                        _expressions_result_helper->operator[](_)->expression->value
+                        _node_pointer_operation
                     );
+
+                else { _node_pointer_operation->~Ast_Node_Pointer_Operation(); free(_node_pointer_operation); }
 
                 if (!_expressions_result_helper->operator[](_ + 1)->function_result_value)
 
@@ -1050,8 +1065,8 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
 
                 if (_expressions_result_helper->count != 1) _--;
 
-                _first_argument->~Ast_Node_Variable_Declaration(); free(_first_argument);
-                _second_argument->~Ast_Node_Variable_Declaration(); free(_second_argument);
+                // _first_argument->~Ast_Node_Variable_Declaration(); free(_first_argument);
+                // _second_argument->~Ast_Node_Variable_Declaration(); free(_second_argument);
 
             }
 

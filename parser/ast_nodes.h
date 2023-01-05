@@ -230,6 +230,12 @@ namespace parser {
 
     };
 
+    struct Ast_Node_Binary_Operation : Ast_Node {
+
+        
+
+    };
+
 }
 
 #endif

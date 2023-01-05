@@ -3,6 +3,7 @@
 #include "ast.h"
 
 #include "linked_List.h"
+#include "common.h"
 #include "token.h"
 
 #include <iostream>
@@ -12,26 +13,17 @@ parser::Exception_Handle::~Exception_Handle() { delete code_by_lines; }
 
 parser::Exception_Handle::Exception_Handle() {
 
-    char* _code_copy = (char*) malloc(strlen(code) + 1), *_token, *_temp_copy;
     code_by_lines = new utils::Linked_List <char*>();
 
-    strcpy(_code_copy, code);
+    char** _splitted_string = utils::splitString(code, '\n'), **_temp = _splitted_string;
 
-    _token = strtok(_code_copy, "\n");
+    while(*_splitted_string) 
 
-    while(_token) {
+        code_by_lines->add(
+            *(_splitted_string++)
+        );
 
-        _temp_copy = (char*) malloc(strlen(_token) + 1);
-
-        strcpy(_temp_copy, _token);
-
-        code_by_lines->add(_temp_copy);
-
-        _token = strtok(0, "\n");
-
-    }
-
-    free(_code_copy);
+    free(_temp);
 
 }
 
@@ -46,6 +38,8 @@ void parser::Exception_Handle::runException(const char* __information) {
 void parser::Exception_Handle::runExceptionAstControl(const char* __information) {
 
     Token* _token = ast_control->getToken(0);
+
+    std::cout << "Size -> " << strlen(code_by_lines->operator[](_token->position_information.line)) << std::endl;
 
     std::cout << "\n\nError:\n" << std::endl;
 

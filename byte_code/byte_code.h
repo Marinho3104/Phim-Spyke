@@ -29,8 +29,13 @@ namespace byte_code {
 
         utils::Linked_List <Byte_Code_Block*>* blocks;
         void* implicit_values_data;
+        int implicit_data_length;
 
-        ~Compiled_Code(); Compiled_Code(utils::Linked_List <Byte_Code_Block*>*, void*);
+        ~Compiled_Code(); Compiled_Code(utils::Linked_List <Byte_Code_Block*>*, void*); 
+        
+        Compiled_Code(utils::Linked_List <Byte_Code_Block*>*, utils::Linked_List <char*>*);
+
+        void saveInFile();
 
         static Compiled_Code* getByFile();
 

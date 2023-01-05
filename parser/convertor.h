@@ -31,9 +31,6 @@ namespace parser {
 
         void setEndByteCode();
 
-        void saveByteCode();
-
-
     };
 
 }

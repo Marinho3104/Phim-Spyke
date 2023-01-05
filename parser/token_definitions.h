@@ -106,3 +106,6 @@
 #define ACCESSING 73 // .
 #define ACCESSING_POINTER 74 // ->
 
+#define BYTE_CODE 75 // byte code
+
+#define RETURN 76 // return

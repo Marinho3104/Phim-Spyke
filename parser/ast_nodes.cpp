@@ -94,6 +94,7 @@ void parser::Ast_Node_Name_Space::setDeclarations() {
             case AST_NODE_NAME_SPACE: declarations->add(Ast_Node_Name_Space::generate()); break;
             case AST_NODE_FUNCTION_DECLARATION: declarations->add(Ast_Node_Function_Declaration::generate(0)); break;
             case AST_NODE_STRUCT_DECLARATION: declarations->add(Ast_Node_Struct_Declaration::generate()); break;
+            case AST_NODE_BYTE_CODE: declarations->add(Ast_Node_Byte_Code::generate()); break;
             case AST_NODE_VARIABLE_DECLARATION:
                 
                     _temp = Ast_Node_Variable_Declaration::generate();
@@ -237,9 +238,11 @@ void parser::Ast_Node_Code_Block::setCode() {
         switch (_node_type = getNodeType())
         {
             case -1: parser::ast_control->current_position++; goto out; break;
+            case AST_NODE_BYTE_CODE: code->add(Ast_Node_Byte_Code::generate()); break;
+            case AST_NODE_RETURN: code->add(Ast_Node_Return::generate()); break;
             case AST_NODE_VARIABLE: case AST_NODE_VALUE: case AST_NODE_FUNCTION_CALL: case AST_NODE_POINTER_OPERATION: case AST_NODE_PARENTHESIS:
                 code->add(Ast_Node_Expression::generate(_node_type));
-                std::cout << (int) parser::ast_control->getToken(0)->id << std::endl; 
+                // std::cout << (int) parser::ast_control->getToken(0)->id << std::endl; 
                 if (parser::ast_control->getToken(0)->id != END_INSTRUCTION) parser::exception_handle->runExceptionAstControl("Excpected token ';' aqui");
                 parser::ast_control->current_position++;
                 break;
@@ -252,7 +255,6 @@ void parser::Ast_Node_Code_Block::setCode() {
                     delete _temp;
 
                     break;
-
 
             default: exception_handle->runExceptionAstControl("Node not supported in Name Space Node"); break;
         }
@@ -1509,4 +1511,70 @@ parser::Ast_Node_Accessing* parser::Ast_Node_Accessing::generate(Ast_Node* __val
     return _node_accessing;
 
 }
+
+
+parser::Ast_Node_Byte_Code::~Ast_Node_Byte_Code() {
+
+}
+
+parser::Ast_Node_Byte_Code::Ast_Node_Byte_Code(char __code, int __argument) 
+    : Ast_Node(NULL, AST_NODE_BYTE_CODE), code(__code), argument(__argument) {}
+
+parser::Ast_Node_Byte_Code* parser::Ast_Node_Byte_Code::generate() {
+
+    parser::ast_control->print("Ast Node Byte Code\n", AST_DEBUG_MODE_INC);
+
+    parser::ast_control->current_position++;
+
+    char _code = atoi(parser::ast_control->getToken(0)->identifier);
+    parser::ast_control->current_position++;
+
+    int _argument = atoi(parser::ast_control->getToken(0)->identifier);
+
+    parser::ast_control->current_position++;
+
+    parser::ast_control->current_position++;
+
+    parser::Ast_Node_Byte_Code* _node_byte_code = (parser::Ast_Node_Byte_Code*) malloc(sizeof(parser::Ast_Node_Byte_Code));
+
+    std::cout << "Code -> " << (int) _code << std::endl;
+    std::cout << "Argument -> " << _argument << std::endl;
+
+    new (_node_byte_code) parser::Ast_Node_Byte_Code(
+        _code, _argument
+    );
+
+    parser::ast_control->print("Ast Node Byte Code\n", AST_DEBUG_MODE_DEC);
+
+    return _node_byte_code;
+
+}
+
+
+
+parser::Ast_Node_Return::~Ast_Node_Return() { expression->~Ast_Node_Expression(); free(expression); }
+
+parser::Ast_Node_Return::Ast_Node_Return(Ast_Node_Expression* __expression) : Ast_Node(__expression->getResultDeclaration(), AST_NODE_RETURN), expression(__expression) {}
+
+parser::Ast_Node_Return* parser::Ast_Node_Return::generate() {
+
+    parser::ast_control->print("Ast Node Return\n", AST_DEBUG_MODE_INC);
+
+    parser::ast_control->current_position++;
+
+    Ast_Node_Expression* _expression = Ast_Node_Expression::generate(getNodeType());
+
+    parser::ast_control->current_position++;
+
+    Ast_Node_Return* _node_return = (Ast_Node_Return*) malloc(sizeof(Ast_Node_Return));
+
+    new (_node_return) Ast_Node_Return(_expression);
+
+    parser::ast_control->print("Ast Node Return\n", AST_DEBUG_MODE_DEC);
+
+    return _node_return;
+
+}
+
+
 

@@ -14,7 +14,7 @@ virtual_machine::Program::~Program() { delete memory; delete byte_code; delete e
 
 virtual_machine::Program::Program(byte_code::Compiled_Code* __compiled_code, int __entry_point) : entry_point(__entry_point) {
 
-    memory = new Memory();
+    memory = new Memory(__compiled_code->implicit_values_data);
 
     byte_code = new Byte_Code_Store(__compiled_code);
 

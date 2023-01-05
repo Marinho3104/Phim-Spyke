@@ -1,6 +1,10 @@
 
 namespace built_ins {
 
+    struct Void {
+
+    };
+
     struct Byte {
 
     };
@@ -9,12 +13,24 @@ namespace built_ins {
 
         int add(int) {
 
-            int l,ll,lll,llll;
+            int _return_value;
+
+            return _return_value;
 
         }
 
         int mul(int) {
 
+        }
+
+        void equal(int __to_add) {
+
+            *this;
+
+            __to_add;
+
+            exec 10 4;
+            
         }
 
     };
@@ -29,26 +45,18 @@ namespace built_ins {
 
 namespace test {
 
-    ::built_ins::Test_Struct _test_;
-    ::built_ins::Test_Struct _test_1;
-
-    int test_func_call() {
-
-        int ff;
-
-        ff;
-        
-    }
+    //::built_ins::Test_Struct _test_;
+    //::built_ins::Test_Struct _test_1;
 
     int test_func() {
 
-        ::built_ins::Test_Struct _test;
+        int p;
 
-        _test;
+        p = 15;
 
-        _test_;
-
-        test_func_call();
+        //::built_ins::Int::equal(&p, 15);
+        
+        p;
 
     }
 

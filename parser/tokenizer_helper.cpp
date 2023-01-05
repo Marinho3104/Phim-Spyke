@@ -77,6 +77,8 @@ int parser::getTokenSymbol(const char*& __current_position) {
     if (!strncmp(__current_position, "/", 1)) { __current_position++; return FUNCTION_OPERATOR_DIVISION; }
     if (!strncmp(__current_position, "%", 1)) { __current_position++; return FUNCTION_OPERATOR_MODULOS; }
 
+    if (!strncmp(__current_position, "=", 1)) { __current_position++; return FUNCTION_OPERATOR_EQUAL; }
+
     if (!strncmp(__current_position, "!", 1)) { __current_position++; return FUNCTION_OPERATOR_NOT; }
 
     if (!strncmp(__current_position, ">", 1)) { __current_position += 1; return FUNCTION_OPERATOR_GREATER_THAN; }
@@ -103,7 +105,8 @@ int parser::getTokenKeyWord(const char*& __current_position) {
     if (!strncmp(__current_position, "struct", 6)) { __current_position += 6; return STRUCT; }
     if (!strncmp(__current_position, "contract", 8)) { __current_position += 8; return CONTRACT; }
     if (!strncmp(__current_position, "static", 6)) { __current_position += 6; return STATIC; }
-
+    if (!strncmp(__current_position, "exec", 4)) { __current_position += 4; return BYTE_CODE; }
+    if (!strncmp(__current_position, "return", 6)) { __current_position += 6; return RETURN; }
 
     return 0;
 
@@ -186,7 +189,7 @@ bool parser::isImplicitValueOrIdentifier(int __token_id) { return __token_id >= 
 
 bool parser::isAccessingOperator(int __token_id) { return __token_id == ACCESSING || __token_id == ACCESSING_POINTER; }
 
-bool parser::isFunctionOperator(int __token_id) { return __token_id >= FUNCTION_OPERATOR_PLUS && __token_id <= FUNCTION_OPERATOR_BITWISE_RIGHT_SHIFT_ASSIGN; }
+bool parser::isFunctionOperator(int __token_id) { return __token_id >= FUNCTION_OPERATOR_PLUS && __token_id <= FUNCTION_OPERATOR_BITWISE_RIGHT_SHIFT_ASSIGN || __token_id == FUNCTION_OPERATOR_EQUAL; }
 
 
 bool parser::isInt(char* __data) {
@@ -194,7 +197,7 @@ bool parser::isInt(char* __data) {
     while(*__data) {
 
         if (
-            (*__data < 48 || *__data > 57) && *(__data) != 95
+            (*__data < 48 || *__data > 57) // && *(__data) != 95
         ) return 0;
 
         __data++;

@@ -232,6 +232,8 @@ int parser::getNodeType() {
     case END_INSTRUCTION: return -2; break;
     case CLOSE_PARENTHESIS: return -3; break;
     case COMMA: return -4; break;
+    case BYTE_CODE: return AST_NODE_BYTE_CODE; break;
+    case RETURN: return AST_NODE_RETURN; break;
     case NAMESPACE: return AST_NODE_NAME_SPACE; break;
     case STRUCT: return AST_NODE_STRUCT_DECLARATION; break;
     case OPEN_PARENTHESIS: return AST_NODE_PARENTHESIS; break;

@@ -12,10 +12,10 @@ namespace virtual_machine {
     */
     struct Memory {
 
-        void* stack_memory, *heap_memory;
+        void* stack_memory, *heap_memory, *implicit_value_memory;
         int top_stack_memory;
 
-        ~Memory(); Memory();
+        ~Memory(); Memory(void*);
 
         /**/
         int allocateStack(int);

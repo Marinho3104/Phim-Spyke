@@ -27,9 +27,15 @@ namespace parser {
 
     utils::Linked_List <byte_code::Byte_Code*>* getByteCodeOfNodeParenthesis(Ast_Node_Parenthesis*);
 
-    byte_code::Byte_Code* getByteCodeOfNodeFunctionCall(Ast_Node_Function_Call*);
+    utils::Linked_List<byte_code::Byte_Code*>* getByteCodeOfNodeFunctionCall(Ast_Node_Function_Call*);
 
     utils::Linked_List <byte_code::Byte_Code*>* getByteCodeOfNodeAccessing(Ast_Node_Accessing*);
+
+    byte_code::Byte_Code* getByteCodeOfNodeByteCode(Ast_Node_Byte_Code*);
+
+    utils::Linked_List <byte_code::Byte_Code*>* getByteCodeOfNodeReturn(Ast_Node_Return*);
+
+    int getImplicitValueOff(int);
 
 }
 

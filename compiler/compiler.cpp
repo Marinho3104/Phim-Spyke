@@ -3,6 +3,7 @@
 #include "pre_compiler.h"
 #include "tokenizer.h"
 #include "convertor.h"
+#include "byte_code.h"
 #include "ast.h"
 
 #include "inicializer.h"
@@ -30,9 +31,13 @@ void compiler::Compiler::generateBuiltIns() {
 
     parser::convertor_control->generate();
 
-    parser::convertor_control->saveByteCode();
+    byte_code::Compiled_Code* _compiled_code = parser::convertor_control->getCompiledByteCode();
 
-    // parser::convertor_control->getCompiledByteCode();
+    _compiled_code->print();
+
+    _compiled_code->saveInFile();
+
+    delete _compiled_code;
 
     parser::deleteVariables();
 

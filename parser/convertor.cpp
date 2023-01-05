@@ -11,7 +11,7 @@
 #include <iostream>
 #include <string.h>
 
-parser::Convertor_Control::~Convertor_Control() { delete byte_code_blocks; }
+parser::Convertor_Control::~Convertor_Control() {}
 
 parser::Convertor_Control::Convertor_Control(bool __debug_mode) : debug_mode(__debug_mode) 
     { byte_code_blocks = new utils::Linked_List <byte_code::Byte_Code_Block*>(); }
@@ -79,18 +79,11 @@ int parser::Convertor_Control::allocBlock() {
 
 }
 
-
 byte_code::Compiled_Code* parser::Convertor_Control::getCompiledByteCode() {
 
-    // byte_code::Compiled_Code* _compiled_code = new byte_code::Compiled_Code(
-    //     byte_code_blocks, ast_control->implicit_values_collection
-    // );
-
-    // _compiled_code->print();
-
-    // delete _compiled_code;
-
-    // return NULL;
+    return new byte_code::Compiled_Code(
+        byte_code_blocks, ast_control->implicit_values_collection
+    );
 
 }
 
@@ -99,6 +92,20 @@ void parser::Convertor_Control::setEndByteCode() {
     byte_code::Byte_Code* _end_code_block;
 
     for (int _ = 0; _ < byte_code_blocks->count; _++) {
+
+        if (!byte_code_blocks->operator[](_)->block->count) {
+
+            _end_code_block = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+            new (_end_code_block) byte_code::Byte_Code(
+                BYTE_CODE_NOP, 0
+            );
+
+            byte_code_blocks->operator[](_)->block->add(
+                _end_code_block
+            );
+
+        }
 
         _end_code_block = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
@@ -114,43 +121,4 @@ void parser::Convertor_Control::setEndByteCode() {
 
 }
 
-void parser::Convertor_Control::saveByteCode() {
 
-    FILE* _file;
-
-    _file = fopen("byte_code.marinho", "wb");
-
-    for (int _ = 0; _ < byte_code_blocks->count; _++)
-
-        for (int __ = 0;__ < byte_code_blocks->operator[](_)->block->count; __++) {
-
-            fwrite(&byte_code_blocks->operator[](_)->block->operator[](__)->code, 1, 1, _file);
-            fwrite(&byte_code_blocks->operator[](_)->block->operator[](__)->argument, 4, 1, _file);
-
-        }
-
-    char* _temp;
-
-    for (int _ = 0; _ < ast_control->implicit_values_collection->count; _++) {
-
-        _temp = ast_control->implicit_values_collection->operator[](_);
-
-        while (_temp)
-
-            fwrite(_temp++, 1, 1, _file);
-
-    }
-
-    // for (int _ = 0; _ < ast_control->implicit_values_collection->count; _++) {
-
-    //     if (parser::isInt(ast_control->implicit_values_collection->operator[](_))) 
-
-    //         fwrite(ast_control->implicit_values_collection->operator[](_), 4, 1, _file);
-
-    //     else fwrite(ast_control->implicit_values_collection->operator[](_), strlen(ast_control->implicit_values_collection->operator[](_)), 1, _file);
-
-    // }
-
-    fclose(_file);
-
-}

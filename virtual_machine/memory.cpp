@@ -4,6 +4,7 @@
 
 #include <sys/mman.h>
 #include <iostream>
+#include <string.h>
 
 
 virtual_machine::Memory::~Memory() {
@@ -12,10 +13,16 @@ virtual_machine::Memory::~Memory() {
 
 }
 
-virtual_machine::Memory::Memory() : top_stack_memory(-1) {
+virtual_machine::Memory::Memory(void* __implicit_memory) : top_stack_memory(-1) {
 
-    stack_memory = mmap(NULL, STACK_MEMORY_SIZE + HEAP_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    stack_memory = mmap(NULL, STACK_MEMORY_SIZE + HEAP_MEMORY_SIZE + IMPLICIT_VALUES_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     heap_memory = stack_memory + STACK_MEMORY_SIZE;
+    implicit_value_memory = heap_memory + HEAP_MEMORY_SIZE;
+
+    mempcpy(implicit_value_memory, __implicit_memory, 4096);
+
+    // std::cout << "Implicit value -> " << *((int*) implicit_value_memory) << std::endl;
+    // std::cout << "Implicit value -> " << *(((int*) implicit_value_memory) + 1) << std::endl;
 
     // std::cout << "Stack memory -> " << stack_memory << std::endl;
     // std::cout << "Heap memory -> " << heap_memory << std::endl;
@@ -47,7 +54,7 @@ void virtual_machine::Memory::deallocateStack(int __s) {
 
 void* virtual_machine::Memory::getRealAddress(int __a) {
 
-    if (__a < 0 || __a > STACK_MEMORY_SIZE + HEAP_MEMORY_SIZE) return 0;
+    if (__a < 0 || __a > STACK_MEMORY_SIZE + HEAP_MEMORY_SIZE + IMPLICIT_VALUES_MEMORY_SIZE) return 0;
 
     return stack_memory + __a;
 

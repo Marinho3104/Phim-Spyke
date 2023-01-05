@@ -27,6 +27,8 @@ namespace parser {
 
         bool setTokenKeyWord();
 
+        bool setTokenImplicitValue();
+
         void setTokenIdentifier();
 
         void generate();

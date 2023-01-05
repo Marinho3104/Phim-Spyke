@@ -63,6 +63,10 @@
         "typeinfo": "cpp",
         "__nullptr": "cpp",
         "__threading_support": "cpp",
-        "ast_helper": "cpp"
+        "ast_helper": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "shared_mutex": "cpp",
+        "cfenv": "cpp"
     }
 }

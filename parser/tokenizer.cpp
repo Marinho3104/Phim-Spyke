@@ -101,6 +101,72 @@ bool parser::Tokenizer_Control::setTokenKeyWord() {
 
 }
 
+bool parser::Tokenizer_Control::setTokenImplicitValue() {
+
+    char* _backup_state = code_copy;
+    bool _setTokenState = 0;
+
+    do code_copy++;
+    while(*code_copy > 32 && !(_setTokenState = setTokenSymbol()));
+
+    if (_setTokenState) 
+        
+        code_copy -= 
+            tokens_collection->last->object->position_information.final_column - tokens_collection->last->object->position_information.column;
+
+    char* _data = (char*) malloc(code_copy - _backup_state + 1);
+
+    strncpy(_data, _backup_state, code_copy - _backup_state);
+    _data[code_copy - _backup_state] = '\0';
+
+    if (isInt(_data)) {
+
+        int _value = atoi(_data);
+        char* _init = (char*) &_value;
+
+        free(_data);
+
+        _data = (char*) malloc(5);
+        _data[4] = '\0';
+
+        for (int _ = 0; _ < 4; _++) _data[_] = _init[_];
+
+        Token* _token = (Token*) malloc(sizeof(Token));
+        new (_token) Token(
+            IMPLICIT_VALUE_INT, _data, _backup_state - inicial_column_address, code_copy - inicial_column_address, current_line
+        );
+
+        if (_setTokenState) {
+
+            code_copy += 
+                tokens_collection->last->object->position_information.final_column - tokens_collection->last->object->position_information.column;
+
+            tokens_collection->insert(_token, tokens_collection->count - 1);
+
+            if (parser::tokenizer_control->tokens_collection->last->object->id == POINTER || parser::tokenizer_control->tokens_collection->last->object->id == ADDRESS)
+                
+                parser::tokenizer_control->tokens_collection->last->object->id = parser::tokenizer_control->tokens_collection->last->object->id == POINTER ? FUNCTION_OPERATOR_MULTIPLICATION : FUNCTION_OPERATOR_BITWISE_AND;
+
+        } else addToken(_token);
+
+        return 1;
+
+    } 
+
+    else {
+
+        free(_data);
+
+        code_copy = _backup_state;
+
+        if (_setTokenState) delete tokens_collection->remove(tokens_collection->count);
+
+    }
+
+    return 0;
+
+}
+
 void parser::Tokenizer_Control::setTokenIdentifier() {
 
     char* _backup_state = code_copy;

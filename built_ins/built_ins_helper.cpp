@@ -29,6 +29,14 @@ char* built_ins::getStructNameOfTokenId(int __token_id) {
         
         break;
 
+    case PRIMITIVE_TYPE_VOID:
+
+        _struct_name = (char*) malloc(5);
+
+        strcpy(_struct_name, PRIMITIVE_TYPE_VOID_NAME);
+        
+        break;
+
     default: break;
     }
 
@@ -60,12 +68,18 @@ char* built_ins::getFunctionNameFromTokenId(int __token_id) {
         break;
     case FUNCTION_OPERATOR_MULTIPLICATION:
         
-        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_NULTIPLICATION) + 1);
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_MULTIPLICATION) + 1);
 
-        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_NULTIPLICATION);
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_MULTIPLICATION);
 
         break;
-    
+    case FUNCTION_OPERATOR_EQUAL:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_EQUAL) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_EQUAL);
+
+        break;  
     default: std::cout << "Error getting Function Name for token -> " << __token_id << std::endl; exit(1); break;
     }
 

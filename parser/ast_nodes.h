@@ -209,6 +209,27 @@ namespace parser {
 
     };
 
+    struct Ast_Node_Byte_Code : Ast_Node {
+
+        char code;
+        int argument;
+
+        ~Ast_Node_Byte_Code(); Ast_Node_Byte_Code(char, int);
+
+        static Ast_Node_Byte_Code* generate();
+
+    };
+
+    struct Ast_Node_Return : Ast_Node {
+
+        Ast_Node_Expression* expression;
+
+        ~Ast_Node_Return(); Ast_Node_Return(Ast_Node_Expression*);
+
+        static Ast_Node_Return* generate();
+
+    };
+
 }
 
 #endif

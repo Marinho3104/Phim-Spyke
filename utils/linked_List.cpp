@@ -15,7 +15,7 @@
 template <typename type>
 utils::Data_Linked_List<type>::~Data_Linked_List() {
 
-    if (destroy_content) destructor()(object);
+    if (destroy_content && object) destructor()(object);
     else 
         if (next) next->destroy_content = 0;
 

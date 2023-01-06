@@ -39,8 +39,6 @@ void parser::Exception_Handle::runExceptionAstControl(const char* __information)
 
     Token* _token = ast_control->getToken(0);
 
-    std::cout << "Size -> " << strlen(code_by_lines->operator[](_token->position_information.line)) << std::endl;
-
     std::cout << "\n\nError:\n" << std::endl;
 
     std::cout << "\t" << __information << ":" << std::endl;

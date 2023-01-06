@@ -15,6 +15,7 @@
 #define AST_NODE_ACCESSING 12
 #define AST_NODE_BYTE_CODE 13
 #define AST_NODE_RETURN 14
+#define AST_NODE_CAST 15
 
 
 

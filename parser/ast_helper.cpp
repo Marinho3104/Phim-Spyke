@@ -225,6 +225,8 @@ int parser::getNodeType() {
 
     std::cout << "Node type -> " << (int) parser::ast_control->getToken(0)->id << std::endl;
 
+    int _backup_state;
+
     switch (parser::ast_control->getToken(0)->id)
     {
     case CLOSE_BRACES: return -1; break;
@@ -235,13 +237,25 @@ int parser::getNodeType() {
     case RETURN: return AST_NODE_RETURN; break;
     case NAMESPACE: return AST_NODE_NAME_SPACE; break;
     case STRUCT: return AST_NODE_STRUCT_DECLARATION; break;
-    case OPEN_PARENTHESIS: return AST_NODE_PARENTHESIS; break;
+    case OPEN_PARENTHESIS: 
+
+        _backup_state = parser::ast_control->current_position;
+
+        parser::ast_control->current_position++;
+
+        try { delete Type_Information::generate(); }
+        catch(...) { parser::ast_control->current_position = _backup_state; return AST_NODE_PARENTHESIS; }
+
+        parser::ast_control->current_position = _backup_state;
+        
+        return AST_NODE_CAST;
+
     case POINTER: case ADDRESS: return AST_NODE_POINTER_OPERATION; break;
     case ACCESSING: case ACCESSING_POINTER: return  AST_NODE_ACCESSING; break;
     default: break;
     }
 
-    int _backup_state = parser::ast_control->current_position;
+    _backup_state = parser::ast_control->current_position;
 
     if (isPrimitive(parser::ast_control->getToken(0)->id) || isNameSpaceScope() || parser::ast_control->getToken(0)->id == IDENTIFIER || parser::ast_control->getToken(0)->id == STATIC) {
 
@@ -281,6 +295,7 @@ int parser::getNodeType() {
 
     if (isImplicitValueOrIdentifier(parser::ast_control->getToken(0)->id)) return AST_NODE_VALUE;
 
+excpection:
     exception_handle->runExceptionAstControl("Unknow token");
 
     return -1;

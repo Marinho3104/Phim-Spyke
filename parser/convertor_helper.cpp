@@ -20,6 +20,8 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
     utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>();
     _byte_code->destroy_content = 0;
 
+    if (!__node) goto return_;
+
     switch (__node->node_type)
     {
     case AST_NODE_NAME_SPACE:
@@ -162,7 +164,8 @@ byte_code::Byte_Code* parser::getByteCodeOfNodeVariableDeclaration(Ast_Node_Vari
         __node_variable_declaration->type->getSize()
     );
 
-    __node_variable_declaration->address = convertor_control->block_in_set->current_allocation_size;
+    __node_variable_declaration->address = 
+        convertor_control->block_in_set->current_allocation_size;
 
     convertor_control->block_in_set->current_allocation_size += _byte_code->argument;
 
@@ -175,9 +178,13 @@ void parser::getByteCodeOfNodeFunctionDeclaration(Ast_Node_Function_Declaration*
 
     parser::convertor_control->print("Node Function Declaration - Byte Code");
 
-    __node_function_declaration->body_position = parser::convertor_control->allocBlock();
+    if (!__node_function_declaration->forward) 
+        __node_function_declaration->body_position = parser::convertor_control->allocBlock();
+    else __node_function_declaration->body_position = __node_function_declaration->forward->body_position;
 
-    byte_code::Byte_Code_Block* _byte_code_block = parser::convertor_control->byte_code_blocks->last->object;
+    if (!__node_function_declaration->body) return;
+
+    byte_code::Byte_Code_Block* _byte_code_block = parser::convertor_control->byte_code_blocks->operator[](__node_function_declaration->body_position);
     byte_code::Byte_Code* _previous_stack, *_copy_memory;
     utils::Linked_List <byte_code::Byte_Code*>* _temp;
 
@@ -289,6 +296,8 @@ void parser::getByteCodeOfNodeStructDeclaration(Ast_Node_Struct_Declaration* __n
         getByteCodeOfNodeFunctionDeclaration(
             (Ast_Node_Function_Declaration*) __node_struct_declaration->functions->declarations->operator[](_)
         );
+
+    parser::convertor_control->print("Node Struct Declaration End - Byte Code");
 
 }
 

@@ -28,7 +28,9 @@ namespace virtual_machine {
 
     void execute_BYTE_CODE_CLEAN_STACK(int, Execution*);
 
-    void execute_BYTE_CODE_COPY_LAST_PREVIOUS_STACK_DATA(int, Execution*);
+    void execute_BYTE_CODE_COPY_PREVIOUS_STACK_DATA(int, Execution*);
+
+    void execute_BYTE_CODE_COPY_PREVIOUS_STACK_DATA_REMOVE(int, Execution*);
 
     void execute_BYTE_CLOSE_STACK_FRAME(int, Execution*);
 

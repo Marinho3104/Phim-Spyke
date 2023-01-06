@@ -86,6 +86,7 @@ namespace parser {
     struct Ast_Node_Function_Declaration : Ast_Node {
 
         utils::Linked_List <Ast_Node*>* parameters;
+        bool is_struct, is_static;
         Ast_Node_Code_Block* body;
         Name_Space* name_space;
         int declaration_id;

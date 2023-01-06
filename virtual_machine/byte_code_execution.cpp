@@ -32,7 +32,8 @@ void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual
     case BYTE_CODE_SET_INTO_STACK: execute_BYTE_CODE_SET_INTO_STACK(__byte_code->argument, __execution); break;
     case BYTE_CODE_GET_FROM_STACK: execute_BYTE_CODE_GET_FROM_STACK(__byte_code->argument, __execution); break;
     case BYTE_CODE_CLEAN_STACK: execute_BYTE_CODE_CLEAN_STACK(__byte_code->argument, __execution); break;
-    case BYTE_CODE_COPY_LAST_PREVIOUS_STACK_DATA: execute_BYTE_CODE_COPY_LAST_PREVIOUS_STACK_DATA(__byte_code->argument, __execution); break;
+    case BYTE_CODE_COPY_PREVIOUS_STACK_DATA: execute_BYTE_CODE_COPY_PREVIOUS_STACK_DATA(__byte_code->argument, __execution); break;
+    case BYTE_CODE_COPY_PREVIOUS_STACK_DATA_REMOVE: execute_BYTE_CODE_COPY_PREVIOUS_STACK_DATA_REMOVE(__byte_code->argument, __execution); break;
     case BYTE_CODE_CLOSE_STACK_FRAME: execute_BYTE_CLOSE_STACK_FRAME(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_ADD: execute_BYTE_BINARY_ADD(__byte_code->argument, __execution); break;
     case BYTE_CODE_NOP: break;
@@ -194,20 +195,50 @@ void virtual_machine::execute_BYTE_CODE_CLEAN_STACK(int, Execution* __execution)
 
 }
 
-void virtual_machine::execute_BYTE_CODE_COPY_LAST_PREVIOUS_STACK_DATA(int __arg, Execution* __execution) {
+void virtual_machine::execute_BYTE_CODE_COPY_PREVIOUS_STACK_DATA(int __arg, Execution* __execution) {
 
     std::cout << "COPY_LAST_PREVIOUS_STACK_DATA" << std::endl;
+
+    utils::Data_Linked_List <int>* __data_linked_list = __execution->stacks->last->previous->object->stack->last;
+
+    for (int _ = 0; _ < __arg; _++) __data_linked_list = __data_linked_list->previous;
 
     __execution->stacks->last->object->stack->printContent();
 
     __execution->stacks->last->object->stack->add(
-        __execution->stacks->last->previous->object->stack->last->object
+        __data_linked_list->object
     );
 
     __execution->stacks->last->object->stack->printContent();
 
-    if (!__arg) delete __execution->stacks->last->previous->object->stack->remove(__execution->stacks->last->previous->object->stack->count);
+}
 
+void virtual_machine::execute_BYTE_CODE_COPY_PREVIOUS_STACK_DATA_REMOVE(int __arg, Execution* __execution) {
+
+    std::cout << "COPY_LAST_PREVIOUS_STACK_DATA_REMOVE -- arg -> " << __arg << std::endl;
+
+    utils::Data_Linked_List <int>* __data_linked_list = __execution->stacks->last->previous->object->stack->last;
+
+    for (int _ = 0; _ < __arg; _++) __data_linked_list = __data_linked_list->previous;
+
+    __execution->stacks->last->object->stack->printContent();
+
+    __execution->stacks->last->object->stack->add(
+        __data_linked_list->object
+    );
+
+    __execution->stacks->last->object->stack->printContent();
+
+    std::cout << "Previous stack after remove ->"; 
+    __execution->stacks->last->previous->object->stack->printContent();
+
+    delete __execution->stacks->last->previous->object->stack->remove(
+        __execution->stacks->last->previous->object->stack->count - 1 -__arg
+    );
+
+    std::cout << "Previous stack before remove ->"; 
+    __execution->stacks->last->previous->object->stack->printContent();
+    
 }
 
 void virtual_machine::execute_BYTE_CLOSE_STACK_FRAME(int, Execution* __execution) {

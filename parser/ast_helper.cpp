@@ -215,7 +215,6 @@ int parser::Type_Information::getSize() {
 }
 
 
-
 parser::Expression_Result_Helper::~Expression_Result_Helper() {}
 
 parser::Expression_Result_Helper::Expression_Result_Helper(Ast_Node_Expression* __expression) 

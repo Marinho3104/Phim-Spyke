@@ -1,0 +1,159 @@
+utils::Linked_List <Expression_Result_Helper*>* _expressions_result_helper = new utils::Linked_List <Expression_Result_Helper*>();
+    Ast_Node_Expression* _expression = this;
+    Expression_Result_Helper* _temp;
+
+    while(_expression) {
+
+        _temp = (Expression_Result_Helper*) malloc(sizeof(Expression_Result_Helper)); 
+
+        new (_temp) Expression_Result_Helper(
+            _expression
+        );
+
+        _expressions_result_helper->add(
+            _temp
+        );
+
+        _expression = _expression->expression;
+
+    }
+
+    utils::Linked_List <Ast_Node*>* _parameters = new utils::Linked_List <Ast_Node*>(); _parameters->destroy_content = 0;
+    Ast_Node_Variable_Declaration* _first_argument, *_second_argument;
+    Ast_Node_Function_Declaration* _function_declaration;
+    Ast_Node_Name_Space* _struct_node_name_space;
+    int _token_id, _declaration_id;
+    char* _function_name;
+
+    int _current_priority = 1;
+
+    while (_expressions_result_helper->count != 1) {
+
+        for (int _ = 0; _ < _expressions_result_helper->count; _++) { // Wrong TODO
+
+            if (
+                getOperatorPriority(_expressions_result_helper->operator[](_)->token_id) == _current_priority
+            ) {
+
+                _second_argument = _expressions_result_helper->operator[](_ + 1)->declaration;
+                _first_argument = _expressions_result_helper->operator[](_)->declaration;
+                _token_id = _expressions_result_helper->operator[](_)->token_id;
+
+                parser::ast_control->addToChain(
+                    parser::ast_control->name_space_control->getNameSpace(
+                        _first_argument->type->declaration->functions
+                    ),
+                    NULL
+                );
+
+                _function_name = built_ins::getFunctionNameFromTokenId(_token_id);
+                _declaration_id = getDeclarationId(_function_name);
+                free(_function_name);
+
+                Ast_Node_Variable_Declaration* _node_variable_declaration = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
+
+                new (_node_variable_declaration) Ast_Node_Variable_Declaration(
+                    _first_argument->type->getCopy(), -1, 0
+                );
+
+                _node_variable_declaration->type->pointer_level++;
+
+                Ast_Node_Pointer_Operation* _node_pointer_operation = (Ast_Node_Pointer_Operation*) malloc(sizeof(Ast_Node_Pointer_Operation));
+
+                new (_node_pointer_operation) Ast_Node_Pointer_Operation(
+                    _node_variable_declaration, 1, _first_argument
+                );
+                _node_pointer_operation->destroy_value = 0;
+
+                _parameters->add(_node_variable_declaration);
+                _parameters->add(_second_argument);
+
+                _function_declaration = getFunctionDeclaration(_declaration_id, _parameters);
+
+                _parameters->clean();
+
+                if (!_function_declaration || _declaration_id == -1) 
+
+                    exception_handle->runExceptionAstControl("No function declaration with given name and given arguments");
+
+                _first_argument->type->pointer_level--;
+
+                if (!_expressions_result_helper->operator[](_)->function_result_value) 
+
+                    this->organized_set->add(
+                        _node_pointer_operation
+                    );
+
+                else { _node_pointer_operation->~Ast_Node_Pointer_Operation(); free(_node_pointer_operation); }
+
+                if (!_expressions_result_helper->operator[](_ + 1)->function_result_value)
+
+                    this->organized_set->add(
+                        _expressions_result_helper->operator[](_ + 1)->expression->value
+                    );    
+                
+
+                this->organized_set->add(
+                    _function_declaration
+                );
+
+                _expressions_result_helper->operator[](_)->token_id = _expressions_result_helper->operator[](_ + 1)->token_id;
+                _expressions_result_helper->operator[](_)->declaration = _function_declaration->representive_declaration;
+                _expressions_result_helper->operator[](_)->function_result_value = 1;
+
+                delete _expressions_result_helper->remove(_ + 1);
+    
+                parser::ast_control->popFromChain();
+
+                if (_expressions_result_helper->count != 1) _--;
+
+                // _first_argument->~Ast_Node_Variable_Declaration(); free(_first_argument);
+                // _second_argument->~Ast_Node_Variable_Declaration(); free(_second_argument);
+
+            }
+
+            else {
+
+                if (!_expressions_result_helper->operator[](_)->function_result_value) 
+
+                    this->organized_set->add(
+                        _expressions_result_helper->operator[](_)->expression->value
+                    );
+
+                _expressions_result_helper->operator[](_)->function_result_value = 1;
+
+            }
+
+        }
+
+        _current_priority++;    
+
+    }
+
+    if (!this->organized_set->count)
+
+        this->organized_set->add(
+            _expressions_result_helper->operator[](0)->expression->value
+        );
+
+    Ast_Node_Variable_Declaration* _result = _expressions_result_helper->operator[](0)->declaration;
+
+    delete _expressions_result_helper;
+
+    delete _parameters;
+
+    return _result;
+
+
+
+
+    struct Expression_Result_Helper {
+
+        Ast_Node_Variable_Declaration* declaration;
+        Ast_Node_Expression* expression;
+        bool function_result_value;
+        int token_id;
+
+        ~Expression_Result_Helper(); Expression_Result_Helper(Ast_Node_Expression*);
+
+    };

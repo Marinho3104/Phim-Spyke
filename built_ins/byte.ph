@@ -11,18 +11,23 @@ namespace built_ins {
     
     struct Int {
 
-        void equal(int __to_add) {
+        int equal(int __to_add) {
 
             *this;
-
             __to_add;
 
             exec 10 4;
-            
+
+            *this + 100;
+
+            return 1;
+
+            // exec 13 0;
+
         }
 
         int add(int __value) {
-            
+
             int _result;
 
             _result;
@@ -42,10 +47,10 @@ namespace built_ins {
             __value;
 
             exec 16 4;
-            
+
         }
 
-        int mul(int) {
+        int mul(int) { return 100;
 
         }
 
@@ -66,13 +71,20 @@ namespace test {
 
     int test_func() {
 
-        int p;
+        int p, l;
 
-        ::built_ins::Int::equal(&p, 150);
+        l = p = 100;
 
-        ::built_ins::Int::add_assign(&p, 167);
+        //p = 100 + 150 * (1000 + 19);
+
+        //p += 12;
+
+        //::built_ins::Int::equal(&p, 150);
+
+        //::built_ins::Int::add_assign(&p, 167);
         
         p;
+        l;
 
     }
 

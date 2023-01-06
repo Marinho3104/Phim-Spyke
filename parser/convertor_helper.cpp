@@ -217,13 +217,48 @@ void parser::getByteCodeOfNodeFunctionDeclaration(Ast_Node_Function_Declaration*
         _previous_stack = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
         new (_previous_stack) byte_code::Byte_Code(
-            BYTE_CODE_COPY_LAST_PREVIOUS_STACK_DATA,
-            0
+            BYTE_CODE_COPY_PREVIOUS_STACK_DATA_REMOVE,
+            __node_function_declaration->representive_declaration->type->getSize() ? 1 : 0
         );
-
+        
         _byte_code_block->block->add(
             _previous_stack
         );
+        
+        if (!__node_function_declaration->is_static && __node_function_declaration->is_struct && !_) {
+
+                byte_code::Byte_Code* _byte_code_memory_allocation = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+                new (_byte_code_memory_allocation) byte_code::Byte_Code(
+                    BYTE_CODE_STACK_MEMORY_ALLOCATE,
+                    2
+                );
+
+                convertor_control->block_in_set->current_allocation_size += _byte_code_memory_allocation->argument;
+
+                _byte_code_block->block->add(_byte_code_memory_allocation);
+
+
+
+                byte_code::Byte_Code* _byte_code_load = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+                new (_byte_code_load) byte_code::Byte_Code(
+                    BYTE_CODE_LOAD,
+                    convertor_control->block_in_set->current_allocation_size - _byte_code_memory_allocation->argument
+                );
+
+                _byte_code_block->block->add(_byte_code_load);
+
+                byte_code::Byte_Code* _byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+                new (_byte_code) byte_code::Byte_Code(
+                    BYTE_CODE_GET_FROM_STACK,
+                    0
+                );
+
+                _byte_code_block->block->add(_byte_code);
+
+        }
 
         _copy_memory = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
@@ -251,7 +286,9 @@ void parser::getByteCodeOfNodeStructDeclaration(Ast_Node_Struct_Declaration* __n
 
     for (int _ = 0; _ < __node_struct_declaration->functions->declarations->count; _++)
 
-        delete getByteCodeOfNode(__node_struct_declaration->functions->declarations->operator[](_));
+        getByteCodeOfNodeFunctionDeclaration(
+            (Ast_Node_Function_Declaration*) __node_struct_declaration->functions->declarations->operator[](_)
+        );
 
 }
 
@@ -273,28 +310,32 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeExpression(
         case AST_NODE_FUNCTION_DECLARATION:
             {
 
-                byte_code::Byte_Code* _memory_allocation_return = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+                if ( ((Ast_Node_Function_Declaration*) __node_expression->organized_set->operator[](_))->representive_declaration->type->getSize()) {
+                    byte_code::Byte_Code* _memory_allocation_return = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
-                new (_memory_allocation_return) byte_code::Byte_Code(
-                    BYTE_CODE_STACK_MEMORY_ALLOCATE,
-                    ((Ast_Node_Function_Declaration*) __node_expression->organized_set->operator[](_))->representive_declaration->type->getSize()
-                );
+                    new (_memory_allocation_return) byte_code::Byte_Code(
+                        BYTE_CODE_STACK_MEMORY_ALLOCATE,
+                        ((Ast_Node_Function_Declaration*) __node_expression->organized_set->operator[](_))->representive_declaration->type->getSize()
+                    );
 
-                // __node_function_call->representive_declaration->address = convertor_control->block_in_set->current_allocation_size;
+                    // __node_function_call->representive_declaration->address = convertor_control->block_in_set->current_allocation_size;
 
-                _byte_code->add(_memory_allocation_return);
+                    _byte_code->add(_memory_allocation_return);
 
-                byte_code::Byte_Code* _load = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+                    convertor_control->block_in_set->current_allocation_size += _memory_allocation_return->argument;
 
-                new (_load) byte_code::Byte_Code(
-                    BYTE_CODE_LOAD,
-                    convertor_control->block_in_set->current_allocation_size
-                );
+                    byte_code::Byte_Code* _load = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
-                _byte_code->add(_load);
+                    new (_load) byte_code::Byte_Code(
+                        BYTE_CODE_LOAD,
+                        convertor_control->block_in_set->current_allocation_size - _memory_allocation_return->argument
+                    );  
 
-                convertor_control->block_in_set->current_allocation_size += _memory_allocation_return->argument;
+                    _byte_code->add(_load);
 
+                }
+
+                
 
                 _call_function = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
@@ -463,30 +504,6 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeFunctionCal
 
     // Add space for memory allocation and load of return value if needed
 
-    byte_code::Byte_Code* _memory_allocation_return = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
-
-    new (_memory_allocation_return) byte_code::Byte_Code(
-        BYTE_CODE_STACK_MEMORY_ALLOCATE,
-        __node_function_call->representive_declaration->type->getSize()
-    );
-
-    __node_function_call->representive_declaration->address = convertor_control->block_in_set->current_allocation_size;
-
-    convertor_control->block_in_set->current_allocation_size += _memory_allocation_return->argument;
-
-    _byte_code->add(_memory_allocation_return);
-
-    byte_code::Byte_Code* _load = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
-
-    new (_load) byte_code::Byte_Code(
-        BYTE_CODE_LOAD,
-        __node_function_call->representive_declaration->address
-    );
-
-    _byte_code->add(_load);
-
-    
-
     for (int _ = 0; _ < __node_function_call->parameters->count; _++) {
 
         _temp = getByteCodeOfNodeExpression(__node_function_call->parameters->operator[](_));
@@ -495,6 +512,30 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeFunctionCal
 
         delete _temp;
 
+    }
+
+    if (__node_function_call->representive_declaration->type->getSize()) {
+        byte_code::Byte_Code* _memory_allocation_return = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+        new (_memory_allocation_return) byte_code::Byte_Code(
+            BYTE_CODE_STACK_MEMORY_ALLOCATE,
+            __node_function_call->representive_declaration->type->getSize()
+        );
+
+        __node_function_call->representive_declaration->address = convertor_control->block_in_set->current_allocation_size;
+
+        convertor_control->block_in_set->current_allocation_size += _memory_allocation_return->argument;
+
+        _byte_code->add(_memory_allocation_return);
+
+        byte_code::Byte_Code* _load = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+        new (_load) byte_code::Byte_Code(
+            BYTE_CODE_LOAD,
+            __node_function_call->representive_declaration->address
+        );
+
+        _byte_code->add(_load);
     }
 
     byte_code::Byte_Code* _byte_code_call = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
@@ -564,8 +605,8 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeReturn(Ast_
     byte_code::Byte_Code* _previous_stack_data = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
     new (_previous_stack_data) byte_code::Byte_Code(
-        BYTE_CODE_COPY_LAST_PREVIOUS_STACK_DATA,
-        1
+        BYTE_CODE_COPY_PREVIOUS_STACK_DATA,
+        0
     );
 
     _byte_code->add(_previous_stack_data);

@@ -508,7 +508,7 @@ parser::Ast_Node_Function_Declaration::~Ast_Node_Function_Declaration() {
 parser::Ast_Node_Function_Declaration::Ast_Node_Function_Declaration(
     parser::Ast_Node_Variable_Declaration* __return_variable_declaration, utils::Linked_List <Ast_Node*>* __parameters, Ast_Node_Code_Block* __body, 
         Name_Space* __name_space, int __declaration_id) : Ast_Node(__return_variable_declaration, AST_NODE_FUNCTION_DECLARATION), 
-            parameters(__parameters), body(__body), name_space(__name_space), declaration_id(__declaration_id) {}
+            parameters(__parameters), body(__body), name_space(__name_space), declaration_id(__declaration_id), is_static(0), is_struct(0) {}
 
 parser::Ast_Node_Function_Declaration* parser::Ast_Node_Function_Declaration::generate(bool __struct_function) {
 
@@ -846,6 +846,9 @@ void parser::Ast_Node_Struct_Declaration::setFunctions() {
                 )
             );
 
+            ((Ast_Node_Function_Declaration*)functions->declarations->last->object)->is_static = _is_static;
+            ((Ast_Node_Function_Declaration*)functions->declarations->last->object)->is_struct = 1;
+
             break;
 
         default: exception_handle->runExceptionAstControl("Unexpected Node"); break;
@@ -993,8 +996,8 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
                 getOperatorPriority(_expressions_result_helper->operator[](_)->token_id) == _current_priority
             ) {
 
-                _second_argument = _expressions_result_helper->operator[](_ + 1)->declaration;
-                _first_argument = _expressions_result_helper->operator[](_)->declaration;
+                _second_argument = _expressions_result_helper->operator[](_ + 1)->declaration->getCopy();
+                _first_argument = _expressions_result_helper->operator[](_)->declaration->getCopy();
                 _token_id = _expressions_result_helper->operator[](_)->token_id;
 
                 parser::ast_control->addToChain(
@@ -1008,22 +1011,9 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
                 _declaration_id = getDeclarationId(_function_name);
                 free(_function_name);
 
-                Ast_Node_Variable_Declaration* _node_variable_declaration = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
+                _first_argument->type->pointer_level++;
 
-                new (_node_variable_declaration) Ast_Node_Variable_Declaration(
-                    _first_argument->type->getCopy(), -1, 0
-                );
-
-                _node_variable_declaration->type->pointer_level++;
-
-                Ast_Node_Pointer_Operation* _node_pointer_operation = (Ast_Node_Pointer_Operation*) malloc(sizeof(Ast_Node_Pointer_Operation));
-
-                new (_node_pointer_operation) Ast_Node_Pointer_Operation(
-                    _node_variable_declaration, 1, _first_argument
-                );
-                _node_pointer_operation->destroy_value = 0;
-
-                _parameters->add(_node_variable_declaration);
+                _parameters->add(_first_argument);
                 _parameters->add(_second_argument);
 
                 _function_declaration = getFunctionDeclaration(_declaration_id, _parameters);
@@ -1039,10 +1029,8 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
                 if (!_expressions_result_helper->operator[](_)->function_result_value) 
 
                     this->organized_set->add(
-                        _node_pointer_operation
+                        _expressions_result_helper->operator[](_)->expression->value
                     );
-
-                else { _node_pointer_operation->~Ast_Node_Pointer_Operation(); free(_node_pointer_operation); }
 
                 if (!_expressions_result_helper->operator[](_ + 1)->function_result_value)
 
@@ -1065,8 +1053,8 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
 
                 if (_expressions_result_helper->count != 1) _--;
 
-                // _first_argument->~Ast_Node_Variable_Declaration(); free(_first_argument);
-                // _second_argument->~Ast_Node_Variable_Declaration(); free(_second_argument);
+                _first_argument->~Ast_Node_Variable_Declaration(); free(_first_argument);
+                _second_argument->~Ast_Node_Variable_Declaration(); free(_second_argument);
 
             }
 

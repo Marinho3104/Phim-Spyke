@@ -32,6 +32,8 @@ int main() {
 
     // _compiled_code_readed->print();
 
+    // exit(1);
+
     virtual_machine::Program* _program = new virtual_machine::Program(_compiled_code_readed, _compiled_code_readed->blocks->count - 1);
 
     _program->execute();

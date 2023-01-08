@@ -144,6 +144,13 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
         );
 
         break;
+    case AST_NODE_CAST:
+
+        _byte_code = getByteCodeOfNode(
+            ((Ast_Node_Cast*) __node)->value
+        );
+
+        break;
 
     default: std::cout << "erorr yey" << std::endl; exit(1); break;
     }
@@ -180,7 +187,7 @@ void parser::getByteCodeOfNodeFunctionDeclaration(Ast_Node_Function_Declaration*
 
     if (!__node_function_declaration->forward) 
         __node_function_declaration->body_position = parser::convertor_control->allocBlock();
-    else __node_function_declaration->body_position = __node_function_declaration->forward->body_position;
+    else { __node_function_declaration->body_position = __node_function_declaration->forward->body_position;}
 
     if (!__node_function_declaration->body) return;
 
@@ -232,41 +239,6 @@ void parser::getByteCodeOfNodeFunctionDeclaration(Ast_Node_Function_Declaration*
             _previous_stack
         );
         
-        if (!__node_function_declaration->is_static && __node_function_declaration->is_struct && !_) {
-
-                byte_code::Byte_Code* _byte_code_memory_allocation = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
-
-                new (_byte_code_memory_allocation) byte_code::Byte_Code(
-                    BYTE_CODE_STACK_MEMORY_ALLOCATE,
-                    2
-                );
-
-                convertor_control->block_in_set->current_allocation_size += _byte_code_memory_allocation->argument;
-
-                _byte_code_block->block->add(_byte_code_memory_allocation);
-
-
-
-                byte_code::Byte_Code* _byte_code_load = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
-
-                new (_byte_code_load) byte_code::Byte_Code(
-                    BYTE_CODE_LOAD,
-                    convertor_control->block_in_set->current_allocation_size - _byte_code_memory_allocation->argument
-                );
-
-                _byte_code_block->block->add(_byte_code_load);
-
-                byte_code::Byte_Code* _byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
-
-                new (_byte_code) byte_code::Byte_Code(
-                    BYTE_CODE_GET_FROM_STACK,
-                    0
-                );
-
-                _byte_code_block->block->add(_byte_code);
-
-        }
-
         _copy_memory = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
         new (_copy_memory) byte_code::Byte_Code(
@@ -280,9 +252,62 @@ void parser::getByteCodeOfNodeFunctionDeclaration(Ast_Node_Function_Declaration*
 
     }
 
+    if (!__node_function_declaration->is_static && __node_function_declaration->is_struct) {
+
+        _temp = getByteCodeOfNode(
+            __node_function_declaration->this_variable
+        );
+        
+        _byte_code_block->block->join(
+            _temp
+        );
+
+        _previous_stack = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+        new (_previous_stack) byte_code::Byte_Code(
+            BYTE_CODE_COPY_PREVIOUS_STACK_DATA_REMOVE,
+            __node_function_declaration->representive_declaration->type->getSize() ? 1 : 0
+        );
+        
+        _byte_code_block->block->add(
+            _previous_stack
+        );
+        
+        byte_code::Byte_Code* _byte_code_load = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+        new (_byte_code_load) byte_code::Byte_Code(
+            BYTE_CODE_LOAD,
+            convertor_control->block_in_set->current_allocation_size - 2
+        );
+
+        _byte_code_block->block->add(_byte_code_load);
+
+
+        byte_code::Byte_Code* _byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+        new (_byte_code) byte_code::Byte_Code(
+            BYTE_CODE_GET_FROM_STACK,
+            0
+        );
+
+        _byte_code_block->block->add(_byte_code);
+        
+        // _copy_memory = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+        // new (_copy_memory) byte_code::Byte_Code(
+        //     BYTE_CODE_MEMORY_COPY,
+        //     2
+        // );
+
+        // _byte_code_block->block->add(
+        //     _copy_memory
+        // );
+
+    }
+
     parser::convertor_control->setBlock(
         __node_function_declaration->body->code,
-        0
+        _byte_code_block
     );
 
 }

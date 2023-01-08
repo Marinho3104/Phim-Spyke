@@ -85,6 +85,7 @@ namespace parser {
 
     struct Ast_Node_Function_Declaration : Ast_Node {
 
+        Ast_Node_Variable_Declaration* this_variable;
         utils::Linked_List <Ast_Node*>* parameters;
         Ast_Node_Function_Declaration* forward;
         bool is_struct, is_static;
@@ -94,11 +95,11 @@ namespace parser {
 
         int body_position;
 
-        ~Ast_Node_Function_Declaration(); Ast_Node_Function_Declaration(Ast_Node_Function_Declaration*, parser::Ast_Node_Variable_Declaration*, utils::Linked_List <Ast_Node*>*, Ast_Node_Code_Block*, Name_Space*, int);
+        ~Ast_Node_Function_Declaration(); Ast_Node_Function_Declaration(Ast_Node_Function_Declaration*, Ast_Node_Variable_Declaration*, parser::Ast_Node_Variable_Declaration*, utils::Linked_List <Ast_Node*>*, Ast_Node_Code_Block*, Name_Space*, int, bool, bool);
         
         static Ast_Node_Function_Declaration* generate(bool);
 
-        static utils::Linked_List <Ast_Node*>* getParameters(bool);
+        static utils::Linked_List <Ast_Node*>* getParameters();
 
     };
 

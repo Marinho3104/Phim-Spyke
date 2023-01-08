@@ -11,14 +11,7 @@ namespace built_ins {
     
     struct Int {
 
-        void equal(int __to_add) {
-            
-            *this;
-            __to_add;
-
-            exec 10 4;
-    
-        }
+        void equal(int __to_add);
 
         int add(int __value) {
 
@@ -56,6 +49,15 @@ namespace built_ins {
 
 }
 
+void built_ins::Int::equal(int __to_add)  {
+    
+    *this;
+    __to_add;
+
+    exec 10 4;
+
+}
+
 namespace test {
 
     //::built_ins::Test_Struct _test_;
@@ -65,7 +67,7 @@ namespace test {
 
         int p;
 
-        (int) p;
+        p += 100;
 
         //::built_ins::Int::equal(&p, 150);
 

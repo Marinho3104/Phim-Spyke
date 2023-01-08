@@ -504,18 +504,24 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Variable_Declaration::ge
 parser::Ast_Node_Function_Declaration::~Ast_Node_Function_Declaration() { 
     representive_declaration->~Ast_Node_Variable_Declaration(); free(representive_declaration); delete parameters;  
     if (body) body->~Ast_Node_Code_Block(); free(body);
+    if (this_variable) this_variable->~Ast_Node_Variable_Declaration(); free(this_variable);
 }
 
 parser::Ast_Node_Function_Declaration::Ast_Node_Function_Declaration(
-    Ast_Node_Function_Declaration* __forward, parser::Ast_Node_Variable_Declaration* __return_variable_declaration, utils::Linked_List <Ast_Node*>* __parameters, Ast_Node_Code_Block* __body, 
-        Name_Space* __name_space, int __declaration_id) : Ast_Node(__return_variable_declaration, AST_NODE_FUNCTION_DECLARATION), 
-            parameters(__parameters), body(__body), name_space(__name_space), declaration_id(__declaration_id), is_static(0), is_struct(0), 
+    Ast_Node_Function_Declaration* __forward, Ast_Node_Variable_Declaration* __this_variable, parser::Ast_Node_Variable_Declaration* __return_variable_declaration, utils::Linked_List <Ast_Node*>* __parameters, Ast_Node_Code_Block* __body, 
+        Name_Space* __name_space, int __declaration_id, bool _is_struct, bool _is_static) : Ast_Node(__return_variable_declaration, AST_NODE_FUNCTION_DECLARATION), 
+            parameters(__parameters), this_variable(__this_variable), body(__body), name_space(__name_space), declaration_id(__declaration_id), is_static(_is_static), is_struct(_is_struct), 
                 body_position(-1), forward(__forward) {}
 
 parser::Ast_Node_Function_Declaration* parser::Ast_Node_Function_Declaration::generate(bool __struct_function) {
 
-    parser::ast_control->print("Ast Node Function Declaration\n", AST_DEBUG_MODE_INC);
+    parser::ast_control->print("Ast Node Function Declaration\n", AST_DEBUG_MODE_INC); 
 
+    bool _is_static = 0;
+
+    if (__struct_function && (_is_static = parser::ast_control->getToken(0)->id == STATIC)) 
+        parser::ast_control->current_position++;
+    
     Type_Information* _return_type = Type_Information::generate();
 
     Name_Space* _name_space = getNameSpace();
@@ -523,6 +529,8 @@ parser::Ast_Node_Function_Declaration* parser::Ast_Node_Function_Declaration::ge
     if (ast_control->getToken(0)->id != IDENTIFIER) exception_handle->runExceptionAstControl("Expected token identifier - Ast_Node_Function_Declaration::generate()");
 
     if (_name_space) parser::ast_control->addToChain(_name_space, NULL);
+
+    __struct_function = parser::ast_control->name_space_chain->last->object->name_space_node->struct_name_space;
 
     char* _function_declaration_name = ast_control->getToken(0)->identifier;
     parser::ast_control->current_position++;
@@ -532,8 +540,32 @@ parser::Ast_Node_Function_Declaration* parser::Ast_Node_Function_Declaration::ge
     parser::ast_control->print("--- --- --- --- ---\n", AST_DEBUG_MODE_STL);
 
     Ast_Node_Code_Block* _body = parser::ast_control->code_block_chain->last->object;
+    Ast_Node_Variable_Declaration* _this_variable = NULL;
 
-    utils::Linked_List <Ast_Node*>* _parameters = getParameters(__struct_function);
+    if (__struct_function && !_is_static) {
+
+        getCurrentDeclarationTracker()->addName( (char*) "this");
+
+        Ast_Node_Variable_Declaration* _struct_variable_declaration = 
+            parser::ast_control->code_block_chain->last->object->name_space->name_space_node->representive_declaration;
+
+        if (!_struct_variable_declaration) 
+            exception_handle->runExceptionAstControl("Struct Variable Declaration not defined - Ast_Node_Function_Declaration::getParameters()");
+
+        _struct_variable_declaration = _struct_variable_declaration->getCopy();
+
+        _struct_variable_declaration->declaration_id = getCurrentDeclarationTracker()->getDeclarationId((char*)"this");
+        _struct_variable_declaration->type->pointer_level++;
+
+        getCurrentDeclarationTracker()->variable_declaration->add(
+            _struct_variable_declaration
+        );
+
+        _this_variable = _struct_variable_declaration;
+
+    }
+
+    utils::Linked_List <Ast_Node*>* _parameters = getParameters();
 
     parser::ast_control->print("--- --- --- --- ---\n", AST_DEBUG_MODE_STL);
 
@@ -554,13 +586,19 @@ parser::Ast_Node_Function_Declaration* parser::Ast_Node_Function_Declaration::ge
 
     else {
 
+        _parameters->insert(_this_variable, 0);
+
         _previous_function_declaration = 
             getCurrentDeclarationTracker()->getFunctionDeclaration(_declaration_id, _parameters);
 
-        if ((_previous_function_declaration && _previous_function_declaration->body))
+        if (_previous_function_declaration && _previous_function_declaration->body)
 
             exception_handle->runExceptionAstControl("Redefenition of function - Ast_Node_Function_Declaration::generate()");
     
+        std::cout << "Previous function ->                          " << _previous_function_declaration << std::endl;
+
+        _parameters->remove(0);
+
     }
 
     Ast_Node_Variable_Declaration* _variable_declaration = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
@@ -570,9 +608,19 @@ parser::Ast_Node_Function_Declaration* parser::Ast_Node_Function_Declaration::ge
     );
 
     parser::Ast_Node_Function_Declaration* _function_declaration = (parser::Ast_Node_Function_Declaration*) malloc(sizeof(parser::Ast_Node_Function_Declaration));
-    new (_function_declaration) parser::Ast_Node_Function_Declaration(_previous_function_declaration, _variable_declaration, _parameters, _body, _name_space, _declaration_id);
-    
-    getCurrentDeclarationTracker()->function_declaration->add(_function_declaration);
+    new (_function_declaration) parser::Ast_Node_Function_Declaration(
+        _previous_function_declaration, 
+        _this_variable,
+        _variable_declaration, 
+        _parameters, 
+        _body, 
+        _name_space, 
+        _declaration_id,
+        __struct_function,
+        _is_static
+    ); 
+
+    if (!_previous_function_declaration) getCurrentDeclarationTracker()->function_declaration->add(_function_declaration);
 
     parser::ast_control->popFromChain();
 
@@ -606,41 +654,12 @@ parser::Ast_Node_Function_Declaration* parser::Ast_Node_Function_Declaration::ge
 
 }
 
-utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Function_Declaration::getParameters(bool __struct_function) {
-    
+utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Function_Declaration::getParameters() {
+
     parser::ast_control->print("Ast Node Function Declaration Parameters\n", AST_DEBUG_MODE_INC);
 
     utils::Linked_List <parser::Ast_Node*>* _nodes = new utils::Linked_List <parser::Ast_Node*>(), *_temp;
-
     parser::ast_control->current_position++;
-
-    if (__struct_function) {
-
-        Ast_Node_Variable_Declaration* _struct_variable_declaration = 
-            parser::ast_control->code_block_chain->last->object->name_space->name_space_node->representive_declaration;
-
-        if (!_struct_variable_declaration) 
-            exception_handle->runExceptionAstControl("Struct Variable Declaration not defined - Ast_Node_Function_Declaration::getParameters()");
-
-        getCurrentDeclarationTracker()->addName( (char*) "this");
-        int _declaration_id = getCurrentDeclarationTracker()->getDeclarationId((char*) "this");
-
-        Ast_Node_Variable_Declaration* _copy = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
-
-        new (_copy) Ast_Node_Variable_Declaration(
-            _struct_variable_declaration->representive_declaration->type->getCopy(), _declaration_id, 0
-        );
-        _copy->type->pointer_level++;
-
-        _nodes->add(
-            _copy
-        );
-
-        getCurrentDeclarationTracker()->variable_declaration->add(
-            _copy
-        );
-
-    }
 
     while(parser::ast_control->getToken(0)->id != CLOSE_PARENTHESIS) {
 
@@ -662,7 +681,7 @@ utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Function_Declaration::g
     }
 
     parser::ast_control->current_position++;
-
+    
     parser::ast_control->print("Ast Node Function Declaration Parameters End\n", AST_DEBUG_MODE_DEC);
 
     return _nodes;
@@ -839,18 +858,11 @@ void parser::Ast_Node_Struct_Declaration::setFunctions() {
 
         case AST_NODE_FUNCTION_DECLARATION:
 
-            _is_static = parser::ast_control->getToken(0)->id == STATIC;
-
-            if (_is_static) parser::ast_control->current_position++;
-        
             functions->declarations->add(
                 Ast_Node_Function_Declaration::generate(
-                    !_is_static
+                    1
                 )
             );
-
-            ((Ast_Node_Function_Declaration*)functions->declarations->last->object)->is_static = _is_static;
-            ((Ast_Node_Function_Declaration*)functions->declarations->last->object)->is_struct = 1;
 
             break;
 
@@ -1169,6 +1181,9 @@ parser::Ast_Node_Variable* parser::Ast_Node_Variable::generate() {
 
     Ast_Node_Variable_Declaration* _variable_declaration = getVariableDeclaration(_declaration_id);
 
+    std::cout << "Declaration id -> " << _declaration_id << std::endl;
+    std::cout << "Declaration -> " << _variable_declaration << std::endl;
+
     if (_declaration_id == -1 || !_variable_declaration) 
 
         exception_handle->runExceptionAstControl("Undefined variable with given name - Ast_Node_Variable::generate()");
@@ -1285,7 +1300,6 @@ parser::Ast_Node_Pointer_Operation* parser::Ast_Node_Pointer_Operation::generate
     return _node_pointer_operation;
 
 }
-
 
 
 parser::Ast_Node_Parenthesis::~Ast_Node_Parenthesis() { if (expression) expression->~Ast_Node_Expression(); free(expression); } 
@@ -1584,12 +1598,13 @@ parser::Ast_Node_Return* parser::Ast_Node_Return::generate() {
 }
 
 
-parser::Ast_Node_Cast::~Ast_Node_Cast() {
-
+parser::Ast_Node_Cast::~Ast_Node_Cast() { 
+    representive_declaration->~Ast_Node_Variable_Declaration(); free(representive_declaration); 
+    value->~Ast_Node(); free(value);
 }
 
 parser::Ast_Node_Cast::Ast_Node_Cast(Ast_Node_Variable_Declaration* __declaration, Type_Information* __type_information, Ast_Node* __value) 
-    : Ast_Node(0, AST_NODE_CAST), type_cast(__type_information), value(__value) {}
+    : Ast_Node(__declaration, AST_NODE_CAST), type_cast(__type_information), value(__value) {}
 
 parser::Ast_Node_Cast* parser::Ast_Node_Cast::generate() {
 
@@ -1602,6 +1617,10 @@ parser::Ast_Node_Cast* parser::Ast_Node_Cast::generate() {
     parser::ast_control->current_position++;
 
     Ast_Node* _value = Ast_Node_Expression::getValue(getNodeType());
+
+    if (_value->representive_declaration->type->getSize() != _cast_type->getSize())
+
+        exception_handle->runExceptionAstControl("Error not same bytes length between cast");
 
     Ast_Node_Variable_Declaration* _declaration = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
 

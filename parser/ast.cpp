@@ -56,15 +56,34 @@ parser::Ast_Node_Function_Declaration* parser::Declarations_Tracker::getFunction
             _founded_variable_declarations = 
                 getSpecificNodesFromLinkedList<parser::Ast_Node_Variable_Declaration>(_function_declaration->parameters, AST_NODE_VARIABLE_DECLARATION);
 
+            if (
+                _function_declaration->is_struct && !_function_declaration->is_static
+            ) {
+
+                std::cout << "Added this var" << std::endl;
+
+                _founded_variable_declarations->insert(
+                    _function_declaration->this_variable, 0
+                );
+            }
+
             if (_given_variable_declarations->count != _founded_variable_declarations->count) _function_declaration = NULL;
 
-            for (int _ = 0; _ < _given_variable_declarations->count && _function_declaration; _++)
+            for (int _ = 0; _ < _given_variable_declarations->count && _function_declaration; _++) {
+
+                std::cout << "loop " << std::endl;
+                std::cout << _given_variable_declarations->operator[](_)->type << std::endl;
+                std::cout << _founded_variable_declarations->operator[](_)->type << std::endl;
 
                 if (
-                    _given_variable_declarations->operator[](_)->type->operator!=(
+                    _given_variable_declarations->operator[](_)->
+                    type->
+                    operator!=(
                         _founded_variable_declarations->operator[](_)->type
                     ) 
                 ) _function_declaration = NULL;
+
+            }
 
             delete _founded_variable_declarations;
 

@@ -4,6 +4,7 @@
 #include "tokenizer.h"
 #include "ast.h"
 
+#include "opcodes.h"
 #include "token_definitions.h"
 #include "tokenizer_helper.h"
 #include "built_ins_helper.h"
@@ -459,9 +460,23 @@ utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Variable_Declaration::g
 
         }
 
+        if (parser::ast_control->getToken(0)->id == FUNCTION_OPERATOR_EQUAL) {
+            
+            parser::ast_control->current_position++;
+
+            utils::Linked_List <Ast_Node*>* _nodes_equal = equal(_variable_declaration);
+
+            _nodes->join(
+                _nodes_equal
+            ); 
+
+            delete _nodes_equal;
+            
+            break;
+        }
+
         switch (parser::ast_control->getToken(0)->id)
         {
-        case FUNCTION_OPERATOR_EQUAL: exception_handle->runExceptionAstControl("Equal not done yet - Ast_Node_Variable_Declaration::generate()"); break;
         case COMMA: parser::ast_control->current_position++; _type_information = parser::Type_Information::generate(_type_information); break;
         case END_INSTRUCTION: break;
         default: exception_handle->runExceptionAstControl("Unexpected token - Ast_Node_Variable_Declaration::generate() switch"); break;
@@ -483,6 +498,45 @@ utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Variable_Declaration::g
 
     return _nodes;
 
+}
+
+utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Variable_Declaration::equal(Ast_Node_Variable_Declaration* __variable) {
+
+    parser::ast_control->print("Ast Node Variable Declaration -- Equal\n", AST_DEBUG_MODE_INC);
+
+    utils::Linked_List <Ast_Node*>* _nodes = new utils::Linked_List <Ast_Node*>(); _nodes->destroy_content = 0;
+
+    Ast_Node_Variable* _variable = (Ast_Node_Variable*) malloc(sizeof(Ast_Node_Variable));
+
+    new (_variable) Ast_Node_Variable(
+        __variable, __variable->declaration_id
+    );
+
+    _nodes->add(_variable);
+
+    Ast_Node* _value =  Ast_Node_Expression::getValue(getNodeType());
+
+    if (_value->representive_declaration->type->getSize() != __variable->representive_declaration->type->getSize())
+
+        exception_handle->runExceptionAstControl("Not same size");
+
+    _nodes->add(
+        _value
+    );
+
+    Ast_Node_Byte_Code* _byte_code = (Ast_Node_Byte_Code*) malloc(sizeof(Ast_Node_Byte_Code));
+
+    new (_byte_code) Ast_Node_Byte_Code(
+        BYTE_CODE_MEMORY_COPY,
+        _value->representive_declaration->type->getSize()
+    ); 
+
+    _nodes->add(_byte_code);
+
+    parser::ast_control->print("Ast Node Variable Declaration -- Equal\n", AST_DEBUG_MODE_DEC);
+
+    return _nodes;
+    
 }
 
 parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Variable_Declaration::getCopy() {
@@ -1148,7 +1202,7 @@ parser::Ast_Node* parser::Ast_Node_Expression::getValue(int __value_node_type) {
     {
     case AST_NODE_VARIABLE: return Ast_Node_Variable::generate(); break;
     case AST_NODE_VALUE: return Ast_Node_Value::generate(); break;
-    case AST_NODE_FUNCTION_CALL: return Ast_Node_Function_Call::generate(NULL, NULL); break;
+    case AST_NODE_FUNCTION_CALL: return Ast_Node_Function_Call::generate(0, 0); break;
     case AST_NODE_POINTER_OPERATION: return Ast_Node_Pointer_Operation::generate(); break;
     case AST_NODE_PARENTHESIS: return Ast_Node_Parenthesis::generate(); break;
     case AST_NODE_CAST: return Ast_Node_Cast::generate(); break;
@@ -1274,7 +1328,7 @@ parser::Ast_Node_Pointer_Operation* parser::Ast_Node_Pointer_Operation::generate
     case AST_NODE_VARIABLE: _value = Ast_Node_Variable::generate(); break;
     case AST_NODE_VALUE: _value = Ast_Node_Value::generate(); break;
     case AST_NODE_PARENTHESIS: _value = Ast_Node_Parenthesis::generate(); break;
-    case AST_NODE_FUNCTION_CALL: _value = Ast_Node_Function_Call::generate(NULL, NULL); break;
+    case AST_NODE_FUNCTION_CALL: _value = Ast_Node_Function_Call::generate(0, 0); break;
     default: exception_handle->runExceptionAstControl("Error getting Pointer operator value - Ast_Node_Pointer_Operation::Ast_Node_Pointer_Operation() switch"); break;
     }
 
@@ -1336,42 +1390,36 @@ parser::Ast_Node_Function_Call::~Ast_Node_Function_Call() { delete parameters; }
 parser::Ast_Node_Function_Call::Ast_Node_Function_Call(utils::Linked_List <Ast_Node_Expression*>* __parameters, Ast_Node_Function_Declaration* __function_declaration)
     : Ast_Node(__function_declaration->representive_declaration, AST_NODE_FUNCTION_CALL), parameters(__parameters), function_declaration(__function_declaration) {}
 
-parser::Ast_Node_Function_Call* parser::Ast_Node_Function_Call::generate(Ast_Node_Expression* __expression, Name_Space* __function_call_name_space) {
+parser::Ast_Node_Function_Call* parser::Ast_Node_Function_Call::generate(Ast_Node_Expression* __expression, Name_Space* __function_name_space) {
 
     parser::ast_control->print("Ast Node Function Call\n", AST_DEBUG_MODE_INC);
 
-    Name_Space* _name_space = NULL; 
+    Name_Space* _name_space = getNameSpace();
 
-    Ast_Node_Code_Block* _parameters_node_code_block = parser::ast_control->code_block_chain->last->object;
-    
-    if (!__function_call_name_space) _name_space = getNameSpace();
-    else _name_space = __function_call_name_space;
+    if (parser::ast_control->getToken(0)->id != IDENTIFIER)
+        exception_handle->runExceptionAstControl("Expected token identifier - Ast_Node_Function_Call::generate()");
 
-    if (_name_space) parser::ast_control->addToChain(_name_space, NULL);
-
-    if (parser::ast_control->getToken(0)->id != IDENTIFIER) exception_handle->runExceptionAstControl("Expected token identifier - Ast_Node_Function_Call::generate()");
-
-    int _declaration_id = getDeclarationId(parser::ast_control->getToken(0)->identifier);
+    char* _function_name = parser::ast_control->getToken(0)->identifier;
     parser::ast_control->current_position++;
 
-    if (_parameters_node_code_block) 
-
-        parser::ast_control->addToChain(
-            NULL,
-            _parameters_node_code_block
-        );
-    
     utils::Linked_List <Ast_Node_Expression*>* _parameters = getParameters(__expression);
 
-    if (_parameters_node_code_block) parser::ast_control->popFromChain();
-        
     utils::Linked_List <Ast_Node*>* _parameters_results = getResultParameters(_parameters);
+
+    if (__function_name_space) parser::ast_control->addToChain(__function_name_space, NULL);
+    else if (_name_space) parser::ast_control->addToChain(_name_space, NULL);
+
+    int _declaration_id = getDeclarationId(_function_name);
+
+    if (__expression) _parameters_results->first->object->representive_declaration->type->pointer_level++; 
 
     Ast_Node_Function_Declaration* _function_declaration = getFunctionDeclaration(_declaration_id, _parameters_results);
 
     if (_declaration_id == -1 || !_function_declaration)
      
         exception_handle->runExceptionAstControl("No declaration of function with given name and parameters");
+    
+    if (__expression) _parameters_results->first->object->representive_declaration->type->pointer_level--; 
 
     parser::Ast_Node_Function_Call* _node_function_call = (Ast_Node_Function_Call*) malloc(sizeof(Ast_Node_Function_Call));
 
@@ -1379,7 +1427,7 @@ parser::Ast_Node_Function_Call* parser::Ast_Node_Function_Call::generate(Ast_Nod
         _parameters, _function_declaration
     );
 
-    if (_name_space) parser::ast_control->popFromChain();
+    if (_name_space || __function_name_space) parser::ast_control->popFromChain();
 
     delete _parameters_results;
 
@@ -1390,6 +1438,8 @@ parser::Ast_Node_Function_Call* parser::Ast_Node_Function_Call::generate(Ast_Nod
 }
 
 utils::Linked_List <parser::Ast_Node_Expression*>* parser::Ast_Node_Function_Call::getParameters(Ast_Node_Expression* __expression) {
+
+    parser::ast_control->print("Ast Node Function Call Parameters\n", AST_DEBUG_MODE_INC);
 
     utils::Linked_List <parser::Ast_Node_Expression*>* _parameters = new utils::Linked_List <parser::Ast_Node_Expression*>();
 
@@ -1416,18 +1466,20 @@ utils::Linked_List <parser::Ast_Node_Expression*>* parser::Ast_Node_Function_Cal
 
     parser::ast_control->current_position++;
 
+    parser::ast_control->print("Ast Node Function Call Parameters End\n", AST_DEBUG_MODE_INC);
+
     return _parameters;
 
 }
 
 utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Function_Call::getResultParameters(utils::Linked_List <Ast_Node_Expression*>* __parameters) {
 
-    utils::Linked_List <parser::Ast_Node*>* _result_parameters = new utils::Linked_List <parser::Ast_Node*>(); _result_parameters->destroy_content = 0;
+    utils::Linked_List <parser::Ast_Node*>* _result_parameters = new utils::Linked_List <parser::Ast_Node*>();
 
     for (int _ = 0; _ < __parameters->count; _++)
 
         _result_parameters->add(
-            __parameters->operator[](_)->getResultDeclaration()
+            __parameters->operator[](_)->getResultDeclaration()->getCopy()
         );
 
     return _result_parameters;
@@ -1482,7 +1534,7 @@ parser::Ast_Node_Accessing* parser::Ast_Node_Accessing::generate(Ast_Node* __val
 
         _value_before_accessing = __value;
 
-        if (!_value_pointer_level) {
+        if (_value_pointer_level) {
 
             Ast_Node_Variable_Declaration* _node_variable_declaration = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
 
@@ -1490,12 +1542,12 @@ parser::Ast_Node_Accessing* parser::Ast_Node_Accessing::generate(Ast_Node* __val
                 _value_before_accessing->representive_declaration->type->getCopy(),
                 -1, 0
             );
-            _node_variable_declaration->type->pointer_level++;
+            _node_variable_declaration->type->pointer_level--;
 
             Ast_Node_Pointer_Operation* _node_pointer_operation = (Ast_Node_Pointer_Operation*) malloc(sizeof(Ast_Node_Pointer_Operation));
 
             new (_node_pointer_operation) Ast_Node_Pointer_Operation(
-                _node_variable_declaration, 1, _value_before_accessing
+                _node_variable_declaration, -1, _value_before_accessing
             );
             _node_pointer_operation->destroy_value = 0;
 
@@ -1509,13 +1561,11 @@ parser::Ast_Node_Accessing* parser::Ast_Node_Accessing::generate(Ast_Node* __val
             NULL, _value_before_accessing, -1
         );
 
-        _expression->destroy_value = 0;
-
-        if (_value_pointer_level) _expression->destroy_value = 0;
+        if (!_value_pointer_level) _expression->destroy_value = 0;
 
         _accessing = Ast_Node_Function_Call::generate(
-            _expression, 
-            parser::ast_control->name_space_control->getNameSpace(_value_before_accessing->representive_declaration->type->declaration->functions)
+            _expression,
+            parser::ast_control->name_space_control->getNameSpace(__value->representive_declaration->type->declaration->functions)    
         );
 
         break;

@@ -39,11 +39,13 @@ parser::Type_Information::Type_Information(parser::Ast_Node_Struct_Declaration* 
 
 bool parser::Type_Information::operator==(Type_Information* __to_comp) {
 
-    // std::cout << "Comp" << std::endl;
-    // std::cout << (declaration == __to_comp->declaration) << std::endl;
-    // std::cout << (pointer_level == __to_comp->pointer_level) << std::endl;
-    // std::cout << (reference_level == __to_comp->reference_level) << std::endl;
-    // std::cout << "Comp" << std::endl;
+    std::cout << "Comp" << std::endl;
+    std::cout << (declaration == __to_comp->declaration) << std::endl;
+    std::cout << (pointer_level == __to_comp->pointer_level) << std::endl;
+    std::cout << (reference_level == __to_comp->reference_level) << std::endl;
+    std::cout << "Self Pointer level ->" << pointer_level << std::endl;
+    std::cout << "Given Pointer level ->" << __to_comp->pointer_level << std::endl;
+    std::cout << "Comp" << std::endl;
 
     return (
         declaration == __to_comp->declaration &&

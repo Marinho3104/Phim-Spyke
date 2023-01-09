@@ -615,6 +615,8 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeAccessing(A
                 __node_accessing->accessing->representive_declaration->address = __node_accessing->value->representive_declaration->address + 
                         __node_accessing->value->representive_declaration->type->declaration->getVariablesOff((Ast_Node_Variable*)__node_accessing->accessing);
 
+                if (__node_accessing->next) break;
+
                 byte_code::Byte_Code* _load_byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
                 new (_load_byte_code) byte_code::Byte_Code(
@@ -631,6 +633,8 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeAccessing(A
         case AST_NODE_FUNCTION_CALL:
 
             {
+
+                if (__node_accessing->next) break;
 
                 _temp = getByteCodeOfNode(
                     __node_accessing->accessing
@@ -655,6 +659,8 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeAccessing(A
     }
 
     //exit(1);
+
+    parser::convertor_control->print("Node Accessing End - Byte Code");
 
     return _byte_code;
 

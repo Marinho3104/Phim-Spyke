@@ -79,6 +79,8 @@ namespace parser {
 
         static utils::Linked_List <Ast_Node*>* generate();
 
+        static utils::Linked_List <Ast_Node*>* equal(Ast_Node_Variable_Declaration*);
+
         Ast_Node_Variable_Declaration* getCopy();
 
     };

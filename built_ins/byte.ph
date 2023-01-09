@@ -31,11 +31,7 @@ namespace built_ins {
 
         int j;
 
-        ::built_ins::Test_Struct* hey;
-
-        void test_func() {
-
-        }
+        static ::built_ins::Test_Struct* hey;
 
     };
 
@@ -81,27 +77,10 @@ namespace test {
 
     int test_func() {
 
-        ::built_ins::Test_Struct p, pp, ppp;
+        ::built_ins::Test_Struct _test_struct;
 
-        //int p;
-
-        //p = 1000;
-
-        //(int) p += 100;
-
-        //::built_ins::Int::equal(&p, 150);
-
-        //::built_ins::Int::add_assign(&p, 167);
+        _test_struct.hey;
         
-        //p + 10;
-
-        //p;
-
-        // p.equal(1010);
-
-        p.hey->hey->hey;
-
-        p;
 
     }
 

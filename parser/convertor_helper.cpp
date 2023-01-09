@@ -262,6 +262,8 @@ void parser::getByteCodeOfNodeFunctionDeclaration(Ast_Node_Function_Declaration*
             _temp
         );
 
+        delete _temp;
+
         _previous_stack = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
         new (_previous_stack) byte_code::Byte_Code(
@@ -589,26 +591,70 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeAccessing(A
 
     parser::convertor_control->print("Node Accessing - Byte Code");
 
-    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>();
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>(), *_temp;
+    _byte_code->destroy_content = 0;
 
-    switch (__node_accessing->accessing->node_type)
-    {
-    case AST_NODE_VARIABLE:
-        
-        std::cout << "Off -> " << __node_accessing->value->representive_declaration->type->declaration->getVariablesOff((Ast_Node_Variable*)__node_accessing->accessing) << std::endl;
-        break;
+    // _temp = getByteCodeOfNode(
+    //     __node_accessing->value
+    // );
 
-    case AST_NODE_FUNCTION_CALL:
+    // _byte_code->join(
+    //     _temp
+    // );
+
+    // delete _temp;
+
+    while(__node_accessing) {
+
+        switch (__node_accessing->accessing->node_type)
+        {
+        case AST_NODE_VARIABLE:
+
+            {
+
+                __node_accessing->accessing->representive_declaration->address = __node_accessing->value->representive_declaration->address + 
+                        __node_accessing->value->representive_declaration->type->declaration->getVariablesOff((Ast_Node_Variable*)__node_accessing->accessing);
+
+                byte_code::Byte_Code* _load_byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+                new (_load_byte_code) byte_code::Byte_Code(
+                    BYTE_CODE_LOAD,
+                    __node_accessing->accessing->representive_declaration->address
+                );
+
+                _byte_code->add(
+                    _load_byte_code
+                );
+
+            }
+            break;
+        case AST_NODE_FUNCTION_CALL:
+
+            {
+
+                _temp = getByteCodeOfNode(
+                    __node_accessing->accessing
+                );
+
+                _byte_code->join(
+                    _temp
+                );
+
+                delete _temp;
+
+                break;
+
+            }
 
 
+        default: break;
+        }
 
-        break;
-    
-    default:
-        break;
+        __node_accessing = __node_accessing->next;
+
     }
 
-    exit(1);
+    //exit(1);
 
     return _byte_code;
 

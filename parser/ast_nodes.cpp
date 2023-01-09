@@ -588,6 +588,8 @@ parser::Ast_Node_Function_Declaration* parser::Ast_Node_Function_Declaration::ge
 
         _parameters->insert(_this_variable, 0);
 
+        _parameters->getDataLinkedList(0)->destroy_content = 0;
+
         _previous_function_declaration = 
             getCurrentDeclarationTracker()->getFunctionDeclaration(_declaration_id, _parameters);
 
@@ -595,9 +597,8 @@ parser::Ast_Node_Function_Declaration* parser::Ast_Node_Function_Declaration::ge
 
             exception_handle->runExceptionAstControl("Redefenition of function - Ast_Node_Function_Declaration::generate()");
     
-        std::cout << "Previous function ->                          " << _previous_function_declaration << std::endl;
 
-        _parameters->remove(0);
+        delete _parameters->remove(0);
 
     }
 
@@ -1507,6 +1508,8 @@ parser::Ast_Node_Accessing* parser::Ast_Node_Accessing::generate(Ast_Node* __val
         new (_expression) Ast_Node_Expression(
             NULL, _value_before_accessing, -1
         );
+
+        _expression->destroy_value = 0;
 
         if (_value_pointer_level) _expression->destroy_value = 0;
 

@@ -31,7 +31,7 @@ namespace built_ins {
 
         int j;
 
-        static ::built_ins::Test_Struct* hey;
+        // static int _static;
 
     };
 
@@ -70,6 +70,8 @@ void built_ins::Int::add_assign(int __value) {
 
 }
 
+int jk;
+
 namespace test {
 
     //::built_ins::Test_Struct _test_;
@@ -78,9 +80,23 @@ namespace test {
     int test_func() {
 
         ::built_ins::Test_Struct _test_struct;
+        ::built_ins::Test_Struct _test_struct_;
 
-        _test_struct.hey;
+        jk = 1000;
+
+        _test_struct.j = 12345;
         
+
+        _test_struct_.j = 123;
+        //_test_struct_._static = 500;
+
+        _test_struct.j;
+        //_test_struct._static;
+
+        _test_struct_.j;
+        //_test_struct_._static;
+
+        jk;
 
     }
 

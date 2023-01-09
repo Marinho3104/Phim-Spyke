@@ -21,13 +21,15 @@ char* utils::getFileContent(char* __path) {
 
 char** utils::splitString(char* __str, char __token) {
 
+    std::cout << "Size of pointer -> " << sizeof(char*) << std::endl;
+
     int _appearence = tokenAppearences(__str, __token);
 
-    char** _splitted_tokens = (char**) malloc(8 * (_appearence + 1)), **_return = _splitted_tokens;
+    char** _splitted_tokens = (char**) malloc(sizeof(char*) * (_appearence + 1)), **_return = _splitted_tokens;
     char* _splitted_string;
     int _string_length;
 
-    _splitted_tokens[8 * _appearence] = 0;
+    _splitted_tokens[_appearence] = 0;
 
     while(*__str) {
 

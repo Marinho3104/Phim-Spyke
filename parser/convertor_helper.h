@@ -15,7 +15,7 @@ namespace parser {
     
     void getByteCodeOfNodeFunctionDeclaration(Ast_Node_Function_Declaration*);
 
-    void getByteCodeOfNodeStructDeclaration(Ast_Node_Struct_Declaration*);
+    utils::Linked_List <byte_code::Byte_Code*>* getByteCodeOfNodeStructDeclaration(Ast_Node_Struct_Declaration*);
 
     utils::Linked_List <byte_code::Byte_Code*>* getByteCodeOfNodeExpression(Ast_Node_Expression*);
     

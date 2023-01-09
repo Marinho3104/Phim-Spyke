@@ -1012,6 +1012,20 @@ int parser::Ast_Node_Struct_Declaration::getVariablesOff(Ast_Node_Variable* __va
 
 }
 
+bool parser::Ast_Node_Struct_Declaration::isStaticVariableDeclaration(Ast_Node_Variable_Declaration* __variable_declaration) {
+
+    for (int _ = 0; _ < functions->declarations->count; _++)
+
+        if (
+            functions->declarations->operator[](_)->node_type == AST_NODE_VARIABLE_DECLARATION &&
+            functions->declarations->operator[](_) == __variable_declaration
+        ) return 1;
+
+    return 0;
+
+}
+
+
 
 
 
@@ -1078,7 +1092,10 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
                 );
 
                 _function_name = built_ins::getFunctionNameFromTokenId(_token_id);
+
+                std::cout << "Function name -> " << _function_name << std::endl;
                 _declaration_id = getDeclarationId(_function_name);
+                std::cout << "Declaration -> " << _declaration_id << std::endl;
                 free(_function_name);
 
                 _first_argument->type->pointer_level++;
@@ -1089,6 +1106,9 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
                 _function_declaration = getFunctionDeclaration(_declaration_id, _parameters);
 
                 _parameters->clean();
+
+                std::cout << "Function -> " << _function_declaration << std::endl;
+                std::cout << "Declaration -> " << _declaration_id << std::endl;
 
                 if (!_function_declaration || _declaration_id == -1) 
 
@@ -1580,11 +1600,24 @@ parser::Ast_Node_Accessing* parser::Ast_Node_Accessing::generate(Ast_Node* __val
         isAccessingOperator(parser::ast_control->getToken(0)->id) ? Ast_Node_Accessing::generate(_accessing) : NULL
     );
 
+    _node_accessing->setRepresensentiveValue();
+
     parser::ast_control->print("Ast Node Accessing End\n", AST_DEBUG_MODE_DEC);
 
     return _node_accessing;
 
 }
+
+void parser::Ast_Node_Accessing::setRepresensentiveValue() {
+
+    Ast_Node_Accessing* _current_acessing = this;
+
+    while(_current_acessing->next) _current_acessing = _current_acessing->next;
+
+    representive_declaration = _current_acessing->accessing->representive_declaration;
+
+}
+
 
 
 parser::Ast_Node_Byte_Code::~Ast_Node_Byte_Code() {

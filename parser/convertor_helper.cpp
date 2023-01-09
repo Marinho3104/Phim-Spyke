@@ -54,14 +54,7 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
 
         goto return_; break;
         
-    case AST_NODE_STRUCT_DECLARATION:
-
-        getByteCodeOfNodeStructDeclaration(
-            (Ast_Node_Struct_Declaration*) __node
-        );
-
-        goto return_; break;
-    
+   
     case AST_NODE_VARIABLE:
 
         _byte_code->add(
@@ -116,6 +109,13 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
         );
         
         break;
+    case AST_NODE_STRUCT_DECLARATION:
+
+        _byte_code = getByteCodeOfNodeStructDeclaration(
+            (Ast_Node_Struct_Declaration*) __node
+        );
+
+        goto return_; break;
     case AST_NODE_POINTER_OPERATION:
 
         _byte_code = getByteCodeOfNodePointerOperation(
@@ -314,17 +314,29 @@ void parser::getByteCodeOfNodeFunctionDeclaration(Ast_Node_Function_Declaration*
 
 }
 
-void parser::getByteCodeOfNodeStructDeclaration(Ast_Node_Struct_Declaration* __node_struct_declaration) {
+utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeStructDeclaration(Ast_Node_Struct_Declaration* __node_struct_declaration) {
 
     parser::convertor_control->print("Node Struct Declaration - Byte Code");
 
-    for (int _ = 0; _ < __node_struct_declaration->functions->declarations->count; _++)
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>();
+    _byte_code->destroy_content = 0;
 
-        getByteCodeOfNodeFunctionDeclaration(
-            (Ast_Node_Function_Declaration*) __node_struct_declaration->functions->declarations->operator[](_)
-        );
+    for (int _ = 0; _ < __node_struct_declaration->functions->declarations->count; _++) 
+
+        if (__node_struct_declaration->functions->declarations->operator[](_)->node_type == AST_NODE_VARIABLE_DECLARATION)
+
+            _byte_code->add(getByteCodeOfNodeVariableDeclaration(
+                (Ast_Node_Variable_Declaration*) __node_struct_declaration->functions->declarations->operator[](_)
+            ));
+
+        else 
+            getByteCodeOfNodeFunctionDeclaration(
+                (Ast_Node_Function_Declaration*) __node_struct_declaration->functions->declarations->operator[](_)
+            );
 
     parser::convertor_control->print("Node Struct Declaration End - Byte Code");
+
+    return _byte_code;
 
 }
 
@@ -612,21 +624,43 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeAccessing(A
 
             {
 
-                __node_accessing->accessing->representive_declaration->address = __node_accessing->value->representive_declaration->address + 
-                        __node_accessing->value->representive_declaration->type->declaration->getVariablesOff((Ast_Node_Variable*)__node_accessing->accessing);
+                if (__node_accessing->value->representive_declaration->type->declaration->isStaticVariableDeclaration(
+                    __node_accessing->accessing->representive_declaration
+                )) {
+                    std::cout << "Static Variable " << std::endl;
 
-                if (__node_accessing->next) break;
+                    byte_code::Byte_Code* _load_byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
-                byte_code::Byte_Code* _load_byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+                    new (_load_byte_code) byte_code::Byte_Code(
+                        BYTE_CODE_LOAD_GLOBAL,
+                        __node_accessing->accessing->representive_declaration->address
+                    );
 
-                new (_load_byte_code) byte_code::Byte_Code(
-                    BYTE_CODE_LOAD,
-                    __node_accessing->accessing->representive_declaration->address
-                );
+                    _byte_code->add(
+                        _load_byte_code
+                    );
 
-                _byte_code->add(
-                    _load_byte_code
-                );
+                }
+
+                else {
+
+                    __node_accessing->accessing->representive_declaration->address = __node_accessing->value->representive_declaration->address + 
+                            __node_accessing->value->representive_declaration->type->declaration->getVariablesOff((Ast_Node_Variable*)__node_accessing->accessing);
+
+                    if (__node_accessing->next) break;
+
+                    byte_code::Byte_Code* _load_byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+                    new (_load_byte_code) byte_code::Byte_Code(
+                        BYTE_CODE_LOAD,
+                        __node_accessing->accessing->representive_declaration->address
+                    );
+
+                    _byte_code->add(
+                        _load_byte_code
+                    );
+
+                }
 
             }
             break;

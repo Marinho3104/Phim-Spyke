@@ -125,6 +125,8 @@ namespace parser {
 
         int getVariablesOff(Ast_Node_Variable*);
 
+        bool isStaticVariableDeclaration(Ast_Node_Variable_Declaration*);
+
     };
 
     struct Ast_Node_Expression : Ast_Node {
@@ -211,6 +213,8 @@ namespace parser {
         ~Ast_Node_Accessing(); Ast_Node_Accessing(Ast_Node*, Ast_Node*, Ast_Node_Accessing*);
 
         static Ast_Node_Accessing* generate(Ast_Node*);
+
+        void setRepresensentiveValue();
 
     };
 

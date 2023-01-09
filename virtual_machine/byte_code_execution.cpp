@@ -75,9 +75,13 @@ void virtual_machine::execute_BYTE_CODE_LOAD(int __arg, Execution* __execution) 
 void virtual_machine::execute_BYTE_CODE_LOAD_GLOBAL(int __arg, Execution* __execution) {
 
     std::cout << "LOAD_GLOBAL" << std::endl;
+    std::cout << "arg -> " << __arg << std::endl;
+    std::cout << "Loaded value address -> " << __execution->stacks->last->object->inicial_position + __arg << std::endl;
+    std::cout << "Loaded value -> " << 
+        *((int*)__execution->program->memory->getRealAddress(__execution->stacks->first->object->inicial_position + __arg)) << std::endl;
 
     __execution->stacks->last->object->addToStack(
-        __arg
+        __execution->stacks->first->object->inicial_position + __arg
     );
 
     __execution->stacks->last->object->stack->printContent();

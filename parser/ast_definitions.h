@@ -16,6 +16,10 @@
 #define AST_NODE_BYTE_CODE 13
 #define AST_NODE_RETURN 14
 #define AST_NODE_CAST 15
+#define AST_NODE_IF 16
+#define AST_NODE_ELSE_IF 17
+#define AST_NODE_ELSE 18
+#define AST_NODE_SIZE_OF 19
 
 
 

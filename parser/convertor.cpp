@@ -41,7 +41,9 @@ void parser::Convertor_Control::generate() {
 void parser::Convertor_Control::setBlock(utils::Linked_List<Ast_Node*>* __declarations, byte_code::Byte_Code_Block* __block) {
 
     byte_code::Byte_Code_Block* _byte_code_block = 
-        __block ? __block : byte_code_blocks->last->object;
+        __block ? __block : block_in_set;
+
+    byte_code::Byte_Code_Block* _previous_byte_code_block = block_in_set;
 
     block_in_set = _byte_code_block;
 
@@ -62,16 +64,24 @@ void parser::Convertor_Control::setBlock(utils::Linked_List<Ast_Node*>* __declar
 
     }
 
+    block_in_set = _previous_byte_code_block;
+
+    std::cout << "\n\n----------------- End New Block ----------------\n\n" << std::endl;
+
 }
 
 int parser::Convertor_Control::allocBlock() {
 
+    std::cout << "\n\n----------------- New Block ----------------\n\n" << std::endl;
+
     byte_code::Byte_Code_Block* _byte_code_block = (byte_code::Byte_Code_Block*) malloc(sizeof(byte_code::Byte_Code_Block));
-    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>(), *_temp;
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>();
 
     new (_byte_code_block) byte_code::Byte_Code_Block(
         _byte_code
     );
+
+    block_in_set = _byte_code_block;
 
     return byte_code_blocks->add(
         _byte_code_block

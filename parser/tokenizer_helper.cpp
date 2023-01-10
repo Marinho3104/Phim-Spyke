@@ -100,6 +100,7 @@ int parser::getTokenKeyWord(const char*& __current_position) {
     if (!strncmp(__current_position, "byte", 4)) { __current_position += 4; return PRIMITIVE_TYPE_BYTE; }
     if (!strncmp(__current_position, "int", 3)) { __current_position += 3; return PRIMITIVE_TYPE_INT; }
     if (!strncmp(__current_position, "bool", 4)) { __current_position += 4; return PRIMITIVE_TYPE_BOOL; }
+    if (!strncmp(__current_position, "pointer", 7)) { __current_position += 7; return PRIMITIVE_TYPE_POINTER; }
     
     if (!strncmp(__current_position, "namespace", 9)) { __current_position += 9; return NAMESPACE; }
     if (!strncmp(__current_position, "struct", 6)) { __current_position += 6; return STRUCT; }
@@ -107,6 +108,11 @@ int parser::getTokenKeyWord(const char*& __current_position) {
     if (!strncmp(__current_position, "static", 6)) { __current_position += 6; return STATIC; }
     if (!strncmp(__current_position, "exec", 4)) { __current_position += 4; return BYTE_CODE; }
     if (!strncmp(__current_position, "return", 6)) { __current_position += 6; return RETURN; }
+
+    if (!strncmp(__current_position, "if", 2)) { __current_position += 2; return IF; }
+    if (!strncmp(__current_position, "else if", 7)) { __current_position += 7; return ELSE_IF; }
+    if (!strncmp(__current_position, "else", 4)) { __current_position += 4; return ELSE; }
+    if (!strncmp(__current_position, "sizeof", 6)) { __current_position += 6; return SIZE_OF; }
 
     return 0;
 
@@ -183,7 +189,7 @@ int parser::getImplicitValueTypeOrIdentifier(char* __data) {
 }
 
 
-bool parser::isPrimitive(int __token_id) { return __token_id >= PRIMITIVE_TYPE_VOID && __token_id <= PRIMITIVE_TYPE_BOOL; }
+bool parser::isPrimitive(int __token_id) { return __token_id >= PRIMITIVE_TYPE_VOID && __token_id <= PRIMITIVE_TYPE_BOOL || __token_id == PRIMITIVE_TYPE_POINTER; }
 
 bool parser::isImplicitValueOrIdentifier(int __token_id) { return __token_id >= IDENTIFIER && __token_id <= IMPLICIT_VALUE_STRING; }
 

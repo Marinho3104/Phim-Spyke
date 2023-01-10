@@ -40,6 +40,8 @@ parser::Type_Information::Type_Information(parser::Ast_Node_Struct_Declaration* 
 bool parser::Type_Information::operator==(Type_Information* __to_comp) {
 
     std::cout << "Comp" << std::endl;
+    std::cout << "Main -> ";
+    std::cout << (!strncmp(__to_comp->declaration->struct_name, "Pointer", 7) && pointer_level) << std::endl;
     std::cout << (declaration == __to_comp->declaration) << std::endl;
     std::cout << (pointer_level == __to_comp->pointer_level) << std::endl;
     std::cout << (reference_level == __to_comp->reference_level) << std::endl;
@@ -47,7 +49,15 @@ bool parser::Type_Information::operator==(Type_Information* __to_comp) {
     std::cout << "Given Pointer level ->" << __to_comp->pointer_level << std::endl;
     std::cout << "Comp" << std::endl;
 
-    return (
+    if (!strncmp(__to_comp->declaration->struct_name, "Pointer", 7) && pointer_level) {
+
+        __to_comp->declaration = declaration;
+        __to_comp->pointer_level = pointer_level;
+        __to_comp->reference_level = reference_level;
+
+    }
+
+    return (!strncmp(__to_comp->declaration->struct_name, "Pointer", 7) && pointer_level) || (
         declaration == __to_comp->declaration &&
         pointer_level == __to_comp->pointer_level &&
         reference_level == __to_comp->reference_level
@@ -197,6 +207,46 @@ parser::Type_Information* parser::Type_Information::generate() {
 
 }
 
+parser::Type_Information* parser::Type_Information::generatePrimitiveType(int __primitive_type_token) {
+
+    utils::Linked_List <char*>* _built_ins_scope = new utils::Linked_List <char*>(); _built_ins_scope->destroy_content = 0;
+
+    _built_ins_scope->add(
+        (char*) "built_ins"
+    );
+
+    Name_Space* _name_space = parser::ast_control->name_space_control->getNameSpace(_built_ins_scope);
+
+    if (!_name_space) exception_handle->runException("built_ins node not defined");
+
+    delete _built_ins_scope;
+
+    parser::ast_control->addToChain(_name_space, NULL);
+
+    char* _struct_name = built_ins::getStructNameOfTokenId(__primitive_type_token);
+
+    int _declaration_id = getCurrentDeclarationTracker()->getDeclarationId(_struct_name);
+
+    Ast_Node_Struct_Declaration* _declaration = getCurrentDeclarationTracker()->getStructDeclaration(_declaration_id);
+
+    if (_declaration_id == -1 || !_declaration) {
+
+        exception_handle->runExceptionAstControl("Undefined type");
+
+    }
+    
+    parser::Type_Information* _type_information = new parser::Type_Information(
+        _declaration, NULL
+    );
+    
+    free(_struct_name);
+
+    if (_name_space) parser::ast_control->popFromChain();
+
+    return _type_information;
+
+}
+
 parser::Type_Information* parser::Type_Information::getCopy() {
 
     parser::Type_Information* _copy = new parser::Type_Information(declaration, NULL);
@@ -207,6 +257,8 @@ parser::Type_Information* parser::Type_Information::getCopy() {
     return _copy;
 
 }
+
+bool parser::Type_Information::isPointerStruct() { return !strncmp(declaration->struct_name, PRIMITIVE_TYPE_POINTER_NAME, strlen(PRIMITIVE_TYPE_POINTER_NAME)); }
 
 int parser::Type_Information::getSize() {
 
@@ -234,8 +286,10 @@ int parser::getNodeType() {
     case CLOSE_BRACES: return -1; break;
     case END_INSTRUCTION: return -2; break;
     case CLOSE_PARENTHESIS: return -3; break;
+    case OPEN_BRACES: return AST_NODE_CODE_BLOCK; break;
     case COMMA: return -4; break;
     case BYTE_CODE: return AST_NODE_BYTE_CODE; break;
+    case SIZE_OF: return AST_NODE_SIZE_OF; break;
     case RETURN: return AST_NODE_RETURN; break;
     case NAMESPACE: return AST_NODE_NAME_SPACE; break;
     case STRUCT: return AST_NODE_STRUCT_DECLARATION; break;
@@ -254,6 +308,9 @@ int parser::getNodeType() {
 
     case POINTER: case ADDRESS: return AST_NODE_POINTER_OPERATION; break;
     case ACCESSING: case ACCESSING_POINTER: return  AST_NODE_ACCESSING; break;
+    case IF: return AST_NODE_IF; break;
+    case ELSE_IF: return AST_NODE_ELSE_IF; break;
+    case ELSE: return AST_NODE_ELSE; break;
     default: break;
     }
 

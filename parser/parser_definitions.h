@@ -32,8 +32,11 @@ namespace parser {
 
     // Ast Nodes
     struct Ast_Node;
+    struct Ast_Node_If;
+    struct Ast_Node_Else;
     struct Ast_Node_Value;
     struct Ast_Node_Return;
+    struct Ast_Node_Else_If;
     struct Ast_Node_Variable;
     struct Ast_Node_Accessing;
     struct Ast_Node_Byte_Code;
@@ -42,6 +45,7 @@ namespace parser {
     struct Ast_Node_Expression;
     struct Ast_Node_Parenthesis;
     struct Ast_Node_Function_Call;
+    struct Ast_Node_Function_Size_Of;
     struct Ast_Node_Pointer_Operation;
     struct Ast_Node_Variable_Declaration;
     struct Ast_Node_Function_Declaration;

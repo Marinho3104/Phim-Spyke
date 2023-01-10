@@ -15,23 +15,6 @@
 #include "byte_code_store.h"
 #include "program.h"
 
-struct ola {
-
-    static void test(ola*);
-    
-    void test();
-
-};
-
-void ola::test(ola*) {
-
-}
-    
-void ola::test() {
-    
-}
-
-
 int main() {
 
     char* _contract_data = utils::getFileContent((char*) "./test/my_contract.ph");

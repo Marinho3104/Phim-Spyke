@@ -35,7 +35,26 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
     
         goto return_; break;
     
-    case AST_NODE_CODE_BLOCK: goto return_; break;
+    case AST_NODE_CODE_BLOCK: 
+        {
+            ((Ast_Node_Code_Block*) __node)->body_position = parser::convertor_control->allocBlock();
+            
+            parser::convertor_control->setBlock(
+                ((Ast_Node_Code_Block*) __node)->code,
+                convertor_control->byte_code_blocks->last->object
+            );
+
+            byte_code::Byte_Code* _call_function = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+            new (_call_function) byte_code::Byte_Code(
+                BYTE_CODE_CALL_SUB,
+                ((Ast_Node_Code_Block*) __node)->body_position
+            );
+
+            _byte_code->add(_call_function);
+        
+            goto return_; break;
+        }
     case AST_NODE_VARIABLE_DECLARATION: 
         
         _byte_code->add(
@@ -82,6 +101,14 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
         _byte_code->add(
             getByteCodeOfNodeByteCode(
                 (Ast_Node_Byte_Code*) __node
+            )
+        );
+        goto return_; break;
+    case AST_NODE_SIZE_OF:
+
+        _byte_code->add(
+            getByteCodeOfNodeFunctionSizeOf(
+                (Ast_Node_Function_Size_Of*) __node
             )
         );
         goto return_; break;
@@ -151,7 +178,13 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
         );
 
         break;
+    case AST_NODE_IF:
 
+        _byte_code = getByteCodeOfNodeIf(
+            (Ast_Node_If*) __node
+        );
+
+        break;
     default: std::cout << "erorr yey" << std::endl; exit(1); break;
     }
 
@@ -163,6 +196,7 @@ return_:
 byte_code::Byte_Code* parser::getByteCodeOfNodeVariableDeclaration(Ast_Node_Variable_Declaration* __node_variable_declaration) {
 
     parser::convertor_control->print("Node Variable Declaration - Byte Code");
+    std::cout << convertor_control->block_in_set->current_allocation_size << std::endl;
 
     byte_code::Byte_Code* _byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
@@ -185,11 +219,21 @@ void parser::getByteCodeOfNodeFunctionDeclaration(Ast_Node_Function_Declaration*
 
     parser::convertor_control->print("Node Function Declaration - Byte Code");
 
+    byte_code::Byte_Code_Block* _previous_byte_code_block = convertor_control->block_in_set;
+
     if (!__node_function_declaration->forward) 
         __node_function_declaration->body_position = parser::convertor_control->allocBlock();
-    else { __node_function_declaration->body_position = __node_function_declaration->forward->body_position;}
+    else { __node_function_declaration->body_position = __node_function_declaration->forward->body_position; }
 
-    if (!__node_function_declaration->body) return;
+    if (!__node_function_declaration->body) {
+
+        convertor_control->block_in_set = _previous_byte_code_block;
+        
+        return;
+        
+    }
+
+    std::cout << "Function body -> " << __node_function_declaration->body_position << std::endl;
 
     byte_code::Byte_Code_Block* _byte_code_block = parser::convertor_control->byte_code_blocks->operator[](__node_function_declaration->body_position);
     byte_code::Byte_Code* _previous_stack, *_copy_memory;
@@ -312,6 +356,8 @@ void parser::getByteCodeOfNodeFunctionDeclaration(Ast_Node_Function_Declaration*
         _byte_code_block
     );
 
+    convertor_control->block_in_set = _previous_byte_code_block;
+
 }
 
 utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeStructDeclaration(Ast_Node_Struct_Declaration* __node_struct_declaration) {
@@ -323,11 +369,17 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeStructDecla
 
     for (int _ = 0; _ < __node_struct_declaration->functions->declarations->count; _++) 
 
-        if (__node_struct_declaration->functions->declarations->operator[](_)->node_type == AST_NODE_VARIABLE_DECLARATION)
+        if (__node_struct_declaration->functions->declarations->operator[](_)->node_type == AST_NODE_VARIABLE_DECLARATION) {
 
-            _byte_code->add(getByteCodeOfNodeVariableDeclaration(
+            std::cout << "Static var" << std::endl;
+
+            _byte_code->add(
+                getByteCodeOfNodeVariableDeclaration(
                 (Ast_Node_Variable_Declaration*) __node_struct_declaration->functions->declarations->operator[](_)
-            ));
+                )
+            );
+
+        }
 
         else 
             getByteCodeOfNodeFunctionDeclaration(
@@ -335,6 +387,7 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeStructDecla
             );
 
     parser::convertor_control->print("Node Struct Declaration End - Byte Code");
+
 
     return _byte_code;
 
@@ -759,6 +812,43 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeReturn(Ast_
     _byte_code->add(_close_stack_frame);
 
     return _byte_code;
+
+}
+
+utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeIf(Ast_Node_If* __node_if) {
+
+    parser::convertor_control->print("Node If - Byte Code");
+
+    __node_if->condition->getResultDeclaration();
+
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = getByteCodeOfNodeExpression(__node_if->condition), *_temp;
+
+    byte_code::Byte_Code* _if_condition = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+    new (_if_condition) byte_code::Byte_Code(
+        BYTE_CODE_IF,
+        0
+    );
+
+    _byte_code->add(_if_condition);
+
+    _temp = getByteCodeOfNode(__node_if->body->first->object);
+
+    _byte_code->join(_temp);
+
+    delete _temp;
+
+    return _byte_code;
+
+}
+
+byte_code::Byte_Code* parser::getByteCodeOfNodeFunctionSizeOf(Ast_Node_Function_Size_Of* __node_function_size_of) {
+
+    parser::convertor_control->print("Node Function Size Of - Byte Code");
+
+    std::cout << __node_function_size_of->getSizeOf() << std::endl;
+
+    exit(1);
 
 }
 

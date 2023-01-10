@@ -47,6 +47,8 @@ namespace parser {
         Name_Space* name_space;
         int off;
 
+        int body_position;
+
         ~Ast_Node_Code_Block(); Ast_Node_Code_Block();
 
         static void generate();
@@ -110,8 +112,9 @@ namespace parser {
         Ast_Node_Name_Space* functions;
         Ast_Node_Code_Block* fields;
         int declaration_id;
+        char* struct_name;
 
-        ~Ast_Node_Struct_Declaration(); Ast_Node_Struct_Declaration(Ast_Node_Name_Space*, Ast_Node_Code_Block*, int);
+        ~Ast_Node_Struct_Declaration(); Ast_Node_Struct_Declaration(Ast_Node_Name_Space*, Ast_Node_Code_Block*, int, char*);
 
         static Ast_Node_Struct_Declaration* generate();
 
@@ -177,6 +180,8 @@ namespace parser {
         ~Ast_Node_Pointer_Operation(); Ast_Node_Pointer_Operation(Ast_Node_Variable_Declaration*, int, Ast_Node*);
 
         static Ast_Node_Pointer_Operation* generate();
+
+        void check();
 
     };
 
@@ -247,6 +252,50 @@ namespace parser {
         ~Ast_Node_Cast(); Ast_Node_Cast(Ast_Node_Variable_Declaration*, Type_Information*, Ast_Node*);
 
         static Ast_Node_Cast* generate();
+    };
+
+    struct Ast_Node_If : Ast_Node {
+
+        Ast_Node_Expression* condition;
+        utils::Linked_List <Ast_Node*>* body;
+
+        ~Ast_Node_If(); Ast_Node_If(Ast_Node_Expression*, utils::Linked_List <Ast_Node*>*);
+
+        static Ast_Node_If* generate();
+
+    };
+
+    struct Ast_Node_Else_If : Ast_Node {
+
+        Ast_Node_Expression* condition;
+        utils::Linked_List <Ast_Node*>* body;
+
+        ~Ast_Node_Else_If(); Ast_Node_Else_If(Ast_Node_Expression*, utils::Linked_List <Ast_Node*>*);
+
+        static Ast_Node_Else_If* generate();
+
+    };
+
+    struct Ast_Node_Else : Ast_Node {
+
+        utils::Linked_List <Ast_Node*>* body;
+
+        ~Ast_Node_Else(); Ast_Node_Else(utils::Linked_List <Ast_Node*>*);
+
+        static Ast_Node_Else* generate();
+
+    };
+
+    struct Ast_Node_Function_Size_Of : Ast_Node {
+
+        Ast_Node* size_of;
+
+        ~Ast_Node_Function_Size_Of(); Ast_Node_Function_Size_Of(Ast_Node*);
+
+        static Ast_Node_Function_Size_Of* generate();
+
+        int getSizeOf();
+
     };
 
 }

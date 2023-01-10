@@ -11,9 +11,15 @@ namespace virtual_machine {
 
     void binary_add_4_bytes(Execution* __execution);
 
+
     void binary_sub_1_bytes(Execution* __execution);
 
     void binary_sub_4_bytes(Execution* __execution);
+
+
+    void binary_equal_to_1_bytes(Execution* __execution);
+
+    void binary_equal_to_4_bytes(Execution* __execution);
 
 }
 

@@ -15,7 +15,7 @@
 #include <string.h>
 
 
-void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual_machine::Execution* __execution) {
+void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual_machine::Execution* __execution, int& __current_index) {
 
     // std::cout << "Code -> " << (int) __byte_code->code << " Argument -> " << __byte_code->argument << std::endl;
 
@@ -36,6 +36,14 @@ void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual
     case BYTE_CODE_COPY_PREVIOUS_STACK_DATA_REMOVE: execute_BYTE_CODE_COPY_PREVIOUS_STACK_DATA_REMOVE(__byte_code->argument, __execution); break;
     case BYTE_CODE_CLOSE_STACK_FRAME: execute_BYTE_CLOSE_STACK_FRAME(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_ADD: execute_BYTE_BINARY_ADD(__byte_code->argument, __execution); break;
+    case BYTE_CODE_BINARY_EQUAL_TO: execute_BYTE_CODE_BINARY_EQUAL_TO(__byte_code->argument, __execution); break;
+    case BYTE_CODE_BINARY_NOT_EQUAL_TO: execute_BYTE_CODE_BINARY_NOT_EQUAL_TO(__byte_code->argument, __execution); break;
+    case BYTE_CODE_BINARY_GREATER_THAN: execute_BYTE_CODE_BINARY_GREATER_THAN(__byte_code->argument, __execution); break;
+    case BYTE_CODE_BINARY_LESS_THAN: execute_BYTE_CODE_BINARY_LESS_THAN(__byte_code->argument, __execution); break;
+    case BYTE_CODE_BINARY_GREATER_THAN_EQUAL_TO: execute_BYTE_CODE_BINARY_GREATER_THAN_EQUAL_TO(__byte_code->argument, __execution); break;
+    case BYTE_CODE_BINARY_LESS_THAN_EQUAL_TO: execute_BYTE_CODE_BINARY_LESS_THAN_EQUAL_TO(__byte_code->argument, __execution); break;
+    case BYTE_CODE_IF: execute_BYTE_CODE_IF(__byte_code->argument, __execution, __current_index); break;
+    case BYTE_CODE_CALL_SUB: execute_BYTE_CODE_CALL_SUB(__byte_code->argument, __execution); break;
     case BYTE_CODE_NOP: break;
     default: std::cout << "error " << std::endl; exit(1); break;
     }
@@ -76,7 +84,7 @@ void virtual_machine::execute_BYTE_CODE_LOAD_GLOBAL(int __arg, Execution* __exec
 
     std::cout << "LOAD_GLOBAL" << std::endl;
     std::cout << "arg -> " << __arg << std::endl;
-    std::cout << "Loaded value address -> " << __execution->stacks->last->object->inicial_position + __arg << std::endl;
+    std::cout << "Loaded value address -> " << __execution->stacks->first->object->inicial_position + __arg << std::endl;
     std::cout << "Loaded value -> " << 
         *((int*)__execution->program->memory->getRealAddress(__execution->stacks->first->object->inicial_position + __arg)) << std::endl;
 
@@ -275,5 +283,70 @@ void virtual_machine::execute_BYTE_BINARY_SUB(int __arg, Execution* __execution)
     case 4: binary_sub_4_bytes(__execution); break;
     default: std::cout << "Error" << std::endl; exit(1); break;
     }
+
+}
+
+void virtual_machine::execute_BYTE_CODE_BINARY_EQUAL_TO(int __arg, Execution* __execution) {
+
+    std::cout << "BINARY_EQUAL_TO" << std::endl;
+
+    switch (__arg)
+    {
+    case 1: binary_equal_to_1_bytes(__execution); break;
+    case 4: binary_equal_to_4_bytes(__execution); break;
+    default: std::cout << "Error" << std::endl; exit(1); break;
+    }
+
+}
+
+void virtual_machine::execute_BYTE_CODE_BINARY_NOT_EQUAL_TO(int, Execution*) {
+
+}
+
+void virtual_machine::execute_BYTE_CODE_BINARY_GREATER_THAN(int, Execution*) {
+
+}
+
+void virtual_machine::execute_BYTE_CODE_BINARY_LESS_THAN(int, Execution*) {
+
+}
+
+void virtual_machine::execute_BYTE_CODE_BINARY_GREATER_THAN_EQUAL_TO(int, Execution*) {
+
+}
+
+void virtual_machine::execute_BYTE_CODE_BINARY_LESS_THAN_EQUAL_TO(int, Execution*) {
+
+}
+
+
+void virtual_machine::execute_BYTE_CODE_IF(int __arg, Execution* __execution, int& __current_index) {
+
+    std::cout << "IF" << std::endl;
+
+    int _condition_address = __execution->stacks->last->object->popFromStack();
+    void* _condition = __execution->program->memory->getRealAddress(_condition_address);
+
+    std::cout << "Condition -> " << *((bool*) _condition) << std::endl;
+
+    if (
+        !*((bool*) _condition) 
+    ) __current_index++;
+
+}
+
+void virtual_machine::execute_BYTE_CODE_CALL_SUB(int __arg, Execution* __execution) {
+
+    std::cout << "CALL_SUB" << std::endl;
+
+    __execution->stacks->last->object->stack->printContent();
+
+    __execution->addStack();
+
+    __execution->stacks->last->object->inicial_position = __execution->stacks->last->previous->object->inicial_position;
+
+    __execution->executeBlock(__arg, 0); 
+    
+    __execution->popStack();
 
 }

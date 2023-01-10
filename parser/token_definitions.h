@@ -109,3 +109,11 @@
 #define BYTE_CODE 75 // byte code
 
 #define RETURN 76 // return
+
+#define IF 77 // if
+#define ELSE_IF 78 // else if
+#define ELSE 79 // else
+
+#define PRIMITIVE_TYPE_POINTER 80 // pointer
+
+#define SIZE_OF 81 // sizeof

@@ -22,7 +22,11 @@ namespace parser {
 
         static Type_Information* generate();
 
+        static Type_Information* generatePrimitiveType(int);
+
         Type_Information* getCopy();
+
+        bool isPointerStruct();
 
         int getSize();
 

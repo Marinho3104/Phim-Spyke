@@ -33,7 +33,7 @@ void virtual_machine::Execution::addStack() {
 
 void virtual_machine::Execution::popStack() { 
     
-    program->memory->deallocateStack(stacks->last->object->inicial_position - 1); 
+    program->memory->deallocateStack(stacks->last->object->call_position - 1); 
 
     delete stacks->remove(stacks->count); 
 
@@ -48,7 +48,7 @@ void virtual_machine::Execution::executeBlock(int __block_index, bool __stack_ch
 
     while((_current_byte_code = program->byte_code->getByteCode(__block_index, _current_index))->code != BYTE_CODE_END_CODE_BLOCK) {
 
-        virtual_machine::executeByteCode(_current_byte_code, this);
+        virtual_machine::executeByteCode(_current_byte_code, this, _current_index);
 
         _current_index ++;
 

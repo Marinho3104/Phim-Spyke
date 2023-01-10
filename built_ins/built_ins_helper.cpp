@@ -29,11 +29,25 @@ char* built_ins::getStructNameOfTokenId(int __token_id) {
         
         break;
 
+    case PRIMITIVE_TYPE_BOOL:
+
+        _struct_name = (char*) malloc(5);
+
+        strcpy(_struct_name, PRIMITIVE_TYPE_BOOL_NAME);
+        
+        break;
     case PRIMITIVE_TYPE_VOID:
 
         _struct_name = (char*) malloc(5);
 
         strcpy(_struct_name, PRIMITIVE_TYPE_VOID_NAME);
+        
+        break;
+    case PRIMITIVE_TYPE_POINTER:
+
+        _struct_name = (char*) malloc(8);
+
+        strcpy(_struct_name, PRIMITIVE_TYPE_POINTER_NAME);
         
         break;
 
@@ -49,6 +63,8 @@ int built_ins::getPrimitiveTypeSize(char* __name) {
     if (!strcmp((const char*) __name, PRIMITIVE_TYPE_BYTE_NAME)) return PRIMITIVE_TYPE_BYTE_SIZE;
     if (!strcmp((const char*) __name, PRIMITIVE_TYPE_INT_NAME)) return PRIMITIVE_TYPE_INT_SIZE;
     if (!strcmp((const char*) __name, PRIMITIVE_TYPE_VOID_NAME)) return PRIMITIVE_TYPE_VOID_SIZE;
+    if (!strcmp((const char*) __name, PRIMITIVE_TYPE_BOOL_NAME)) return PRIMITIVE_TYPE_BOOL_SIZE;
+    if (!strcmp((const char*) __name, PRIMITIVE_TYPE_POINTER_NAME)) return PRIMITIVE_TYPE_POINTER_SIZE;
 
     return -1;
 
@@ -87,7 +103,49 @@ char* built_ins::getFunctionNameFromTokenId(int __token_id) {
 
         strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_PLUS_ASSIGN);
 
+        break; 
+    case FUNCTION_OPERATOR_EQUAL_TO:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_EQUAL_TO) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_EQUAL_TO);
+
+        break; 
+    case FUNCTION_OPERATOR_NOT_EQUAL_TO:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_NOT_EQUAL_TO) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_NOT_EQUAL_TO);
+
+        break; 
+    case FUNCTION_OPERATOR_GREATER_THAN:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_GREATER_THAN) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_GREATER_THAN);
+
+        break; 
+    case FUNCTION_OPERATOR_LESS_THAN:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_LESS_THAN) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_LESS_THAN);
+
+        break;
+    case FUNCTION_OPERATOR_GREATER_THAN_EQUAL_TO:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_GREATER_THAN_EQUAL_TO) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_GREATER_THAN_EQUAL_TO);
+
         break;  
+    case FUNCTION_OPERATOR_LESS_THAN_EQUAL_TO:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_LESS_THAN_EQUAL_TO) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_LESS_THAN_EQUAL_TO);
+
+        break; 
     default: std::cout << "Error getting Function Name for token -> " << __token_id << std::endl; exit(1); break;
     }
 

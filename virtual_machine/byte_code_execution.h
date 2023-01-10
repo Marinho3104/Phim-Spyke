@@ -8,7 +8,7 @@
 
 namespace virtual_machine {
 
-    void executeByteCode(byte_code::Byte_Code*, Execution*);
+    void executeByteCode(byte_code::Byte_Code*, Execution*, int&);
 
     void execute_BYTE_CODE_STACK_MEMORY_ALLOCATE(int, Execution*);
 
@@ -37,6 +37,22 @@ namespace virtual_machine {
     void execute_BYTE_BINARY_ADD(int, Execution*);
 
     void execute_BYTE_BINARY_SUB(int, Execution*);
+
+    void execute_BYTE_CODE_BINARY_EQUAL_TO(int, Execution*);
+
+    void execute_BYTE_CODE_BINARY_NOT_EQUAL_TO(int, Execution*);
+
+    void execute_BYTE_CODE_BINARY_GREATER_THAN(int, Execution*);
+
+    void execute_BYTE_CODE_BINARY_LESS_THAN(int, Execution*);
+
+    void execute_BYTE_CODE_BINARY_GREATER_THAN_EQUAL_TO(int, Execution*);
+
+    void execute_BYTE_CODE_BINARY_LESS_THAN_EQUAL_TO(int, Execution*);
+
+    void execute_BYTE_CODE_IF(int, Execution*, int&);
+
+    void execute_BYTE_CODE_CALL_SUB(int, Execution*);
 
 }
 

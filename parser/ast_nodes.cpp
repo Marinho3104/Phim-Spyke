@@ -14,7 +14,7 @@
 #include "token.h"
 
 #include <iostream>
-
+#include <string.h>
 
 parser::Ast_Node::~Ast_Node() {}
 
@@ -191,7 +191,7 @@ parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Name_Space::getStructDecla
 
 parser::Ast_Node_Code_Block::~Ast_Node_Code_Block() { delete code; delete declarations_tracker; }
 
-parser::Ast_Node_Code_Block::Ast_Node_Code_Block() : Ast_Node(NULL, AST_NODE_CODE_BLOCK), off(0) { 
+parser::Ast_Node_Code_Block::Ast_Node_Code_Block() : Ast_Node(NULL, AST_NODE_CODE_BLOCK), off(0), body_position(0) { 
 
     previous_node_code_block = parser::ast_control->code_block_chain->last->object;
     name_space = parser::ast_control->name_space_chain->last->object;
@@ -241,8 +241,11 @@ void parser::Ast_Node_Code_Block::setCode() {
             case -1: parser::ast_control->current_position++; goto out; break;
             case AST_NODE_BYTE_CODE: code->add(Ast_Node_Byte_Code::generate()); break;
             case AST_NODE_RETURN: code->add(Ast_Node_Return::generate()); break;
+            case AST_NODE_IF: code->add(Ast_Node_If::generate()); break;
+            case AST_NODE_ELSE_IF: code->add(Ast_Node_Else_If::generate()); break;
+            case AST_NODE_ELSE: code->add(Ast_Node_Else::generate()); break;
             case AST_NODE_VARIABLE: case AST_NODE_VALUE: case AST_NODE_FUNCTION_CALL: case AST_NODE_POINTER_OPERATION: case AST_NODE_PARENTHESIS:
-            case AST_NODE_CAST:
+            case AST_NODE_CAST: case AST_NODE_SIZE_OF:
                 code->add(Ast_Node_Expression::generate(_node_type));
                 // std::cout << (int) parser::ast_control->getToken(0)->id << std::endl; 
                 if (parser::ast_control->getToken(0)->id != END_INSTRUCTION) parser::exception_handle->runExceptionAstControl("Excpected token ';' aqui");
@@ -258,7 +261,7 @@ void parser::Ast_Node_Code_Block::setCode() {
 
                     break;
 
-            default: exception_handle->runExceptionAstControl("Node not supported in Name Space Node"); break;
+            default: exception_handle->runExceptionAstControl("Node not supported in Code Block Node"); break;
         }
 
     }
@@ -751,8 +754,8 @@ parser::Ast_Node_Struct_Declaration::~Ast_Node_Struct_Declaration() {
     delete representive_declaration;
 }
 
-parser::Ast_Node_Struct_Declaration::Ast_Node_Struct_Declaration(Ast_Node_Name_Space* __node_name_space, Ast_Node_Code_Block* __node_code_block, int __declaration_id) 
-    : Ast_Node(NULL, AST_NODE_STRUCT_DECLARATION), functions(__node_name_space), fields(__node_code_block), declaration_id(__declaration_id) {}
+parser::Ast_Node_Struct_Declaration::Ast_Node_Struct_Declaration(Ast_Node_Name_Space* __node_name_space, Ast_Node_Code_Block* __node_code_block, int __declaration_id, char* __struct_name) 
+    : Ast_Node(NULL, AST_NODE_STRUCT_DECLARATION), functions(__node_name_space), fields(__node_code_block), declaration_id(__declaration_id), struct_name(__struct_name) {}
 
 parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Struct_Declaration::generate() {
 
@@ -801,7 +804,7 @@ parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Struct_Declaration::genera
 
     Ast_Node_Struct_Declaration* _node_struct_declaration = (Ast_Node_Struct_Declaration*) malloc(sizeof(Ast_Node_Struct_Declaration));
     new (_node_struct_declaration) Ast_Node_Struct_Declaration(
-        _functions, _fields, _declaration_id
+        _functions, _fields, _declaration_id, _struct_name
     );
 
     getCurrentDeclarationTracker()->struct_declaration->add(
@@ -1049,6 +1052,8 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
 
     while(_expression) {
 
+        if (_expression->value->node_type == AST_NODE_POINTER_OPERATION) ((Ast_Node_Pointer_Operation*) _expression->value)->check();
+
         _temp = (Expression_Result_Helper*) malloc(sizeof(Expression_Result_Helper)); 
 
         new (_temp) Expression_Result_Helper(
@@ -1084,7 +1089,25 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
                 _first_argument = _expressions_result_helper->operator[](_)->declaration->getCopy();
                 _token_id = _expressions_result_helper->operator[](_)->token_id;
 
-                parser::ast_control->addToChain(
+                if (_first_argument->type->pointer_level) {
+
+                    utils::Linked_List <char*>* _scope = new utils::Linked_List <char*>(); _scope->destroy_content = 0;
+
+                    _scope->add("built_ins");
+                    _scope->add("Pointer");
+
+                    parser::ast_control->addToChain(
+                        parser::ast_control->name_space_control->getNameSpace(
+                            _scope
+                        ),
+                        NULL
+                    );
+
+                    delete _scope;
+
+                }
+
+                else parser::ast_control->addToChain(
                     parser::ast_control->name_space_control->getNameSpace(
                         _first_argument->type->declaration->functions
                     ),
@@ -1226,6 +1249,7 @@ parser::Ast_Node* parser::Ast_Node_Expression::getValue(int __value_node_type) {
     case AST_NODE_POINTER_OPERATION: return Ast_Node_Pointer_Operation::generate(); break;
     case AST_NODE_PARENTHESIS: return Ast_Node_Parenthesis::generate(); break;
     case AST_NODE_CAST: return Ast_Node_Cast::generate(); break;
+    case AST_NODE_SIZE_OF: return Ast_Node_Function_Size_Of::generate(); break;
     default: break;
     }
 
@@ -1355,7 +1379,7 @@ parser::Ast_Node_Pointer_Operation* parser::Ast_Node_Pointer_Operation::generate
     Type_Information* _type_information = _value->representive_declaration->type->getCopy();
     _type_information->pointer_level += _pointer_level;
 
-    if (_type_information->pointer_level < 0) exception_handle->runExceptionAstControl("Pointer level below 0 - Ast_Node_Pointer_Operation::Ast_Node_Pointer_Operation()");
+    if (_type_information->pointer_level < 0 && !_type_information->isPointerStruct()) exception_handle->runExceptionAstControl("Pointer level below 0 - Ast_Node_Pointer_Operation::Ast_Node_Pointer_Operation()");
 
     Ast_Node_Variable_Declaration* _node_variable_declaration = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
 
@@ -1373,6 +1397,17 @@ parser::Ast_Node_Pointer_Operation* parser::Ast_Node_Pointer_Operation::generate
     parser::ast_control->print("Ast Node Pointer Operation End\n", AST_DEBUG_MODE_DEC);
 
     return _node_pointer_operation;
+
+}
+
+void parser::Ast_Node_Pointer_Operation::check() {
+
+    // std::cout << "Pointer Level <- " << pointer_level <<  std::endl;
+
+    delete representive_declaration->type;
+
+    representive_declaration->type = value->representive_declaration->type->getCopy();
+    representive_declaration->type->pointer_level += pointer_level;
 
 }
 
@@ -1689,6 +1724,8 @@ parser::Ast_Node_Cast::~Ast_Node_Cast() {
     value->~Ast_Node(); free(value);
 }
 
+
+// Not complete miss call constructor function TODO
 parser::Ast_Node_Cast::Ast_Node_Cast(Ast_Node_Variable_Declaration* __declaration, Type_Information* __type_information, Ast_Node* __value) 
     : Ast_Node(__declaration, AST_NODE_CAST), type_cast(__type_information), value(__value) {}
 
@@ -1725,3 +1762,177 @@ parser::Ast_Node_Cast* parser::Ast_Node_Cast::generate() {
     return _node_cast;
 
 }
+
+
+parser::Ast_Node_If::~Ast_Node_If() {
+    condition->~Ast_Node_Expression(); free(condition);
+    delete body;
+}
+
+parser::Ast_Node_If::Ast_Node_If(Ast_Node_Expression* __condition, utils::Linked_List <Ast_Node*>* __body) 
+    : Ast_Node(0, AST_NODE_IF), condition(__condition), body(__body) {}
+
+parser::Ast_Node_If* parser::Ast_Node_If::generate() {
+
+    parser::ast_control->print("Ast Node If\n", AST_DEBUG_MODE_INC);
+
+    parser::ast_control->current_position++;
+
+    if (parser::ast_control->getToken(0)->id != OPEN_PARENTHESIS)
+
+        exception_handle->runException("Excpected token '('");
+
+    parser::ast_control->current_position++;
+
+    Ast_Node_Expression* _condition_expression = Ast_Node_Expression::generate(getNodeType()); 
+
+    if (parser::ast_control->getToken(0)->id != CLOSE_PARENTHESIS)
+
+        exception_handle->runException("Excpected token ')'");
+
+    parser::ast_control->current_position++;
+
+    utils::Linked_List <Ast_Node*>* _body = new utils::Linked_List <Ast_Node*>(), *_temp;
+
+    switch (int _node_type = getNodeType())
+    {
+        case -2: parser::ast_control->current_position++; break;
+        case AST_NODE_CODE_BLOCK:
+
+            parser::ast_control->current_position++;
+
+            Ast_Node_Code_Block::setUp();
+            
+            _body->add(
+                parser::ast_control->code_block_chain->last->object
+            );
+
+            parser::ast_control->code_block_chain->last->object->setCode();
+
+            parser::ast_control->popFromChain();
+
+            break;
+
+        case AST_NODE_BYTE_CODE: _body->add(Ast_Node_Byte_Code::generate()); break;
+        case AST_NODE_RETURN: _body->add(Ast_Node_Return::generate()); break;
+        case AST_NODE_VARIABLE: case AST_NODE_VALUE: case AST_NODE_FUNCTION_CALL: case AST_NODE_POINTER_OPERATION: case AST_NODE_PARENTHESIS:
+        case AST_NODE_CAST:
+            _body->add(Ast_Node_Expression::generate(_node_type));
+            if (parser::ast_control->getToken(0)->id != END_INSTRUCTION) parser::exception_handle->runExceptionAstControl("Excpected token ';' aqui");
+            parser::ast_control->current_position++;
+            break;
+        case AST_NODE_VARIABLE_DECLARATION:
+            
+                _temp = Ast_Node_Variable_Declaration::generate();
+
+                _body->join(_temp);
+
+                delete _temp;
+
+                break;
+
+        default: exception_handle->runExceptionAstControl("Node not supported in If Node"); break;
+    }
+
+    Ast_Node_If* _node_if = (Ast_Node_If*) malloc(sizeof(Ast_Node_If));
+
+    new (_node_if) Ast_Node_If(
+        _condition_expression,
+        _body
+    );
+
+    parser::ast_control->print("Ast Node If End\n", AST_DEBUG_MODE_DEC);
+
+    return _node_if;
+
+}
+
+
+parser::Ast_Node_Else_If::~Ast_Node_Else_If() {
+
+}
+
+parser::Ast_Node_Else_If::Ast_Node_Else_If(Ast_Node_Expression* __condition, utils::Linked_List <Ast_Node*>* __body) 
+    : Ast_Node(0, AST_NODE_ELSE_IF), condition(__condition), body(__body) {}
+
+parser::Ast_Node_Else_If* parser::Ast_Node_Else_If::generate() {
+    
+}
+
+
+parser::Ast_Node_Else::~Ast_Node_Else() {
+
+}
+
+parser::Ast_Node_Else::Ast_Node_Else(utils::Linked_List <Ast_Node*>* __body) 
+    : Ast_Node(0, AST_NODE_ELSE), body(__body) {}
+
+parser::Ast_Node_Else* parser::Ast_Node_Else::generate() {
+    
+}
+
+
+parser::Ast_Node_Function_Size_Of::~Ast_Node_Function_Size_Of() { size_of->~Ast_Node(); free(size_of); }
+
+parser::Ast_Node_Function_Size_Of::Ast_Node_Function_Size_Of(Ast_Node* __size_of) : Ast_Node(0, AST_NODE_SIZE_OF), size_of(__size_of) {
+
+    Ast_Node_Variable_Declaration* __variable_declaration = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
+
+    new (__variable_declaration) Ast_Node_Variable_Declaration(
+        Type_Information::generatePrimitiveType(PRIMITIVE_TYPE_INT), -1, 0
+    );
+
+    representive_declaration = __variable_declaration;
+
+}
+
+parser::Ast_Node_Function_Size_Of* parser::Ast_Node_Function_Size_Of::generate() {
+
+    parser::ast_control->print("Ast Node Size Of\n", AST_DEBUG_MODE_INC);
+
+    parser::ast_control->current_position++;
+
+    if (parser::ast_control->getToken(0)->id != OPEN_PARENTHESIS) 
+        exception_handle->runExceptionAstControl("Excpected token '('");
+
+    parser::ast_control->current_position++;
+
+    Ast_Node_Expression* _expression = Ast_Node_Expression::generate(getNodeType());
+
+    if (parser::ast_control->getToken(0)->id != CLOSE_PARENTHESIS) 
+        exception_handle->runExceptionAstControl("Excpected token ')'");
+
+    parser::ast_control->current_position++;
+
+    parser::Ast_Node_Function_Size_Of* _size_of_node = (parser::Ast_Node_Function_Size_Of*) malloc(sizeof(parser::Ast_Node_Function_Size_Of));
+
+    new (_size_of_node) parser::Ast_Node_Function_Size_Of(
+        _expression
+    ); 
+
+    parser::ast_control->print("Ast Node Size Of End\n", AST_DEBUG_MODE_DEC);
+
+    return _size_of_node;
+
+}
+
+int parser::Ast_Node_Function_Size_Of::getSizeOf() {
+
+    int _size;
+
+    switch (size_of->node_type)
+    {
+    case AST_NODE_EXPRESSION:
+
+        _size = ((Ast_Node_Expression*) size_of)->getResultDeclaration()->type->getSize();
+
+        break;
+    
+    default: std::cout << "Error size of function " << std::endl; exit(1); break;
+    }
+
+    return _size;
+
+}
+
+

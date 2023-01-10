@@ -35,6 +35,10 @@ namespace parser {
 
     utils::Linked_List <byte_code::Byte_Code*>* getByteCodeOfNodeReturn(Ast_Node_Return*);
 
+    utils::Linked_List <byte_code::Byte_Code*>* getByteCodeOfNodeIf(Ast_Node_If*);
+
+    byte_code::Byte_Code* getByteCodeOfNodeFunctionSizeOf(Ast_Node_Function_Size_Of*);
+
     int getImplicitValueOff(int);
 
 }

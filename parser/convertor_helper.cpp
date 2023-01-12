@@ -846,9 +846,22 @@ byte_code::Byte_Code* parser::getByteCodeOfNodeFunctionSizeOf(Ast_Node_Function_
 
     parser::convertor_control->print("Node Function Size Of - Byte Code");
 
-    std::cout << __node_function_size_of->getSizeOf() << std::endl;
+    int _size = __node_function_size_of->getSizeOf();
 
-    exit(1);
+    char* _value;
+    asprintf (&_value, "%i", _size);
+
+    int _position = parser::ast_control->addImplicitValue(_value);
+    free(_value);
+
+    byte_code::Byte_Code* _byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+    new (_byte_code) byte_code::Byte_Code(
+        BYTE_CODE_LOAD_IMPLICIT_VALUE,
+        getImplicitValueOff(_position)
+    );  
+
+    return _byte_code;
 
 }
 

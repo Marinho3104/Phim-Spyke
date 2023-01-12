@@ -576,7 +576,7 @@ parser::Ast_Node_Function_Declaration* parser::Ast_Node_Function_Declaration::ge
 
     bool _is_static = 0;
 
-    if (__struct_function && (_is_static = parser::ast_control->getToken(0)->id == STATIC)) 
+    if (_is_static = parser::ast_control->getToken(0)->id == STATIC) 
         parser::ast_control->current_position++;
     
     Type_Information* _return_type = Type_Information::generate();
@@ -1047,12 +1047,10 @@ parser::Ast_Node_Expression::Ast_Node_Expression(Ast_Node_Expression* __expressi
 parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDeclaration() {
 
     utils::Linked_List <Expression_Result_Helper*>* _expressions_result_helper = new utils::Linked_List <Expression_Result_Helper*>();
-    Ast_Node_Expression* _expression = this;
+    Ast_Node_Expression* _expression = this, *_last_expression;
     Expression_Result_Helper* _temp;
 
     while(_expression) {
-
-        if (_expression->value->node_type == AST_NODE_POINTER_OPERATION) ((Ast_Node_Pointer_Operation*) _expression->value)->check();
 
         _temp = (Expression_Result_Helper*) malloc(sizeof(Expression_Result_Helper)); 
 
@@ -1064,11 +1062,14 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
             _temp
         );
 
+        if (!_expression->expression) _last_expression = _expression;
+
         _expression = _expression->expression;
 
     }
 
     utils::Linked_List <Ast_Node*>* _parameters = new utils::Linked_List <Ast_Node*>(); _parameters->destroy_content = 0;
+    Ast_Node* _first_argument_value, *_second_argument_value, *_third_argument_value;
     Ast_Node_Variable_Declaration* _first_argument, *_second_argument;
     Ast_Node_Function_Declaration* _function_declaration;
     Ast_Node_Name_Space* _struct_node_name_space;
@@ -1089,6 +1090,10 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
                 _first_argument = _expressions_result_helper->operator[](_)->declaration->getCopy();
                 _token_id = _expressions_result_helper->operator[](_)->token_id;
 
+                _second_argument_value = _expressions_result_helper->operator[](_ + 1)->expression->value;
+                _first_argument_value = _expressions_result_helper->operator[](_)->expression->value;
+                _third_argument_value = NULL;
+
                 if (_first_argument->type->pointer_level) {
 
                     utils::Linked_List <char*>* _scope = new utils::Linked_List <char*>(); _scope->destroy_content = 0;
@@ -1104,6 +1109,41 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
                     );
 
                     delete _scope;
+
+                    Ast_Node_Variable_Declaration* _node_variable = _expressions_result_helper->operator[](_)->declaration->getCopy();
+                    _node_variable->type->pointer_level--;
+
+                    Ast_Node_Pointer_Operation* _node_pointer = (Ast_Node_Pointer_Operation*) malloc(sizeof(Ast_Node_Pointer_Operation));
+                    new (_node_pointer) Ast_Node_Pointer_Operation(
+                        _node_variable, -1, NULL
+                    );
+                    _node_pointer->destroy_value = 0;
+
+                    Ast_Node_Expression* _node_expression = (Ast_Node_Expression*) malloc(sizeof(Ast_Node_Expression));
+
+                    new (_node_expression) Ast_Node_Expression(
+                        NULL, _node_pointer, -1
+                    );
+
+                    Ast_Node_Function_Size_Of* __node_size_of = (Ast_Node_Function_Size_Of*) malloc(sizeof(Ast_Node_Function_Size_Of));
+
+                    new (__node_size_of) Ast_Node_Function_Size_Of(
+                        _node_expression
+                    );
+
+                    _third_argument_value = __node_size_of;
+
+                    _parameters->add(_third_argument_value->representive_declaration);
+
+
+                    Ast_Node_Expression* _node_expression_to_remove = (Ast_Node_Expression*) malloc(sizeof(Ast_Node_Expression));
+
+                    new (_node_expression_to_remove) Ast_Node_Expression(
+                        NULL, __node_size_of, -1
+                    );
+
+                    _last_expression->expression = _node_expression_to_remove;
+                    _last_expression = _last_expression->expression;
 
                 }
 
@@ -1121,10 +1161,12 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
                 std::cout << "Declaration -> " << _declaration_id << std::endl;
                 free(_function_name);
 
-                _first_argument->type->pointer_level++;
+                if (_expressions_result_helper->operator[](_)->declaration->type->pointer_level);
 
-                _parameters->add(_first_argument);
-                _parameters->add(_second_argument);
+                else _first_argument->type->pointer_level++;
+
+                _parameters->insert(_first_argument, 0);
+                _parameters->insert(_second_argument, 1);
 
                 _function_declaration = getFunctionDeclaration(_declaration_id, _parameters);
 
@@ -1137,18 +1179,22 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
 
                     exception_handle->runExceptionAstControl("No function declaration with given name and given arguments");
 
-                _first_argument->type->pointer_level--;
-
                 if (!_expressions_result_helper->operator[](_)->function_result_value) 
 
                     this->organized_set->add(
-                        _expressions_result_helper->operator[](_)->expression->value
+                        _first_argument_value
                     );
 
                 if (!_expressions_result_helper->operator[](_ + 1)->function_result_value)
 
                     this->organized_set->add(
-                        _expressions_result_helper->operator[](_ + 1)->expression->value
+                        _second_argument_value
+                    );
+
+                if (_third_argument_value)
+
+                    this->organized_set->add(
+                        _third_argument_value
                     );    
                 
 
@@ -1872,7 +1918,7 @@ parser::Ast_Node_Else* parser::Ast_Node_Else::generate() {
 }
 
 
-parser::Ast_Node_Function_Size_Of::~Ast_Node_Function_Size_Of() { size_of->~Ast_Node(); free(size_of); }
+parser::Ast_Node_Function_Size_Of::~Ast_Node_Function_Size_Of() { size_of->~Ast_Node(); free(size_of); representive_declaration->~Ast_Node_Variable_Declaration(); free(representive_declaration); }
 
 parser::Ast_Node_Function_Size_Of::Ast_Node_Function_Size_Of(Ast_Node* __size_of) : Ast_Node(0, AST_NODE_SIZE_OF), size_of(__size_of) {
 

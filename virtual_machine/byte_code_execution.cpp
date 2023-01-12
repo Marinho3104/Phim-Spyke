@@ -44,6 +44,10 @@ void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual
     case BYTE_CODE_BINARY_LESS_THAN_EQUAL_TO: execute_BYTE_CODE_BINARY_LESS_THAN_EQUAL_TO(__byte_code->argument, __execution); break;
     case BYTE_CODE_IF: execute_BYTE_CODE_IF(__byte_code->argument, __execution, __current_index); break;
     case BYTE_CODE_CALL_SUB: execute_BYTE_CODE_CALL_SUB(__byte_code->argument, __execution); break;
+    case BYTE_CODE_BINARY_MUL: execute_BYTE_BINARY_MUL(__byte_code->argument, __execution); break;
+    case BYTE_CODE_BINARY_DIV: execute_BYTE_BINARY_DIV(__byte_code->argument, __execution); break;
+    case BYTE_CODE_BINARY_MOD: execute_BYTE_BINARY_MOD(__byte_code->argument, __execution); break;
+
     case BYTE_CODE_NOP: break;
     default: std::cout << "error " << std::endl; exit(1); break;
     }
@@ -98,7 +102,7 @@ void virtual_machine::execute_BYTE_CODE_LOAD_GLOBAL(int __arg, Execution* __exec
 
 void virtual_machine::execute_BYTE_CODE_CALL(byte_code::Byte_Code* __byte_code, Execution* __execution) { 
 
-    std::cout << "CALL" << std::endl;
+    std::cout << "CALL " << __byte_code->argument << std::endl;
     __execution->stacks->last->object->stack->printContent();
 
     __execution->addStack();
@@ -350,3 +354,47 @@ void virtual_machine::execute_BYTE_CODE_CALL_SUB(int __arg, Execution* __executi
     __execution->popStack();
 
 }
+
+void virtual_machine::execute_BYTE_BINARY_MUL(int __arg, Execution* __execution) {
+
+    std::cout << "BINARY_MUL" << std::endl;
+
+    switch (__arg)
+    {
+    case 1: binary_mul_1_bytes(__execution); break;
+    case 4: binary_mul_4_bytes(__execution); break;
+    default: std::cout << "Error" << std::endl; exit(1); break;
+    }
+
+}
+
+void virtual_machine::execute_BYTE_BINARY_DIV(int __arg, Execution* __execution) {
+
+    std::cout << "BINARY_DIV" << std::endl;
+
+    switch (__arg)
+    {
+    case 1: binary_div_1_bytes(__execution); break;
+    case 4: binary_div_4_bytes(__execution); break;
+    default: std::cout << "Error" << std::endl; exit(1); break;
+    }
+
+}
+
+void virtual_machine::execute_BYTE_BINARY_MOD(int __arg, Execution* __execution) {
+
+    std::cout << "BINARY_MOD" << std::endl;
+
+    switch (__arg)
+    {
+    case 1: binary_mod_1_bytes(__execution); break;
+    case 4: binary_mod_4_bytes(__execution); break;
+    default: std::cout << "Error" << std::endl; exit(1); break;
+    }
+
+}
+
+
+
+
+

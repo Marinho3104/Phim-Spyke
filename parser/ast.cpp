@@ -67,6 +67,9 @@ parser::Ast_Node_Function_Declaration* parser::Declarations_Tracker::getFunction
                 );
             }
 
+            std::cout << "Given count -> " << _given_variable_declarations->count << std::endl;
+            std::cout << "Founded count -> " << _founded_variable_declarations->count << std::endl;
+
             if (_given_variable_declarations->count != _founded_variable_declarations->count) _function_declaration = NULL;
 
             for (int _ = 0; _ < _given_variable_declarations->count && _function_declaration; _++) {

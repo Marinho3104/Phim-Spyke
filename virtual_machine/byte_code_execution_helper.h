@@ -21,6 +21,20 @@ namespace virtual_machine {
 
     void binary_equal_to_4_bytes(Execution* __execution);
 
+
+    void binary_mul_1_bytes(Execution* __execution);
+
+    void binary_mul_4_bytes(Execution* __execution);
+
+
+    void binary_div_1_bytes(Execution* __execution);
+
+    void binary_div_4_bytes(Execution* __execution);
+
+
+    void binary_mod_1_bytes(Execution* __execution);
+
+    void binary_mod_4_bytes(Execution* __execution);
 }
 
 #endif

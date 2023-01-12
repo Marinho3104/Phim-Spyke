@@ -54,7 +54,7 @@ namespace utils {
 
         void printContent();
 
-        int add(type); Data_Linked_List <type>* remove(int);
+        int add(type); int add(type, bool); Data_Linked_List <type>* remove(int);
 
         void insert(type, int); void remove(Data_Linked_List <type>*);
 

@@ -102,6 +102,10 @@ template <typename type>
 int utils::Linked_List <type>::add(type __to_add) { insert(__to_add, count); return count - 1; }
 
 template <typename type>
+int utils::Linked_List <type>::add(type __to_add, bool __destroy) 
+    { insert(__to_add, count); getDataLinkedList(count - 1)->destroy_content  = 0; return count - 1; }
+
+template <typename type>
 utils::Data_Linked_List <type>* utils::Linked_List <type>::remove(int __index) {
     
     utils::Data_Linked_List <type>* _removed_data_linked_list = getDataLinkedList(__index); remove(_removed_data_linked_list);

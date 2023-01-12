@@ -54,6 +54,12 @@ namespace virtual_machine {
 
     void execute_BYTE_CODE_CALL_SUB(int, Execution*);
 
+    void execute_BYTE_BINARY_MUL(int, Execution*);
+
+    void execute_BYTE_BINARY_DIV(int, Execution*);
+
+    void execute_BYTE_BINARY_MOD(int, Execution*);
+
 }
 
 #endif

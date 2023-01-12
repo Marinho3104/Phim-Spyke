@@ -40,8 +40,6 @@ parser::Type_Information::Type_Information(parser::Ast_Node_Struct_Declaration* 
 bool parser::Type_Information::operator==(Type_Information* __to_comp) {
 
     std::cout << "Comp" << std::endl;
-    std::cout << "Main -> ";
-    std::cout << (!strncmp(__to_comp->declaration->struct_name, "Pointer", 7) && pointer_level) << std::endl;
     std::cout << (declaration == __to_comp->declaration) << std::endl;
     std::cout << (pointer_level == __to_comp->pointer_level) << std::endl;
     std::cout << (reference_level == __to_comp->reference_level) << std::endl;
@@ -49,15 +47,7 @@ bool parser::Type_Information::operator==(Type_Information* __to_comp) {
     std::cout << "Given Pointer level ->" << __to_comp->pointer_level << std::endl;
     std::cout << "Comp" << std::endl;
 
-    if (!strncmp(__to_comp->declaration->struct_name, "Pointer", 7) && pointer_level) {
-
-        __to_comp->declaration = declaration;
-        __to_comp->pointer_level = pointer_level;
-        __to_comp->reference_level = reference_level;
-
-    }
-
-    return (!strncmp(__to_comp->declaration->struct_name, "Pointer", 7) && pointer_level) || (
+    return (__to_comp->isPointerStruct() && pointer_level) || (
         declaration == __to_comp->declaration &&
         pointer_level == __to_comp->pointer_level &&
         reference_level == __to_comp->reference_level

@@ -1,12 +1,6 @@
 
 namespace built_ins {
 
-    struct Pointer {
-
-        //pointer add(pointer);
-
-    };
-
     struct Void {
 
     };
@@ -37,6 +31,14 @@ namespace built_ins {
         bool equal_to(int);
 
         bool not_equal_to(int);
+
+    };
+
+    struct Pointer {
+
+        void equal(pointer);
+
+        pointer add(int, int);
 
     };
 
@@ -103,38 +105,53 @@ bool built_ins::Int::not_equal_to(int __value) {
 
 }
 
-struct Test_Struct {
 
-    int m, a, r, i, n, h, o;
+void built_ins::Pointer::equal(pointer __eq) {
+    
+    *this;
+    __eq;
+
+    exec 10 2;
+
+}
+
+pointer built_ins::Pointer::add(int __v, int __so) {
+
+    pointer _return;
+
+    _return;
+    *this;
+    __v;
+
+    __v;
+    __v;
+    __so;
+    exec 27 4;
+
+    exec 16 4;
+
+    return _return;
+
+}
+
+struct Ey {
+
+    int j,k,l,m,n,o,p;
 
 };
 
 namespace test {
 
-    void test_pointer(pointer __test_pointer) {
-
-        // *__test_pointer;
-
-        sizeof(*__test_pointer);
-
-        //*((int*)__test_pointer) = 123456;
+    void test_fufu(bool) {
 
     }
 
     int test_func() {
 
-        //int marinho = 123;
+        int k;
 
-        //::Test_Struct test;
-
-        bool* j, *k;
-
-        //*j = 123;
-
-        test_pointer(j);
-
-        //sizeof(test);
-
+        // test_fufu(k);
+        
         
     }
 

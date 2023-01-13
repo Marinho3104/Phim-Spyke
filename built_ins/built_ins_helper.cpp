@@ -154,6 +154,20 @@ char* built_ins::getFunctionNameFromTokenId(int __token_id) {
 }    
 
 
+char** built_ins::getPrimitivesNames() {
+    
+    char** _names = (char**) malloc(8 * 3);
+
+    _names[2] = 0;
+    _names[0] = getStructNameOfTokenId(PRIMITIVE_TYPE_BOOL);
+    _names[1] = getStructNameOfTokenId(PRIMITIVE_TYPE_BYTE);
+    // _names[2] = getStructNameOfTokenId(PRIMITIVE_TYPE_INT);
+    // _names[3] = getStructNameOfTokenId(PRIMITIVE_TYPE_POINTER);
+    // _names[4] = getStructNameOfTokenId(PRIMITIVE_TYPE_VOID);
+
+    return _names;
+
+}
 
 
 

@@ -219,6 +219,9 @@ parser::Type_Information* parser::Type_Information::generatePrimitiveType(int __
 
     Ast_Node_Struct_Declaration* _declaration = getCurrentDeclarationTracker()->getStructDeclaration(_declaration_id);
 
+    std::cout << _declaration_id << std::endl;
+    std::cout << _declaration << std::endl;
+
     if (_declaration_id == -1 || !_declaration) {
 
         exception_handle->runExceptionAstControl("Undefined type");
@@ -495,7 +498,7 @@ int parser::getDeclarationId(char* __name) {
 
     if (parser::ast_control->code_block_chain->last->object) return parser::ast_control->code_block_chain->last->object->getDeclarationId(__name);
 
-    return parser::ast_control->name_space_chain->last->object->name_space_node->getDeclarationId(__name);
+    return parser::ast_control->name_space_chain->last->object->name_space_nodes->last->object->getDeclarationId(__name);
 
 }
 
@@ -503,7 +506,7 @@ parser::Ast_Node_Variable_Declaration* parser::getVariableDeclaration(int __decl
 
     if (parser::ast_control->code_block_chain->last->object) return parser::ast_control->code_block_chain->last->object->getVariableDeclaration(__declaration_id);
 
-    return parser::ast_control->name_space_chain->last->object->name_space_node->getVariableDeclaration(__declaration_id);
+    return parser::ast_control->name_space_chain->last->object->name_space_nodes->last->object->getVariableDeclaration(__declaration_id);
 
 }
 
@@ -511,7 +514,7 @@ parser::Ast_Node_Function_Declaration* parser::getFunctionDeclaration(int __decl
 
     if (parser::ast_control->code_block_chain->last->object) return parser::ast_control->code_block_chain->last->object->getFunctionDeclaration(__declaration_id, __parameters);
 
-    return parser::ast_control->name_space_chain->last->object->name_space_node->getFunctionDeclaration(__declaration_id, __parameters);
+    return parser::ast_control->name_space_chain->last->object->name_space_nodes->last->object->getFunctionDeclaration(__declaration_id, __parameters);
 
 }
 
@@ -519,7 +522,7 @@ parser::Ast_Node_Struct_Declaration* parser::getStructDeclaration(int __declarat
 
     if (parser::ast_control->code_block_chain->last->object) return parser::ast_control->code_block_chain->last->object->getStructDeclaration(__declaration_id);
 
-    return parser::ast_control->name_space_chain->last->object->name_space_node->getStructDeclaration(__declaration_id);
+    return parser::ast_control->name_space_chain->last->object->name_space_nodes->last->object->getStructDeclaration(__declaration_id);
 
 }
 

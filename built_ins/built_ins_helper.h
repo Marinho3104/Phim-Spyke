@@ -11,6 +11,8 @@ namespace built_ins {
 
     char* getFunctionNameFromTokenId(int);
 
+    char** getPrimitivesNames();
+
 }
 
 #endif

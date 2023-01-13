@@ -143,11 +143,14 @@ void parser::Declarations_Tracker::addName(char* __name) {
 
 parser::Name_Space::~Name_Space() { 
     delete scope; 
-    delete declarations_tracker; }
+    delete declarations_tracker;
+    delete name_space_nodes;
+}
 
-parser::Name_Space::Name_Space(utils::Linked_List <char*>* __scope, int* __off) : name_space_node(NULL) {
+parser::Name_Space::Name_Space(utils::Linked_List <char*>* __scope, int* __off) : name_space_nodes(new utils::Linked_List <Ast_Node_Name_Space*>()) {
 
     declarations_tracker = new Declarations_Tracker(__off);
+    name_space_nodes->destroy_content = 0;
     scope = new utils::Linked_List <char*>();
 
     char* _temp_data;
@@ -167,9 +170,10 @@ parser::Name_Space::Name_Space(utils::Linked_List <char*>* __scope, int* __off) 
 
 }
 
-parser::Name_Space::Name_Space(utils::Linked_List <char*>* __scope, Ast_Node_Name_Space* __name_space_node, int* __off) : name_space_node(__name_space_node) {
+parser::Name_Space::Name_Space(utils::Linked_List <char*>* __scope, Ast_Node_Name_Space* __name_space_node, int* __off) : name_space_nodes(new utils::Linked_List <Ast_Node_Name_Space*>()) {
 
     declarations_tracker = new Declarations_Tracker(__off);
+    name_space_nodes->destroy_content = 0;
     scope = new utils::Linked_List <char*>();
 
     char* _temp_data;
@@ -185,6 +189,8 @@ parser::Name_Space::Name_Space(utils::Linked_List <char*>* __scope, Ast_Node_Nam
             scope->add(_temp_data);
 
         }
+
+    name_space_nodes->add(__name_space_node);
 
 }
 
@@ -237,9 +243,11 @@ parser::Name_Space* parser::Name_Space_Control::getNameSpace(Ast_Node_Name_Space
 
     for (int _ = 0; _ < name_space_collection->count; _++)
 
-        if (
-            name_space_collection->operator[](_)->name_space_node == __node_name_space
-        ) return name_space_collection->operator[](_);
+        for (int __ = 0; __ < name_space_collection->operator[](_)->name_space_nodes->count; __++)
+
+            if (
+                name_space_collection->operator[](_)->name_space_nodes->operator[](__) == __node_name_space
+            ) return name_space_collection->operator[](_);
 
     return NULL;
 

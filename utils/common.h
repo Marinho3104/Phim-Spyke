@@ -5,6 +5,8 @@
 
 namespace utils {
 
+    char* getFilesContent(char*, char**);
+
     char* getFileContent(char*);
 
     char** splitString(char*, char);

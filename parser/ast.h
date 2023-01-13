@@ -37,7 +37,7 @@ namespace parser {
     struct Name_Space {
 
         Declarations_Tracker* declarations_tracker;
-        Ast_Node_Name_Space* name_space_node;
+        utils::Linked_List <Ast_Node_Name_Space*>* name_space_nodes;
         utils::Linked_List <char*>* scope;
 
         ~Name_Space(); 

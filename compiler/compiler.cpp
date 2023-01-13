@@ -1,5 +1,6 @@
 #include "./compiler.h"
 
+#include "built_ins_helper.h"
 #include "pre_compiler.h"
 #include "tokenizer.h"
 #include "convertor.h"
@@ -19,7 +20,14 @@ compiler::Compiler::Compiler(char* __code) : code(__code) { generateBuiltIns(); 
 
 void compiler::Compiler::generateBuiltIns() {
 
-    parser::code = utils::getFileContent((char*) "./built_ins/byte.ph");
+    char** _names = built_ins::getPrimitivesNames();
+
+    parser::code = utils::getFilesContent((char*) "./built_ins/code/", _names);
+
+    char** _names_cpy = _names;
+
+    while(*_names) free(*(_names++));
+    free(_names_cpy);
 
     parser::inicializeVariables();
 

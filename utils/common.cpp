@@ -5,6 +5,41 @@
 #include <fstream>
 
 
+char* utils::getFilesContent(char* __path, char** __names) {
+
+    char* _rtr = (char*) malloc(1), *_temp, *_file_content, *_path;
+
+    *_rtr = '\0';
+
+    while(*__names) {
+
+        _path = (char*) malloc(strlen(__path) + strlen(*__names) + 4);
+
+        strncpy(_path, __path, strlen(__path));
+        strncpy(_path + strlen(__path), *__names, strlen(*__names));
+        strcpy(_path + strlen(__path) + strlen(*__names), ".ph");
+
+        _file_content = getFileContent(_path);
+
+        _temp = _rtr;
+
+        _rtr = (char*) malloc(strlen(_temp) + strlen(_file_content) + 1);
+
+        strncpy(_rtr, _temp, strlen(_temp));
+        strncpy(_rtr + strlen(_temp), _file_content, strlen(_file_content) + 1);
+
+        __names++;
+
+        free(_file_content);
+        free(_temp);
+        free(_path);
+
+    }
+
+    return _rtr;
+
+}
+
 char* utils::getFileContent(char* __path) {
 
     std::ifstream ifs(__path);
@@ -21,19 +56,19 @@ char* utils::getFileContent(char* __path) {
 
 char** utils::splitString(char* __str, char __token) {
 
-    std::cout << "Size of pointer -> " << sizeof(char*) << std::endl;
-
     int _appearence = tokenAppearences(__str, __token);
 
-    char** _splitted_tokens = (char**) malloc(sizeof(char*) * (_appearence + 1)), **_return = _splitted_tokens;
+    char** _splitted_tokens = (char**) malloc(sizeof(char*) * (_appearence + 2)), **_return = _splitted_tokens;
     char* _splitted_string;
     int _string_length;
 
-    _splitted_tokens[_appearence] = 0;
+    _splitted_tokens[_appearence + 1] = 0;
 
     while(*__str) {
 
         _string_length = tokenPosition(__str, __token);
+
+        std::cout << "String length -> " << _string_length << std::endl;
 
         _splitted_string = (char*) malloc(_string_length + 1);
 
@@ -71,6 +106,6 @@ int utils::tokenPosition(char* __str, char __token) {
 
     while(*__str) if (*(__str++) == __token) return _count; else _count++;
 
-    return -1; 
+    return _count - 1; 
 
 }

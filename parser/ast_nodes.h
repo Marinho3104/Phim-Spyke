@@ -69,6 +69,7 @@ namespace parser {
 
     struct Ast_Node_Variable_Declaration : Ast_Node {
 
+        Ast_Node_Function_Declaration* constructor_declaration;
         parser::Type_Information* type;
         int declaration_id;
         bool global;
@@ -91,8 +92,8 @@ namespace parser {
 
         Ast_Node_Variable_Declaration* this_variable;
         utils::Linked_List <Ast_Node*>* parameters;
+        bool is_struct, is_static, is_constructor;
         Ast_Node_Function_Declaration* forward;
-        bool is_struct, is_static;
         Ast_Node_Code_Block* body;
         Name_Space* name_space;
         int declaration_id;
@@ -104,6 +105,8 @@ namespace parser {
         static Ast_Node_Function_Declaration* generate(bool);
 
         static utils::Linked_List <Ast_Node*>* getParameters();
+
+        static Ast_Node_Function_Declaration* generate();
 
     };
 
@@ -129,6 +132,8 @@ namespace parser {
         int getVariablesOff(Ast_Node_Variable*);
 
         bool isStaticVariableDeclaration(Ast_Node_Variable_Declaration*);
+
+        bool haveContructorDefined();
 
     };
 

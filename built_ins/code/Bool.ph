@@ -7,6 +7,8 @@ namespace built_ins {
 
     struct Bool {
 
+        Bool();
+
         void equal(bool __equal) {
 
         *this;
@@ -36,7 +38,13 @@ namespace built_ins {
 
     struct Pointer {
 
+        Pointer();
+        Pointer(int __value);
+
+        ~Pointer();
+
         void equal(pointer);
+        void equal(int);
 
         pointer add(int, int);
 
@@ -115,6 +123,13 @@ void built_ins::Pointer::equal(pointer __eq) {
 
 }
 
+void built_ins::Pointer::equal(int __eq) {
+
+
+
+}
+
+
 pointer built_ins::Pointer::add(int __v, int __so) {
 
     pointer _return;
@@ -150,7 +165,7 @@ namespace test {
 
         int k;
 
-        // test_fufu(k);
+        k = 100;
         
         
     }

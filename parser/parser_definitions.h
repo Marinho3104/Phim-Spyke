@@ -33,6 +33,7 @@ namespace parser {
     // Ast Nodes
     struct Ast_Node;
     struct Ast_Node_If;
+    struct Ast_Node_Cast;
     struct Ast_Node_Else;
     struct Ast_Node_Value;
     struct Ast_Node_Return;

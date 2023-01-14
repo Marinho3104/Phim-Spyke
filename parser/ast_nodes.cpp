@@ -1325,7 +1325,7 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
 
     while (_expressions_result_helper->count != 1) {
 
-        for (int _ = 0; _ < _expressions_result_helper->count; _++) { // Wrong TODO
+        for (int _ = 0; _ < _expressions_result_helper->count; _++) { 
 
             if (
                 getOperatorPriority(_expressions_result_helper->operator[](_)->token_id) == _current_priority

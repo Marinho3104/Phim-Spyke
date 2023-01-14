@@ -173,8 +173,8 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
         break;
     case AST_NODE_CAST:
 
-        _byte_code = getByteCodeOfNode(
-            ((Ast_Node_Cast*) __node)->value
+        _byte_code = getByteCodeOfNodeCast(
+            (Ast_Node_Cast*) __node
         );
 
         break;
@@ -863,6 +863,40 @@ byte_code::Byte_Code* parser::getByteCodeOfNodeFunctionSizeOf(Ast_Node_Function_
 
     return _byte_code;
 
+}
+
+utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeCast(Ast_Node_Cast* __node_cast) {
+
+    parser::convertor_control->print("Node Cast - Byte Code");
+
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>(), *_temp;
+    _byte_code->destroy_content = 0;
+
+    byte_code::Byte_Code* _memory_allocation = getByteCodeOfNodeVariableDeclaration(__node_cast->representive_declaration);
+    _byte_code->add(_memory_allocation);
+
+    byte_code::Byte_Code* _load = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+    new (_load) byte_code::Byte_Code(
+        BYTE_CODE_LOAD,
+        __node_cast->representive_declaration->address
+    );
+    _byte_code->add(_load);
+
+    _temp = getByteCodeOfNode(__node_cast->value);
+    _byte_code->join(_temp);
+    delete _temp;
+
+    byte_code::Byte_Code* _call = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+    new (_call) byte_code::Byte_Code(
+        BYTE_CODE_CALL,
+        __node_cast->representive_declaration->constructor_declaration->body_position
+    );
+    _byte_code->add(_call);
+
+    parser::convertor_control->print("Node Cast End - Byte Code");
+
+    return _byte_code;
+    
 }
 
 

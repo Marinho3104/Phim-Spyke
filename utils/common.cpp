@@ -58,11 +58,11 @@ char** utils::splitString(char* __str, char __token) {
 
     int _appearence = tokenAppearences(__str, __token);
 
-    char** _splitted_tokens = (char**) malloc(sizeof(char*) * (_appearence + 2)), **_return = _splitted_tokens;
+    char** _splitted_tokens = (char**) malloc(sizeof(char*) * (_appearence + 1)), **_return = _splitted_tokens;
     char* _splitted_string;
     int _string_length;
 
-    _splitted_tokens[_appearence + 1] = 0;
+    _splitted_tokens[_appearence] = 0;
 
     while(*__str) {
 

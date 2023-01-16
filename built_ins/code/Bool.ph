@@ -11,10 +11,9 @@ namespace built_ins {
 
 void main() {
 
-    12;
+    int j = 12345 + 123;
 
-    int* _first, *_second;
-
-    _first + 5;
+    j;
 
 }
+ 

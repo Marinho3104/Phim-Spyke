@@ -12,6 +12,8 @@ namespace virtual_machine {
 
     void execute_BYTE_CODE_STACK_MEMORY_ALLOCATE(int, Execution*);
 
+    void execute_BYTE_CODE_HEAP_MEMORY_ALLOCATE(int, Execution*);
+
     void execute_BYTE_CODE_LOAD(int, Execution*);
 
     void execute_BYTE_CODE_LOAD_GLOBAL(int, Execution*);
@@ -59,6 +61,10 @@ namespace virtual_machine {
     void execute_BYTE_BINARY_DIV(int, Execution*);
 
     void execute_BYTE_BINARY_MOD(int, Execution*);
+
+    void execute_BYTE_BINARY_INC(int, Execution*);
+    
+    void execute_BYTE_BINARY_DEC(int, Execution*);
 
 }
 

@@ -88,6 +88,7 @@ void parser::Ast_Node_Name_Space::setDeclarations() {
             case -1: parser::ast_control->current_position++; goto out; break;
             case AST_NODE_NAME_SPACE: declarations->add(Ast_Node_Name_Space::generate()); break;
             case AST_NODE_FUNCTION_DECLARATION: declarations->add(Ast_Node_Function_Declaration::generate(0)); break;
+            case AST_NODE_FUNCTION_CALL: declarations->add(Ast_Node_Function_Declaration::generate()); break;
             case AST_NODE_STRUCT_DECLARATION: declarations->add(Ast_Node_Struct_Declaration::generate()); break;
             case AST_NODE_BYTE_CODE: declarations->add(Ast_Node_Byte_Code::generate()); break;
             case AST_NODE_VARIABLE_DECLARATION:
@@ -585,36 +586,45 @@ utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Variable_Declaration::e
     utils::Linked_List <Ast_Node*>* _nodes = new utils::Linked_List <Ast_Node*>(); _nodes->destroy_content = 0;
 
     Ast_Node_Variable* _variable = (Ast_Node_Variable*) malloc(sizeof(Ast_Node_Variable));
-
     new (_variable) Ast_Node_Variable(
         __variable, __variable->declaration_id
     );
 
     _nodes->add(_variable);
 
-    Ast_Node* _value =  Ast_Node_Expression::getValue(getNodeType());
+    Ast_Node* _value;
 
-    if (_value->representive_declaration->type->getSize() != __variable->representive_declaration->type->getSize())
+    switch (int _node_type = getNodeType())
+    {
+        case AST_NODE_VARIABLE: case AST_NODE_VALUE: case AST_NODE_FUNCTION_CALL: case AST_NODE_POINTER_OPERATION: case AST_NODE_PARENTHESIS:
+            case AST_NODE_CAST: case AST_NODE_SIZE_OF:
+        
+                _value = Ast_Node_Expression::generate(_node_type);
 
-        exception_handle->runExceptionAstControl("Not same size");
+                if (((Ast_Node_Expression*) _value)->getResultDeclaration()->type->getSize() != __variable->representive_declaration->type->getSize())
+
+                    exception_handle->runExceptionAstControl("Not same size");
+
+                break;
+    default: break;
+    }
 
     _nodes->add(
         _value
     );
 
     Ast_Node_Byte_Code* _byte_code = (Ast_Node_Byte_Code*) malloc(sizeof(Ast_Node_Byte_Code));
-
     new (_byte_code) Ast_Node_Byte_Code(
         BYTE_CODE_MEMORY_COPY,
-        _value->representive_declaration->type->getSize()
+        __variable->representive_declaration->type->getSize()
     ); 
 
     _nodes->add(_byte_code);
 
-    parser::ast_control->print("Ast Node Variable Declaration -- Equal\n", AST_DEBUG_MODE_DEC);
-
-    return _nodes;
+    parser::ast_control->print("Ast Node Variable Declaration -- Equal End\n", AST_DEBUG_MODE_DEC);
     
+    return _nodes;
+
 }
 
 parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Variable_Declaration::getCopy() {
@@ -1290,6 +1300,8 @@ parser::Ast_Node_Expression::Ast_Node_Expression(Ast_Node_Expression* __expressi
         destroy_value(1) { organized_set = new utils::Linked_List <Ast_Node*>(); organized_set->destroy_content = 0;     }
 
 parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDeclaration() {
+
+    this->organized_set->clean();
 
     utils::Linked_List <Expression_Result_Helper*>* _expressions_result_helper = new utils::Linked_List <Expression_Result_Helper*>();
     Ast_Node_Expression* _expression = this, *_last_expression;

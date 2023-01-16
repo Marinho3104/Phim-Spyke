@@ -882,6 +882,13 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeCast(Ast_No
     );
     _byte_code->add(_load);
 
+    byte_code::Byte_Code* _load_param = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+    new (_load_param) byte_code::Byte_Code(
+        BYTE_CODE_LOAD,
+        __node_cast->representive_declaration->address
+    );
+    _byte_code->add(_load_param);
+
     _temp = getByteCodeOfNode(__node_cast->value);
     _byte_code->join(_temp);
     delete _temp;

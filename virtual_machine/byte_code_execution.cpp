@@ -47,8 +47,10 @@ void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual
     case BYTE_CODE_BINARY_MUL: execute_BYTE_BINARY_MUL(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_DIV: execute_BYTE_BINARY_DIV(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_MOD: execute_BYTE_BINARY_MOD(__byte_code->argument, __execution); break;
+    case BYTE_CODE_BINARY_INC: execute_BYTE_BINARY_INC(__byte_code->argument, __execution); break;
+    case BYTE_CODE_BINARY_DEC: execute_BYTE_BINARY_DEC(__byte_code->argument, __execution); break;
 
-    case BYTE_CODE_NOP: break;
+    case BYTE_CODE_NOP: std::cout << "NOP" << std::endl; break;
     default: std::cout << "error " << std::endl; exit(1); break;
     }
 
@@ -56,7 +58,7 @@ void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual
 
 void virtual_machine::execute_BYTE_CODE_STACK_MEMORY_ALLOCATE(int __arg, Execution* __execution) {
 
-    std::cout << "MEMORY_ALLOCATE" << std::endl;
+    std::cout << "STACK_MEMORY_ALLOCATE" << std::endl;
     std::cout << "Allocate size -> " << __arg << std::endl;
     int _address;
 
@@ -65,6 +67,14 @@ void virtual_machine::execute_BYTE_CODE_STACK_MEMORY_ALLOCATE(int __arg, Executi
     // __execution->stacks->last->object->addToStack(
     //     _address
     // );
+
+}
+
+void virtual_machine::execute_BYTE_CODE_HEAP_MEMORY_ALLOCATE(int __arg, Execution* __execution) {
+
+    std::cout << "HEAP_MEMORY_ALLOCATE" << std::endl;
+    std::cout << "Allocate size -> " << __arg << std::endl;
+
 
 }
 
@@ -271,6 +281,7 @@ void virtual_machine::execute_BYTE_BINARY_ADD(int __arg, Execution* __execution)
     switch (__arg)
     {
     case 1: binary_add_1_bytes(__execution); break;
+    case 2: binary_add_2_bytes(__execution); break;
     case 4: binary_add_4_bytes(__execution); break;
     default: std::cout << "Error" << std::endl; exit(1); break;
     }
@@ -284,6 +295,7 @@ void virtual_machine::execute_BYTE_BINARY_SUB(int __arg, Execution* __execution)
     switch (__arg)
     {
     case 1: binary_sub_1_bytes(__execution); break;
+    case 2: binary_sub_2_bytes(__execution); break;
     case 4: binary_sub_4_bytes(__execution); break;
     default: std::cout << "Error" << std::endl; exit(1); break;
     }
@@ -297,6 +309,7 @@ void virtual_machine::execute_BYTE_CODE_BINARY_EQUAL_TO(int __arg, Execution* __
     switch (__arg)
     {
     case 1: binary_equal_to_1_bytes(__execution); break;
+    case 2: binary_equal_to_2_bytes(__execution); break;
     case 4: binary_equal_to_4_bytes(__execution); break;
     default: std::cout << "Error" << std::endl; exit(1); break;
     }
@@ -322,7 +335,6 @@ void virtual_machine::execute_BYTE_CODE_BINARY_GREATER_THAN_EQUAL_TO(int, Execut
 void virtual_machine::execute_BYTE_CODE_BINARY_LESS_THAN_EQUAL_TO(int, Execution*) {
 
 }
-
 
 void virtual_machine::execute_BYTE_CODE_IF(int __arg, Execution* __execution, int& __current_index) {
 
@@ -362,6 +374,7 @@ void virtual_machine::execute_BYTE_BINARY_MUL(int __arg, Execution* __execution)
     switch (__arg)
     {
     case 1: binary_mul_1_bytes(__execution); break;
+    case 2: binary_mul_2_bytes(__execution); break;
     case 4: binary_mul_4_bytes(__execution); break;
     default: std::cout << "Error" << std::endl; exit(1); break;
     }
@@ -375,6 +388,7 @@ void virtual_machine::execute_BYTE_BINARY_DIV(int __arg, Execution* __execution)
     switch (__arg)
     {
     case 1: binary_div_1_bytes(__execution); break;
+    case 2: binary_div_2_bytes(__execution); break;
     case 4: binary_div_4_bytes(__execution); break;
     default: std::cout << "Error" << std::endl; exit(1); break;
     }
@@ -388,12 +402,40 @@ void virtual_machine::execute_BYTE_BINARY_MOD(int __arg, Execution* __execution)
     switch (__arg)
     {
     case 1: binary_mod_1_bytes(__execution); break;
+    case 2: binary_mod_2_bytes(__execution); break;
     case 4: binary_mod_4_bytes(__execution); break;
     default: std::cout << "Error" << std::endl; exit(1); break;
     }
 
 }
 
+void virtual_machine::execute_BYTE_BINARY_INC(int __arg, Execution* __execution) {
+
+    std::cout << "BINARY_INC" << std::endl;
+
+    switch (__arg)
+    {
+    case 1: binary_inc_1_bytes(__execution); break;
+    case 2: binary_inc_2_bytes(__execution); break;
+    case 4: binary_inc_4_bytes(__execution); break;
+    default: std::cout << "Error" << std::endl; exit(1); break;
+    }
+
+}
+
+void virtual_machine::execute_BYTE_BINARY_DEC(int __arg, Execution* __execution) {
+
+    std::cout << "BINARY_DEC" << std::endl;
+
+    switch (__arg)
+    {
+    case 1: binary_dec_1_bytes(__execution); break;
+    case 2: binary_dec_2_bytes(__execution); break;
+    case 4: binary_dec_4_bytes(__execution); break;
+    default: std::cout << "Error" << std::endl; exit(1); break;
+    }
+
+}
 
 
 

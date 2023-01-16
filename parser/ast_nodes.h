@@ -71,12 +71,13 @@ namespace parser {
 
         Ast_Node_Function_Declaration* constructor_declaration;
         parser::Type_Information* type;
+        Ast_Node* array_length;
         int declaration_id;
         bool global;
 
         int address;
         
-        ~Ast_Node_Variable_Declaration(); Ast_Node_Variable_Declaration(parser::Type_Information*, int, bool);
+        ~Ast_Node_Variable_Declaration(); Ast_Node_Variable_Declaration(parser::Type_Information*, int, bool); Ast_Node_Variable_Declaration(parser::Type_Information*, Ast_Node*, int, bool);
 
         static utils::Linked_List <Ast_Node*>* generateFunctionParameter();
 

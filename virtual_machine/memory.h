@@ -18,6 +18,9 @@ namespace virtual_machine {
         ~Memory(); Memory(void*);
 
         /**/
+        int allocateHeap(int);
+
+        /**/
         int allocateStack(int);
 
         /**/

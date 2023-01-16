@@ -8,7 +8,7 @@
 virtual_machine::Stack::~Stack() { delete stack; }
 
 virtual_machine::Stack::Stack(int __inicial_position) 
-    : inicial_position(__inicial_position), call_position(__inicial_position)
+    : inicial_position(__inicial_position), call_position(__inicial_position), stack_off(0)
         { stack = new utils::Linked_List <int>(); }
 
 void virtual_machine::Stack::addToStack(int __value) { stack->add(__value); }

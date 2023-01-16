@@ -200,9 +200,9 @@ char** built_ins::getPrimitivesNames() {
     _names[5] = 0;
     _names[0] = getStructNameOfTokenId(PRIMITIVE_TYPE_VOID);
     _names[1] = getStructNameOfTokenId(PRIMITIVE_TYPE_BYTE);
-    _names[2] = getStructNameOfTokenId(PRIMITIVE_TYPE_INT);
-    _names[3] = getStructNameOfTokenId(PRIMITIVE_TYPE_POINTER);
-    _names[4] = getStructNameOfTokenId(PRIMITIVE_TYPE_BOOL);
+    _names[2] = getStructNameOfTokenId(PRIMITIVE_TYPE_BOOL);
+    _names[3] = getStructNameOfTokenId(PRIMITIVE_TYPE_INT);
+    _names[4] = getStructNameOfTokenId(PRIMITIVE_TYPE_POINTER);
 
     return _names;
 

@@ -281,6 +281,7 @@ int parser::getNodeType() {
     case CLOSE_PARENTHESIS: return -3; break;
     case OPEN_BRACES: return AST_NODE_CODE_BLOCK; break;
     case COMMA: return -4; break;
+    case CLOSE_BRACKET: return -5; break;
     case BYTE_CODE: return AST_NODE_BYTE_CODE; break;
     case SIZE_OF: return AST_NODE_SIZE_OF; break;
     case RETURN: return AST_NODE_RETURN; break;
@@ -332,7 +333,7 @@ int parser::getNodeType() {
 
         switch (parser::ast_control->getToken(1)->id)
         {
-        case FUNCTION_OPERATOR_EQUAL: case COMMA: case END_INSTRUCTION: _node_type = AST_NODE_VARIABLE_DECLARATION; break;
+        case FUNCTION_OPERATOR_EQUAL: case COMMA: case END_INSTRUCTION: case OPEN_BRACKET: _node_type = AST_NODE_VARIABLE_DECLARATION; break;
         case OPEN_PARENTHESIS: _node_type = AST_NODE_FUNCTION_DECLARATION; break;
         default: exception_handle->runExceptionAstControl("Unexpected token - getNodeType() isPrimitive"); break;
         }

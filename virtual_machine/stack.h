@@ -11,7 +11,7 @@ namespace virtual_machine {
 
     struct Stack {
 
-        int inicial_position, call_position;
+        int inicial_position, call_position, stack_off;
 
         utils::Linked_List <int>* stack;
 

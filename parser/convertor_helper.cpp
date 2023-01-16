@@ -55,16 +55,6 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
         
             goto return_; break;
         }
-    case AST_NODE_VARIABLE_DECLARATION: 
-        
-        _byte_code->add(
-            getByteCodeOfNodeVariableDeclaration(
-                (Ast_Node_Variable_Declaration*) __node
-            )
-        ); 
-        
-        goto return_; break;
-        
     case AST_NODE_FUNCTION_DECLARATION:
 
         getByteCodeOfNodeFunctionDeclaration(
@@ -119,6 +109,15 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
 
     switch (__node->node_type)
     {
+    case AST_NODE_VARIABLE_DECLARATION: 
+        
+        _byte_code = 
+            getByteCodeOfNodeVariableDeclaration(
+                (Ast_Node_Variable_Declaration*) __node
+            ); 
+        
+        break;
+        
     case AST_NODE_FUNCTION_CALL:
 
         _byte_code = 
@@ -193,24 +192,75 @@ return_:
 
 }
 
-byte_code::Byte_Code* parser::getByteCodeOfNodeVariableDeclaration(Ast_Node_Variable_Declaration* __node_variable_declaration) {
+utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeVariableDeclaration(Ast_Node_Variable_Declaration* __node_variable_declaration) {
 
     parser::convertor_control->print("Node Variable Declaration - Byte Code");
     std::cout << convertor_control->block_in_set->current_allocation_size << std::endl;
 
-    byte_code::Byte_Code* _byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code_rtr = new utils::Linked_List <byte_code::Byte_Code*>(), *_temp;
+    _byte_code_rtr->destroy_content = 0;
 
-    new (_byte_code) byte_code::Byte_Code(
+    byte_code::Byte_Code* _variable = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+    new (_variable) byte_code::Byte_Code(
         BYTE_CODE_STACK_MEMORY_ALLOCATE,
         __node_variable_declaration->type->getSize()
     );
+    _byte_code_rtr->add(_variable);
 
     __node_variable_declaration->address = 
         convertor_control->block_in_set->current_allocation_size;
 
-    convertor_control->block_in_set->current_allocation_size += _byte_code->argument;
+    convertor_control->block_in_set->current_allocation_size += _variable->argument;
 
-    return _byte_code;
+
+    if (__node_variable_declaration->array_length) {
+
+        byte_code::Byte_Code* _load_var = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+        new (_load_var) byte_code::Byte_Code(
+            BYTE_CODE_LOAD,
+            __node_variable_declaration->address
+        );
+        _byte_code_rtr->add(_load_var);
+
+
+        byte_code::Byte_Code* _load = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+        new (_load) byte_code::Byte_Code(
+            BYTE_CODE_LOAD,
+            convertor_control->block_in_set->current_allocation_size
+        );
+        _byte_code_rtr->add(_load);
+
+        byte_code::Byte_Code* _byte_code_chng = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+        new (_byte_code_chng) byte_code::Byte_Code(
+            BYTE_CODE_SET_INTO_STACK,
+            0
+        );
+        _byte_code_rtr->add(_byte_code_chng);
+
+
+        _temp = getByteCodeOfNodeExpression(
+            (Ast_Node_Expression*) __node_variable_declaration->array_length
+        );
+        _byte_code_rtr->join(
+            _temp
+        );
+        delete _temp;
+
+
+        __node_variable_declaration->type->pointer_level--;
+
+        byte_code::Byte_Code* _stack_off = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+        new (_stack_off) byte_code::Byte_Code(
+            BYTE_CODE_STACK_OFF,
+            __node_variable_declaration->type->getSize()
+        );
+        _byte_code_rtr->add(_stack_off);        
+
+        __node_variable_declaration->type->pointer_level++;
+
+    }
+
+    return _byte_code_rtr;
 
 
 }
@@ -364,7 +414,7 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeStructDecla
 
     parser::convertor_control->print("Node Struct Declaration - Byte Code");
 
-    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>();
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>(), *_temp;
     _byte_code->destroy_content = 0;
 
     for (int _ = 0; _ < __node_struct_declaration->functions->declarations->count; _++) 
@@ -373,11 +423,12 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeStructDecla
 
             std::cout << "Static var" << std::endl;
 
-            _byte_code->add(
-                getByteCodeOfNodeVariableDeclaration(
+            _temp = getByteCodeOfNodeVariableDeclaration(
                 (Ast_Node_Variable_Declaration*) __node_struct_declaration->functions->declarations->operator[](_)
-                )
-            );
+                );
+
+            _byte_code->join(_temp);
+            delete _temp;
 
         }
 
@@ -872,8 +923,9 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeCast(Ast_No
     utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>(), *_temp;
     _byte_code->destroy_content = 0;
 
-    byte_code::Byte_Code* _memory_allocation = getByteCodeOfNodeVariableDeclaration(__node_cast->representive_declaration);
-    _byte_code->add(_memory_allocation);
+    _temp = getByteCodeOfNodeVariableDeclaration(__node_cast->representive_declaration);
+    _byte_code->join(_temp);
+    delete _temp;
 
     byte_code::Byte_Code* _load = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
     new (_load) byte_code::Byte_Code(

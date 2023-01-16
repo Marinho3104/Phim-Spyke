@@ -6,14 +6,3 @@ namespace built_ins {
     };
 
 }
-
-
-
-void main() {
-
-    int j = 12345 + 123;
-
-    j;
-
-}
- 

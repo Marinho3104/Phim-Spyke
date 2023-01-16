@@ -58,8 +58,8 @@ int parser::getTokenSymbol(const char*& __current_position) {
     if (!strncmp(__current_position, "{", 1)) { __current_position += 1; return OPEN_BRACES; }
     if (!strncmp(__current_position, "}", 1)) { __current_position += 1; return CLOSE_BRACES; }
 
-    if (!strncmp(__current_position, "[", 1)) { __current_position += 1; return OPEN_BRACES; }
-    if (!strncmp(__current_position, "]", 1)) { __current_position += 1; return CLOSE_BRACES; }
+    if (!strncmp(__current_position, "[", 1)) { __current_position += 1; return OPEN_BRACKET; }
+    if (!strncmp(__current_position, "]", 1)) { __current_position += 1; return CLOSE_BRACKET; }
 
     if (!strncmp(__current_position, ",", 1)) { __current_position += 1; return COMMA; }
     if (!strncmp(__current_position, ":", 1)) { __current_position += 1; return COLON; }

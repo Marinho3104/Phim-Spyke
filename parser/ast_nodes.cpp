@@ -382,10 +382,16 @@ parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Code_Block::getStructDecla
 
 
 
-parser::Ast_Node_Variable_Declaration::~Ast_Node_Variable_Declaration() { delete type; }
+parser::Ast_Node_Variable_Declaration::~Ast_Node_Variable_Declaration() { delete type; if (array_length) array_length->~Ast_Node(); free(array_length); }
 
 parser::Ast_Node_Variable_Declaration::Ast_Node_Variable_Declaration(parser::Type_Information* __type_information, int __declaration_id, bool __global) 
-    : Ast_Node(this, AST_NODE_VARIABLE_DECLARATION), type(__type_information), global(__global), declaration_id(__declaration_id), constructor_declaration(0) {}
+    : Ast_Node(this, AST_NODE_VARIABLE_DECLARATION), type(__type_information), global(__global), declaration_id(__declaration_id), array_length(0), constructor_declaration(0) {}
+
+parser::Ast_Node_Variable_Declaration::Ast_Node_Variable_Declaration(parser::Type_Information* __type_information, Ast_Node* __array_length, int __declaration_id, bool __global) 
+    : Ast_Node(this, AST_NODE_VARIABLE_DECLARATION), type(__type_information), global(__global), declaration_id(__declaration_id), array_length(__array_length), constructor_declaration(0) 
+        { if (array_length) type->pointer_level++;  }
+
+
 
 utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Variable_Declaration::generateFunctionParameter() {
 
@@ -447,7 +453,8 @@ utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Variable_Declaration::g
 
     return _nodes;
 
-}   
+}  
+
 
 utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Variable_Declaration::generate() {
 
@@ -491,9 +498,30 @@ utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Variable_Declaration::g
 
         _global = _is_static ? 1 : isGlobalDeclaration();
 
+        Ast_Node* _array_length = 0;
+
+        if (parser::ast_control->getToken(0)->id == OPEN_BRACKET) {
+
+            parser::ast_control->current_position++;
+
+            _array_length = Ast_Node_Expression::generate(
+                getNodeType()
+            );
+
+            if (parser::ast_control->getToken(0)->id != CLOSE_BRACKET) 
+
+                exception_handle->runExceptionAstControl("Excpected token ']'");
+
+            ((Ast_Node_Expression*) _array_length)->getResultDeclaration();
+
+            parser::ast_control->current_position++;
+
+        }
+
+
         _variable_declaration = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
         new (_variable_declaration) Ast_Node_Variable_Declaration(
-            _type_information, _declaration_id, _global
+            _type_information, _array_length, _declaration_id, _global
         );
         
         if (_is_static) {

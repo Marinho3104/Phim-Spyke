@@ -24,6 +24,7 @@ void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual
     switch (__byte_code->code)
     {
     case BYTE_CODE_STACK_MEMORY_ALLOCATE: execute_BYTE_CODE_STACK_MEMORY_ALLOCATE(__byte_code->argument, __execution); break;
+    case BYTE_CODE_HEAP_MEMORY_ALLOCATE: execute_BYTE_CODE_HEAP_MEMORY_ALLOCATE(__byte_code->argument, __execution); break;
     case BYTE_CODE_LOAD: execute_BYTE_CODE_LOAD(__byte_code->argument, __execution); break;
     case BYTE_CODE_LOAD_GLOBAL: execute_BYTE_CODE_LOAD_GLOBAL(__byte_code->argument, __execution); break;
     case BYTE_CODE_CALL: execute_BYTE_CODE_CALL(__byte_code, __execution); break;
@@ -49,6 +50,7 @@ void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual
     case BYTE_CODE_BINARY_MOD: execute_BYTE_BINARY_MOD(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_INC: execute_BYTE_BINARY_INC(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_DEC: execute_BYTE_BINARY_DEC(__byte_code->argument, __execution); break;
+    case BYTE_CODE_STACK_OFF: execute_BYTE_CODE_STACK_OFF(__byte_code->argument, __execution); break;
 
     case BYTE_CODE_NOP: std::cout << "NOP" << std::endl; break;
     default: std::cout << "error " << std::endl; exit(1); break;
@@ -75,6 +77,15 @@ void virtual_machine::execute_BYTE_CODE_HEAP_MEMORY_ALLOCATE(int __arg, Executio
     std::cout << "HEAP_MEMORY_ALLOCATE" << std::endl;
     std::cout << "Allocate size -> " << __arg << std::endl;
 
+    int _address;
+
+    if (
+        (_address = __execution->program->memory->allocateHeap(__arg)) == -1
+    ) {std::cout << "Error" << std::endl; exit(1);} // Raise proper error 
+
+    __execution->stacks->last->object->addToStack(
+        _address
+    );
 
 }
 
@@ -84,10 +95,10 @@ void virtual_machine::execute_BYTE_CODE_LOAD(int __arg, Execution* __execution) 
     std::cout << "arg -> " << __arg << std::endl;
     std::cout << "Loaded value address -> " << __execution->stacks->last->object->inicial_position + __arg << std::endl;
     std::cout << "Loaded value -> " << 
-        *((int*)__execution->program->memory->getRealAddress(__execution->stacks->last->object->inicial_position + __arg)) << std::endl;
+        *((short*)__execution->program->memory->getRealAddress(__execution->stacks->last->object->inicial_position + __arg)) << std::endl;
 
     __execution->stacks->last->object->addToStack(
-        __execution->stacks->last->object->inicial_position + __arg
+        __execution->stacks->last->object->inicial_position + __execution->stacks->last->object->stack_off +  __arg
     );
 
     __execution->stacks->last->object->stack->printContent();
@@ -112,7 +123,7 @@ void virtual_machine::execute_BYTE_CODE_LOAD_GLOBAL(int __arg, Execution* __exec
 
 void virtual_machine::execute_BYTE_CODE_CALL(byte_code::Byte_Code* __byte_code, Execution* __execution) { 
 
-    std::cout << "CALL " << __byte_code->argument << std::endl;
+    std::cout << "\t\t\t\t\tCALL " << __byte_code->argument << std::endl;
     __execution->stacks->last->object->stack->printContent();
 
     __execution->addStack();
@@ -182,7 +193,7 @@ void virtual_machine::execute_BYTE_CODE_SET_INTO_STACK(int __arg, Execution* __e
     __execution->stacks->last->object->stack->printContent();
 
     std::cout << "Value added " << _to_add << std::endl;
-    std::cout << "Value -> " << *((int*) __execution->program->memory->getRealAddress(_to_add)) << std::endl;
+    std::cout << "Value -> " << *((short*) __execution->program->memory->getRealAddress(_to_add)) << std::endl;
 
 }
 
@@ -437,6 +448,22 @@ void virtual_machine::execute_BYTE_BINARY_DEC(int __arg, Execution* __execution)
 
 }
 
+
+void virtual_machine::execute_BYTE_CODE_STACK_OFF(int __arg, Execution* __execution) {
+
+    std::cout << "STACK_OFF" << std::endl;
+
+    int _expression_size_address = __execution->stacks->last->object->popFromStack();
+
+    int _off = *((short*) __execution->program->memory->getRealAddress(_expression_size_address)) * __arg;
+
+    std::cout << "Expression result -> " << *((short*) __execution->program->memory->getRealAddress(_expression_size_address)) << std::endl;
+    std::cout << "Argument -> " << __arg << std::endl;
+
+    __execution->stacks->last->object->stack_off += _off;
+    __execution->program->memory->allocateStack(_off);
+
+}
 
 
 

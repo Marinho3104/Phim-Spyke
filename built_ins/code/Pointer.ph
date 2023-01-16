@@ -31,13 +31,7 @@ built_ins::Pointer::Pointer() {}
 
 built_ins::Pointer::Pointer(pointer __pntr) { *this; __pntr; exec 10 2; }
 
-built_ins::Pointer::Pointer(int __v) {
-
-    pointer __address = &__v;
-
-    __address;
-
-}
+built_ins::Pointer::Pointer(int __v) { *this; __v; exec 10 2; }
 
 void built_ins::Pointer::equal(pointer __eq) { *this; __eq; exec 10 2; }
 
@@ -74,3 +68,24 @@ pointer built_ins::Pointer::add(int __off) {
 void built_ins::Pointer::add_assign(int __off) { *this; *this; __off; exec 16 2; }
 
 void built_ins::Pointer::add_assign(int __off, int __s) { *this; *this; __off * __s; exec 16 2; }
+
+
+
+
+
+
+
+
+
+void main() {
+
+    int marinho = 100;
+
+    int _var[1];
+
+    int k;
+
+    *_var;
+    k;
+
+}

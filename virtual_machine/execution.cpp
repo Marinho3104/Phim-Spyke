@@ -56,6 +56,8 @@ void virtual_machine::Execution::executeBlock(int __block_index, bool __stack_ch
 
     if (__stack_chage) popStack();
 
+    std::cout << "\n\nBlock Out \n\n" << std::endl;
+
 }
 
 

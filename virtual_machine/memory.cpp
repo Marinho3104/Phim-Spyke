@@ -29,6 +29,16 @@ virtual_machine::Memory::Memory(void* __implicit_memory) : top_stack_memory(-1) 
 
 }
 
+int virtual_machine::Memory::allocateHeap(int __s) {
+
+    std::cout << __s + STACK_MEMORY_SIZE << std::endl;
+
+    if ((__s + STACK_MEMORY_SIZE) >= STACK_MEMORY_SIZE + HEAP_MEMORY_SIZE || __s < 0) return -1;
+
+    return __s + STACK_MEMORY_SIZE;   
+
+}
+
 int virtual_machine::Memory::allocateStack(int __s) {
 
     std::cout << __s + top_stack_memory << std::endl;
@@ -48,7 +58,10 @@ void virtual_machine::Memory::deallocateStack(int __s) {
 
     if (__s < -1 >= top_stack_memory) return;
 
-    top_stack_memory = __s;
+    // For degub only
+    while(top_stack_memory != __s) { void* _ = getRealAddress(top_stack_memory); *((char*) _) = 0; top_stack_memory--; }
+
+    //top_stack_memory = __s;
 
 }
 

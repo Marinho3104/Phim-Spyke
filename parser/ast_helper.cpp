@@ -40,14 +40,20 @@ parser::Type_Information::Type_Information(parser::Ast_Node_Struct_Declaration* 
 bool parser::Type_Information::operator==(Type_Information* __to_comp) {
 
     std::cout << "Comp" << std::endl;
+    std::cout << "Struct Name this -> " << declaration->struct_name << std::endl;
+    std::cout << "Struct Name to_comp -> " << __to_comp->declaration->struct_name << std::endl;
+    std::cout << "this pointer level -> " << pointer_level << std::endl;
+    std::cout << "to_comp pointer level -> " << __to_comp->pointer_level << std::endl;
     std::cout << (declaration == __to_comp->declaration) << std::endl;
     std::cout << (pointer_level == __to_comp->pointer_level) << std::endl;
     std::cout << (reference_level == __to_comp->reference_level) << std::endl;
-    std::cout << "Self Pointer level ->" << pointer_level << std::endl;
-    std::cout << "Given Pointer level ->" << __to_comp->pointer_level << std::endl;
+    std::cout << (__to_comp->isPointerStruct() && pointer_level) << std::endl;
+    std::cout << (isPointerStruct() && __to_comp->pointer_level) << std::endl;
+    std::cout << isSpykeStruct() << std::endl;
+    std::cout << __to_comp->isSpykeStruct() << std::endl;
     std::cout << "Comp" << std::endl;
 
-    return (__to_comp->isPointerStruct() && pointer_level) || (
+    return isSpykeStruct() || __to_comp->isSpykeStruct() || ((__to_comp->isPointerStruct() && pointer_level) || (isPointerStruct() && __to_comp->pointer_level)) || (
         declaration == __to_comp->declaration &&
         pointer_level == __to_comp->pointer_level &&
         reference_level == __to_comp->reference_level
@@ -252,6 +258,8 @@ parser::Type_Information* parser::Type_Information::getCopy() {
 }
 
 bool parser::Type_Information::isPointerStruct() { return !strncmp(declaration->struct_name, PRIMITIVE_TYPE_POINTER_NAME, strlen(PRIMITIVE_TYPE_POINTER_NAME)); }
+
+bool parser::Type_Information::isSpykeStruct() { return !strncmp(declaration->struct_name, PRIMITIVE_TYPE_SPYKE_NAME, strlen(PRIMITIVE_TYPE_SPYKE_NAME)); }
 
 int parser::Type_Information::getSize() {
 
@@ -542,6 +550,8 @@ bool parser::isGlobalDeclaration() { return !parser::ast_control->code_block_cha
 
 int parser::getOperatorPriority(int __token_id) {
 
+
+    if (__token_id == OPEN_BRACKET) return 0;
     if (__token_id >= FUNCTION_OPERATOR_MULTIPLICATION && __token_id <= FUNCTION_OPERATOR_MODULOS) return 1;
     if (__token_id >= FUNCTION_OPERATOR_PLUS && __token_id <= FUNCTION_OPERATOR_MINUS) return 2;
     if (__token_id >= FUNCTION_OPERATOR_BITWISE_AND && __token_id <= FUNCTION_OPERATOR_BITWISE_RIGHT_SHIFT) return 3;

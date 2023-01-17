@@ -28,6 +28,8 @@ namespace parser {
 
         bool isPointerStruct();
 
+        bool isSpykeStruct();
+
         int getSize();
 
     };

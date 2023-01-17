@@ -45,11 +45,15 @@ parser::Ast_Node_Function_Declaration* parser::Declarations_Tracker::getFunction
         getSpecificNodesFromLinkedList<parser::Ast_Node_Variable_Declaration>(__parameters, AST_NODE_VARIABLE_DECLARATION), *_founded_variable_declarations;
     parser::Ast_Node_Function_Declaration* _function_declaration = NULL;
 
+    std::cout << "Searching " << std::endl;
+
     for (int _ = 0; _ < function_declaration->count; _++)
 
         if (
             function_declaration->operator[](_)->declaration_id == __declaration_id
         ) {
+
+            std::cout << "\n\nFound new one\n\n" << std::endl;
 
             _function_declaration = function_declaration->operator[](_);
 

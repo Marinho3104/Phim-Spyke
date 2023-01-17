@@ -66,7 +66,7 @@ namespace virtual_machine {
     
     void execute_BYTE_BINARY_DEC(int, Execution*);
 
-    void execute_BYTE_CODE_STACK_OFF(int, Execution*);
+    void execute_BYTE_CODE_EXECUTE_PREVIOUS_STACK(byte_code::Byte_Code*, Execution*, int&);
 
 }
 

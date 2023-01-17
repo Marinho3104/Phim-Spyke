@@ -50,10 +50,10 @@ void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual
     case BYTE_CODE_BINARY_MOD: execute_BYTE_BINARY_MOD(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_INC: execute_BYTE_BINARY_INC(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_DEC: execute_BYTE_BINARY_DEC(__byte_code->argument, __execution); break;
-    case BYTE_CODE_STACK_OFF: execute_BYTE_CODE_STACK_OFF(__byte_code->argument, __execution); break;
+    case BYTE_CODE_EXECUTE_PREVIOUS_STACK: execute_BYTE_CODE_EXECUTE_PREVIOUS_STACK(__byte_code, __execution, __current_index); break;
 
     case BYTE_CODE_NOP: std::cout << "NOP" << std::endl; break;
-    default: std::cout << "error " << std::endl; exit(1); break;
+    default: std::cout << "error " << __byte_code->code << std::endl; exit(1); break;
     }
 
 }
@@ -449,21 +449,32 @@ void virtual_machine::execute_BYTE_BINARY_DEC(int __arg, Execution* __execution)
 }
 
 
-void virtual_machine::execute_BYTE_CODE_STACK_OFF(int __arg, Execution* __execution) {
+void virtual_machine::execute_BYTE_CODE_EXECUTE_PREVIOUS_STACK(byte_code::Byte_Code* __byte_code, Execution* __execution, int& __current_index) {
 
-    std::cout << "STACK_OFF" << std::endl;
+    std::cout << "EXECUTE_PREVIOUS_STACK" << std::endl;
 
-    int _expression_size_address = __execution->stacks->last->object->popFromStack();
+    __execution->stacks->add(
+        __execution->stacks->last->previous->object, 0
+    );
 
-    int _off = *((short*) __execution->program->memory->getRealAddress(_expression_size_address)) * __arg;
+    int _temp = __execution->stacks->last->object->inicial_position;
+    __execution->stacks->last->object->inicial_position = __execution->stacks->last->previous->object->inicial_position;
 
-    std::cout << "Expression result -> " << *((short*) __execution->program->memory->getRealAddress(_expression_size_address)) << std::endl;
-    std::cout << "Argument -> " << __arg << std::endl;
 
-    __execution->stacks->last->object->stack_off += _off;
-    __execution->program->memory->allocateStack(_off);
+    for (int _ = 0; _ < __byte_code->argument; _++) {
+
+        __byte_code++;
+        __current_index++;
+
+        executeByteCode(__byte_code, __execution, __current_index);
+
+    }
+
+    __execution->stacks->last->object->inicial_position = _temp;
+
+    delete __execution->stacks->remove(
+        __execution->stacks->count
+    );
 
 }
-
-
 

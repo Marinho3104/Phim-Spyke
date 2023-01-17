@@ -50,6 +50,13 @@ char* built_ins::getStructNameOfTokenId(int __token_id) {
         strcpy(_struct_name, PRIMITIVE_TYPE_POINTER_NAME);
         
         break;
+    case PRIMITIVE_TYPE_SPYKE:
+
+        _struct_name = (char*) malloc(6);
+
+        strcpy(_struct_name, PRIMITIVE_TYPE_SPYKE_NAME);
+        
+        break;
 
     default: break;
     }
@@ -183,6 +190,13 @@ char* built_ins::getFunctionNameFromTokenId(int __token_id) {
 
         break; 
 
+    case OPEN_BRACKET:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_BRACKET) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_BRACKET);
+
+        break; 
 
 
     default: std::cout << "Error getting Function Name for token -> " << __token_id << std::endl; exit(1); break;
@@ -195,14 +209,15 @@ char* built_ins::getFunctionNameFromTokenId(int __token_id) {
 
 char** built_ins::getPrimitivesNames() {
     
-    char** _names = (char**) malloc(8 * 6);
+    char** _names = (char**) malloc(8 * 7);
 
-    _names[5] = 0;
+    _names[6] = 0;
     _names[0] = getStructNameOfTokenId(PRIMITIVE_TYPE_VOID);
     _names[1] = getStructNameOfTokenId(PRIMITIVE_TYPE_BYTE);
     _names[2] = getStructNameOfTokenId(PRIMITIVE_TYPE_BOOL);
     _names[3] = getStructNameOfTokenId(PRIMITIVE_TYPE_INT);
-    _names[4] = getStructNameOfTokenId(PRIMITIVE_TYPE_POINTER);
+    _names[4] = getStructNameOfTokenId(PRIMITIVE_TYPE_SPYKE);
+    _names[5] = getStructNameOfTokenId(PRIMITIVE_TYPE_POINTER);
 
     return _names;
 

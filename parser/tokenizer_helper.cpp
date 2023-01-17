@@ -84,6 +84,8 @@ int parser::getTokenSymbol(const char*& __current_position) {
     if (!strncmp(__current_position, ">", 1)) { __current_position += 1; return FUNCTION_OPERATOR_GREATER_THAN; }
     if (!strncmp(__current_position, "<", 1)) { __current_position += 1; return FUNCTION_OPERATOR_LESS_THAN; }
 
+    if (!strncmp(__current_position, "~", 1)) { __current_position += 1; return FUNCTION_OPERATOR_BITWISE_NOT; }
+
     if (!strncmp(__current_position, "&", 1)) { __current_position += 1; return FUNCTION_OPERATOR_BITWISE_AND; } // Never reatch
     if (!strncmp(__current_position, "|", 1)) { __current_position += 1; return FUNCTION_OPERATOR_BITWISE_OR; }
     if (!strncmp(__current_position, "^", 1)) { __current_position += 1; return FUNCTION_OPERATOR_BITWISE_XOR; }
@@ -101,6 +103,7 @@ int parser::getTokenKeyWord(const char*& __current_position) {
     if (!strncmp(__current_position, "int", 3)) { __current_position += 3; return PRIMITIVE_TYPE_INT; }
     if (!strncmp(__current_position, "bool", 4)) { __current_position += 4; return PRIMITIVE_TYPE_BOOL; }
     if (!strncmp(__current_position, "pointer", 7)) { __current_position += 7; return PRIMITIVE_TYPE_POINTER; }
+    if (!strncmp(__current_position, "spyke", 5)) { __current_position += 5; return PRIMITIVE_TYPE_SPYKE; }
     
     if (!strncmp(__current_position, "namespace", 9)) { __current_position += 9; return NAMESPACE; }
     if (!strncmp(__current_position, "struct", 6)) { __current_position += 6; return STRUCT; }
@@ -189,13 +192,13 @@ int parser::getImplicitValueTypeOrIdentifier(char* __data) {
 }
 
 
-bool parser::isPrimitive(int __token_id) { return __token_id >= PRIMITIVE_TYPE_VOID && __token_id <= PRIMITIVE_TYPE_BOOL || __token_id == PRIMITIVE_TYPE_POINTER; }
+bool parser::isPrimitive(int __token_id) { return __token_id >= PRIMITIVE_TYPE_VOID && __token_id <= PRIMITIVE_TYPE_BOOL || __token_id == PRIMITIVE_TYPE_POINTER || __token_id == PRIMITIVE_TYPE_SPYKE; }
 
 bool parser::isImplicitValueOrIdentifier(int __token_id) { return __token_id >= IDENTIFIER && __token_id <= IMPLICIT_VALUE_STRING; }
 
 bool parser::isAccessingOperator(int __token_id) { return __token_id == ACCESSING || __token_id == ACCESSING_POINTER; }
 
-bool parser::isFunctionOperator(int __token_id) { return __token_id >= FUNCTION_OPERATOR_PLUS && __token_id <= FUNCTION_OPERATOR_BITWISE_RIGHT_SHIFT_ASSIGN || __token_id == FUNCTION_OPERATOR_EQUAL; }
+bool parser::isFunctionOperator(int __token_id) { return __token_id >= FUNCTION_OPERATOR_PLUS && __token_id <= FUNCTION_OPERATOR_BITWISE_RIGHT_SHIFT_ASSIGN || __token_id == FUNCTION_OPERATOR_EQUAL || __token_id == OPEN_BRACKET || __token_id == FUNCTION_OPERATOR_BITWISE_NOT; }
 
 
 bool parser::isInt(char* __data) {

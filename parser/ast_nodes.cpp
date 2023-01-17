@@ -1361,7 +1361,7 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
     int _token_id, _declaration_id;
     char* _function_name;
 
-    int _current_priority = 1;
+    int _current_priority = 0;
 
     while (_expressions_result_helper->count != 1) {
 
@@ -1464,13 +1464,13 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
 
                     exception_handle->runExceptionAstControl("No function declaration with given name and given arguments");
 
-                if (!_expressions_result_helper->operator[](_)->function_result_value) 
+                if (!_expressions_result_helper->operator[](_)->function_result_value && !_expressions_result_helper->operator[](_)->declaration->type->isSpykeStruct()) 
 
                     this->organized_set->add(
                         _first_argument_value
                     );
 
-                if (!_expressions_result_helper->operator[](_ + 1)->function_result_value)
+                if (!_expressions_result_helper->operator[](_ + 1)->function_result_value && !_expressions_result_helper->operator[](_ + 1)->declaration->type->isSpykeStruct())
 
                     this->organized_set->add(
                         _second_argument_value
@@ -1504,7 +1504,7 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
 
             else {
 
-                if (!_expressions_result_helper->operator[](_)->function_result_value) 
+                if (!_expressions_result_helper->operator[](_)->function_result_value && !_expressions_result_helper->operator[](_)->declaration->type->isSpykeStruct()) 
 
                     this->organized_set->add(
                         _expressions_result_helper->operator[](_)->expression->value
@@ -1542,6 +1542,14 @@ parser::Ast_Node_Expression* parser::Ast_Node_Expression::generate(int __value_n
 
     Ast_Node* _value = getValue(__value_node_type);
 
+    if (__value_node_type == AST_NODE_EXPRESSION) {
+
+        if (ast_control->getToken(0)->id != CLOSE_BRACKET) exception_handle->runExceptionAstControl("Excpected token ']'");
+
+        ast_control->current_position++;
+    
+    }
+
     std::cout << (int) parser::ast_control->getToken(0)->id << std::endl;
 
 second_operator_check:
@@ -1557,9 +1565,13 @@ second_operator_check:
         default: break;
         }
 
+    std::cout << "Token id -> " << _token_id << std::endl;
+ 
+    int _next_node_type = _token_id == OPEN_BRACKET ? AST_NODE_EXPRESSION : getNodeType();
+
     parser::Ast_Node_Expression* _expression_node = (parser::Ast_Node_Expression*) malloc(sizeof(parser::Ast_Node_Expression));
     new (_expression_node) parser::Ast_Node_Expression(
-        _token_id != -1 ? Ast_Node_Expression::generate(getNodeType()) : NULL,
+        _token_id != -1 ? Ast_Node_Expression::generate(_next_node_type) : NULL,
         _value,
         _token_id
     );
@@ -1574,6 +1586,7 @@ parser::Ast_Node* parser::Ast_Node_Expression::getValue(int __value_node_type) {
 
     switch (__value_node_type)
     {
+    case AST_NODE_EXPRESSION: return Ast_Node_Expression::generate(getNodeType()); break;
     case AST_NODE_VARIABLE: return Ast_Node_Variable::generate(); break;
     case AST_NODE_VALUE: return Ast_Node_Value::generate(); break;
     case AST_NODE_FUNCTION_CALL: return Ast_Node_Function_Call::generate(0, 0); break;
@@ -2085,7 +2098,29 @@ parser::Ast_Node_Cast* parser::Ast_Node_Cast::generate() {
             ast_control->name_space_control->getNameSpace(_cast_type->declaration->functions), 0
         );
 
-        int _declaration_id = getDeclarationId(_cast_type->declaration->struct_name);
+        char* _struct_name;
+
+        if (_cast_type->pointer_level) {
+
+            ast_control->popFromChain();
+
+            Type_Information* _pointer_type = Type_Information::generatePrimitiveType(PRIMITIVE_TYPE_POINTER);
+
+            ast_control->addToChain(
+                ast_control->name_space_control->getNameSpace(_pointer_type->declaration->functions), 0
+            );
+
+            delete _pointer_type;
+
+            _struct_name = "Pointer";
+
+        }
+
+        else _struct_name = _cast_type->declaration->struct_name;
+
+        std::cout << "Struct name -> " << _struct_name << std::endl;
+
+        int _declaration_id = getDeclarationId(_struct_name);
 
         utils::Linked_List <Ast_Node*>* _params = new utils::Linked_List <Ast_Node*>();
 
@@ -2096,8 +2131,13 @@ parser::Ast_Node_Cast* parser::Ast_Node_Cast::generate() {
             _variable_declaration_node    
         );
 
+        Ast_Node_Variable_Declaration* _representive_declaration;
+
+        if (_value->node_type == AST_NODE_EXPRESSION) _representive_declaration = ((Ast_Node_Expression*)_value)->getResultDeclaration();
+        else _representive_declaration = _value->representive_declaration;
+
         _params->add(
-            _value->representive_declaration, 0
+            _representive_declaration, 0
         ); 
 
         Ast_Node_Function_Declaration* _function_declaration = getFunctionDeclaration(_declaration_id, _params);
@@ -2111,6 +2151,9 @@ parser::Ast_Node_Cast* parser::Ast_Node_Cast::generate() {
         delete _params;
 
         ast_control->popFromChain();
+
+
+        // exit(1);
 
     }
 

@@ -23,6 +23,8 @@ namespace built_ins {
 
 }
 
+built_ins::Int::Int(int __val) { *this; __val; exec 10 4; }
+
 int built_ins::Int::add(int __add) {
 
     int __rtr; __rtr;

@@ -77,6 +77,8 @@ namespace parser {
         utils::Linked_List <Name_Space*>* name_space_chain;
         utils::Linked_List <Ast_Node_Code_Block*>* code_block_chain;
 
+        utils::Linked_List <Ast_Node*>* current_nodes_list;
+
         int current_position;
 
         int debug_mode_tab;

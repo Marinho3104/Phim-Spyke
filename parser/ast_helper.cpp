@@ -55,8 +55,8 @@ bool parser::Type_Information::operator==(Type_Information* __to_comp) {
 
     return isSpykeStruct() || __to_comp->isSpykeStruct() || ((__to_comp->isPointerStruct() && pointer_level) || (isPointerStruct() && __to_comp->pointer_level)) || (
         declaration == __to_comp->declaration &&
-        pointer_level == __to_comp->pointer_level &&
-        reference_level == __to_comp->reference_level
+        pointer_level == __to_comp->pointer_level
+        // reference_level == __to_comp->reference_level
     );
 
 }

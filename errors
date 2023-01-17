@@ -1,0 +1,12 @@
+
+
+struct marinho {
+
+    int m;
+
+} *hey;
+
+(*hey).m = 10;
+
+
+//

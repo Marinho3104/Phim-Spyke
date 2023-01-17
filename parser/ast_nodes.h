@@ -80,6 +80,8 @@ namespace parser {
         ~Ast_Node_Variable_Declaration(); Ast_Node_Variable_Declaration(parser::Type_Information*, int, bool); Ast_Node_Variable_Declaration(parser::Type_Information*, Ast_Node*, int, bool);
 
         static utils::Linked_List <Ast_Node*>* generateFunctionParameter();
+        
+        static utils::Linked_List <Ast_Node*>* generateStructDeclarations(Type_Information*);
 
         static utils::Linked_List <Ast_Node*>* generate();
 
@@ -113,6 +115,7 @@ namespace parser {
 
     struct Ast_Node_Struct_Declaration : Ast_Node {
 
+        utils::Linked_List <Ast_Node*>* variables_declarations;
         Ast_Node_Struct_Declaration* forward;
         Ast_Node_Name_Space* functions;
         Ast_Node_Code_Block* fields;

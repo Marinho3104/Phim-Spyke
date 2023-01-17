@@ -15,10 +15,11 @@
 #include "byte_code_store.h"
 #include "program.h"
 
+struct {
+    int k;
+} *m, k;
+
 int main() {
-
-    
-
 
     char* _contract_data = utils::getFileContent((char*) "./test/my_contract.ph");
 
@@ -36,7 +37,7 @@ int main() {
 
     // exit(1);
 
-    virtual_machine::Program* _program = new virtual_machine::Program(_compiled_code_readed, _compiled_code_readed->blocks->count - 1);
+    virtual_machine::Program* _program = new virtual_machine::Program(_compiled_code_readed, _compiled_code_readed->blocks->count - 2);
 
     _program->execute();
 

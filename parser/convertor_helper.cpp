@@ -445,6 +445,24 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeStructDecla
 
     parser::convertor_control->print("Node Struct Declaration End - Byte Code");
 
+    if (!__node_struct_declaration->variables_declarations) return _byte_code;
+
+    parser::convertor_control->print("Node Struct Declaration - Variable Declaration");
+
+    for (int _ = 0; _ < __node_struct_declaration->variables_declarations->count; _++) {
+
+        _temp = getByteCodeOfNode(
+            __node_struct_declaration->variables_declarations->operator[](_)
+        );
+
+        _byte_code->join(_temp);
+
+        delete _temp;
+
+    }
+
+    parser::convertor_control->print("Node Struct Declaration - Variable Declaration End");
+
 
     return _byte_code;
 
@@ -762,7 +780,7 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeAccessing(A
                     byte_code::Byte_Code* _load_byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
 
                     new (_load_byte_code) byte_code::Byte_Code(
-                        BYTE_CODE_LOAD,
+                        __node_accessing->value->representive_declaration->global ? BYTE_CODE_LOAD_GLOBAL : BYTE_CODE_LOAD,
                         __node_accessing->accessing->representive_declaration->address
                     );
 

@@ -98,19 +98,21 @@ spyke built_ins::Pointer::bracket(int __idx, int __s) {
 
 }
 
-void chng(int __to_change) {
+struct marinho {
 
-    __to_change = 100;
+    int m;
 
-}
+} *hey;
 
 void main() {
 
-    int _to_change = 10;
+    if (1) {
 
-    chng(_to_change);
+    }
 
-    _to_change;
+    else if (1) {
+        
+    }
 
 }
 

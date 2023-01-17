@@ -421,6 +421,8 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeStructDecla
     utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>(), *_temp;
     _byte_code->destroy_content = 0;
 
+    if (!__node_struct_declaration->functions) return _byte_code;
+
     for (int _ = 0; _ < __node_struct_declaration->functions->declarations->count; _++) 
 
         if (__node_struct_declaration->functions->declarations->operator[](_)->node_type == AST_NODE_VARIABLE_DECLARATION) {

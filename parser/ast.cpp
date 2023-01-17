@@ -3,6 +3,7 @@
 #include "tokenizer.h"
 
 #include "ast_definitions.h"
+#include "exception_handle.h"
 #include "linked_List.h"
 #include "ast_helper.h"
 #include "ast_nodes.h"
@@ -106,12 +107,17 @@ parser::Ast_Node_Function_Declaration* parser::Declarations_Tracker::getFunction
 
 parser::Ast_Node_Struct_Declaration* parser::Declarations_Tracker::getStructDeclaration(int __declaration_id) {
 
-    for (int _ = 0; _ < struct_declaration->count; _++)
+    Ast_Node_Struct_Declaration* _forward = 0;
 
-        if (struct_declaration->operator[](_)->declaration_id == __declaration_id) return struct_declaration->operator[](_);
+    for (int _ = 0; _ < struct_declaration->count; _++) {
 
-    return NULL;
+        if (struct_declaration->operator[](_)->declaration_id == __declaration_id && struct_declaration->operator[](_)->fields) return struct_declaration->operator[](_);
 
+        else if (struct_declaration->operator[](_)->declaration_id == __declaration_id) _forward = struct_declaration->operator[](_);
+
+    }
+
+    return _forward;
 
 }
 

@@ -269,6 +269,25 @@ int parser::Type_Information::getSize() {
 
 }
 
+bool parser::Type_Information::haveConstructorDefined() {
+
+    if (pointer_level) {
+
+        Type_Information* _pointer_type = Type_Information::generatePrimitiveType(PRIMITIVE_TYPE_POINTER);
+
+        bool _rtr = _pointer_type->haveConstructorDefined();
+
+        delete _pointer_type;
+
+        return _rtr;
+
+    }
+
+    return declaration->haveContructorDefined();
+
+
+}
+
 
 parser::Expression_Result_Helper::~Expression_Result_Helper() {}
 

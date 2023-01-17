@@ -113,12 +113,13 @@ namespace parser {
 
     struct Ast_Node_Struct_Declaration : Ast_Node {
 
+        Ast_Node_Struct_Declaration* forward;
         Ast_Node_Name_Space* functions;
         Ast_Node_Code_Block* fields;
         int declaration_id;
         char* struct_name;
 
-        ~Ast_Node_Struct_Declaration(); Ast_Node_Struct_Declaration(Ast_Node_Name_Space*, Ast_Node_Code_Block*, int, char*);
+        ~Ast_Node_Struct_Declaration(); Ast_Node_Struct_Declaration(Ast_Node_Struct_Declaration*, Ast_Node_Name_Space*, Ast_Node_Code_Block*, int, char*);
 
         static Ast_Node_Struct_Declaration* generate();
 
@@ -135,6 +136,8 @@ namespace parser {
         bool isStaticVariableDeclaration(Ast_Node_Variable_Declaration*);
 
         bool haveContructorDefined();
+
+        void checkBody();
 
     };
 

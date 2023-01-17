@@ -1,0 +1,39 @@
+int _declaration_id;
+        
+        if (_cast_type->pointer_level) {
+
+            std::cout << "pointer level ->" << std::endl;
+
+            _declaration_id = getDeclarationId((char*) "Pointer");
+            std::cout << "declaration id " << _declaration_id << std::endl;
+
+        }
+        
+        else _declaration_id = getDeclarationId(_cast_type->declaration->struct_name);
+
+        std::cout << "parenthesis result -> " << _value->representive_declaration->type->declaration->struct_name << std::endl;
+
+        utils::Linked_List <Ast_Node*>* _params = new utils::Linked_List <Ast_Node*>();
+
+        Ast_Node_Variable_Declaration* _variable_declaration_node = _cast_type->declaration->representive_declaration->getCopy();
+        _variable_declaration_node->type->pointer_level++;
+
+        _params->add(
+            _variable_declaration_node    
+        );
+
+        _params->add(
+            _value->representive_declaration, 0
+        ); 
+
+        Ast_Node_Function_Declaration* _function_declaration = getFunctionDeclaration(_declaration_id, _params);
+
+        if (!_function_declaration) exception_handle->runExceptionAstControl("No Constructor with given parameters");
+
+        _declaration->constructor_declaration = _function_declaration;
+
+        delete _params->remove(_params->count);
+
+        delete _params;
+
+        ast_control->popFromChain();

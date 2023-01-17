@@ -553,17 +553,44 @@ utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Variable_Declaration::g
             break;
         }
 
-        else if (_type_information->declaration->haveContructorDefined()) {
+        else if (_type_information->haveConstructorDefined()) {
+
+            Ast_Node_Name_Space* _functions_name_space;
+            char* _struct_name;
+
+            if (_type_information->pointer_level) {
+
+                Type_Information* _pointer_type = Type_Information::generatePrimitiveType(PRIMITIVE_TYPE_POINTER);
+
+                _functions_name_space = _pointer_type->declaration->functions;
+
+                _struct_name = (char*) "Pointer";
+
+                delete _pointer_type;
+
+            } 
+            
+            else {
+
+                _functions_name_space = _type_information->declaration->functions;
+
+                _struct_name = _type_information->declaration->struct_name;
+
+            }
 
             ast_control->addToChain(
-                ast_control->name_space_control->getNameSpace(_type_information->declaration->functions), 0
+                ast_control->name_space_control->getNameSpace(_functions_name_space), 0
             );
 
-            int _declaration_id = getDeclarationId(_type_information->declaration->struct_name);
+            int _declaration_id = getDeclarationId(_struct_name);
 
-            utils::Linked_List <Ast_Node*>* _params = new utils::Linked_List <Ast_Node*>();
+            utils::Linked_List <Ast_Node*>* _params = new utils::Linked_List <Ast_Node*>(); 
 
-            Ast_Node_Variable_Declaration* _variable_declaration_node = _type_information->declaration->representive_declaration->getCopy();
+            Ast_Node_Variable_Declaration* _variable_declaration_node = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
+
+            new (_variable_declaration_node) Ast_Node_Variable_Declaration(
+                _type_information->getCopy(), -1, 0
+            );
             _variable_declaration_node->type->pointer_level++;
 
             _params->add(
@@ -1016,8 +1043,8 @@ parser::Ast_Node_Struct_Declaration::~Ast_Node_Struct_Declaration() {
     delete representive_declaration;
 }
 
-parser::Ast_Node_Struct_Declaration::Ast_Node_Struct_Declaration(Ast_Node_Name_Space* __node_name_space, Ast_Node_Code_Block* __node_code_block, int __declaration_id, char* __struct_name) 
-    : Ast_Node(NULL, AST_NODE_STRUCT_DECLARATION), functions(__node_name_space), fields(__node_code_block), declaration_id(__declaration_id), struct_name(__struct_name) {}
+parser::Ast_Node_Struct_Declaration::Ast_Node_Struct_Declaration(Ast_Node_Struct_Declaration* __forward, Ast_Node_Name_Space* __node_name_space, Ast_Node_Code_Block* __node_code_block, int __declaration_id, char* __struct_name) 
+    : Ast_Node(NULL, AST_NODE_STRUCT_DECLARATION), forward(__forward), functions(__node_name_space), fields(__node_code_block), declaration_id(__declaration_id), struct_name(__struct_name) {}
 
 parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Struct_Declaration::generate() {
 
@@ -1027,6 +1054,7 @@ parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Struct_Declaration::genera
 
     int _declaration_id;
     char* _struct_name = NULL;
+    Ast_Node_Struct_Declaration* _forward = 0;
 
     switch (parser::ast_control->getToken(0)->id)
     {
@@ -1037,9 +1065,11 @@ parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Struct_Declaration::genera
 
         _declaration_id = getCurrentDeclarationTracker()->getDeclarationId(_struct_name);
 
+        parser::Ast_Node_Struct_Declaration* _struct_declaration;
+
         if (_declaration_id != -1) {
 
-            parser::Ast_Node_Struct_Declaration* _struct_declaration = getCurrentDeclarationTracker()->getStructDeclaration(_declaration_id);
+            _struct_declaration = getCurrentDeclarationTracker()->getStructDeclaration(_declaration_id);
 
             if (_struct_declaration && _struct_declaration->functions && _struct_declaration->fields)
 
@@ -1061,17 +1091,19 @@ parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Struct_Declaration::genera
     default: parser::exception_handle->runExceptionAstControl("Unexpected token"); break;
     }
 
-    Ast_Node_Name_Space* _functions = (Ast_Node_Name_Space*) malloc(sizeof(Ast_Node_Name_Space));
-    Ast_Node_Code_Block* _fields = (Ast_Node_Code_Block*) malloc(sizeof(Ast_Node_Code_Block));
-
     Ast_Node_Struct_Declaration* _node_struct_declaration = (Ast_Node_Struct_Declaration*) malloc(sizeof(Ast_Node_Struct_Declaration));
     new (_node_struct_declaration) Ast_Node_Struct_Declaration(
-        _functions, _fields, _declaration_id, _struct_name
+        0, NULL, NULL, _declaration_id, _struct_name
     );
 
     getCurrentDeclarationTracker()->struct_declaration->add(
         _node_struct_declaration
     );
+
+    if (ast_control->getToken(0)->id == END_INSTRUCTION) { ast_control->current_position++; return _node_struct_declaration;}
+
+    _node_struct_declaration->functions = (Ast_Node_Name_Space*) malloc(sizeof(Ast_Node_Name_Space));
+    _node_struct_declaration->fields = (Ast_Node_Code_Block*) malloc(sizeof(Ast_Node_Code_Block));
 
     Type_Information* _type_information = new Type_Information(
         _node_struct_declaration, NULL
@@ -1082,12 +1114,12 @@ parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Struct_Declaration::genera
     );
     _node_struct_declaration->representive_declaration = _struct_variable_declaration;
 
-    new (_functions) Ast_Node_Name_Space(
+    new (_node_struct_declaration->functions) Ast_Node_Name_Space(
         _struct_variable_declaration
     );
-    _functions->struct_name_space = 1;
+    _node_struct_declaration->functions->struct_name_space = 1;
 
-    new (_fields) Ast_Node_Code_Block();
+    new (_node_struct_declaration->fields) Ast_Node_Code_Block();
 
     utils::Linked_List <char*>* _scope_name_space = new utils::Linked_List <char*>(); _scope_name_space->destroy_content = 0;
 
@@ -1102,10 +1134,10 @@ parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Struct_Declaration::genera
 
     Name_Space* _name_space = (Name_Space*) malloc(sizeof(Name_Space));
     new (_name_space) Name_Space(
-        _scope_name_space, _functions, getCurrentDeclarationTracker()->off
+        _scope_name_space, _node_struct_declaration->functions, getCurrentDeclarationTracker()->off
     );
 
-    _fields->name_space = _name_space;
+    _node_struct_declaration->fields->name_space = _name_space;
 
     delete _scope_name_space;
 
@@ -1118,13 +1150,12 @@ parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Struct_Declaration::genera
     case OPEN_BRACES: 
 
         parser::ast_control->addToChain(_name_space, NULL);
-        parser::ast_control->addToChain(NULL, _fields);
+        parser::ast_control->addToChain(NULL, _node_struct_declaration->fields);
         
         _node_struct_declaration->set(); 
         
         break;
 
-    // case END_INSTRUCTION: goto out; break;
     default: exception_handle->runExceptionAstControl("Unexpected token"); break;
     }
 
@@ -1143,6 +1174,8 @@ parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Struct_Declaration::genera
 
 void parser::Ast_Node_Struct_Declaration::set() {
 
+    checkBody();
+
     int _backup_state = ++parser::ast_control->current_position;
 
     setFields();
@@ -1160,6 +1193,8 @@ void parser::Ast_Node_Struct_Declaration::set() {
 }
 
 void parser::Ast_Node_Struct_Declaration::setFunctions() {
+
+    checkBody();
 
     parser::ast_control->print("Ast Node Struct Set Functions\n", AST_DEBUG_MODE_INC);
     bool _is_static;
@@ -1204,6 +1239,8 @@ void parser::Ast_Node_Struct_Declaration::setFunctions() {
 
 void parser::Ast_Node_Struct_Declaration::setFields() {
 
+    checkBody();
+
     parser::ast_control->print("Ast Node Struct Set Fields\n", AST_DEBUG_MODE_INC);
 
     utils::Linked_List <Ast_Node*>* _temp;
@@ -1244,6 +1281,8 @@ void parser::Ast_Node_Struct_Declaration::setFields() {
 
 int parser::Ast_Node_Struct_Declaration::getSize() {
 
+    checkBody();
+
     int _size = built_ins::getPrimitiveTypeSize(
         parser::ast_control->name_space_control->getNameSpace(
             functions
@@ -1266,6 +1305,8 @@ int parser::Ast_Node_Struct_Declaration::getSize() {
 
 int parser::Ast_Node_Struct_Declaration::getVariablesOff(Ast_Node_Variable* __variable_declaration) {
 
+    checkBody();
+
     int _off = 0;
 
     for(int _  = 0; _ < fields->code->count; _++) {
@@ -1286,6 +1327,8 @@ int parser::Ast_Node_Struct_Declaration::getVariablesOff(Ast_Node_Variable* __va
 
 bool parser::Ast_Node_Struct_Declaration::isStaticVariableDeclaration(Ast_Node_Variable_Declaration* __variable_declaration) {
 
+    checkBody();
+
     for (int _ = 0; _ < functions->declarations->count; _++)
 
         if (
@@ -1299,6 +1342,8 @@ bool parser::Ast_Node_Struct_Declaration::isStaticVariableDeclaration(Ast_Node_V
 
 bool parser::Ast_Node_Struct_Declaration::haveContructorDefined() {
 
+    checkBody();
+
     for (int _ = 0; _ < functions->declarations->count; _++)
 
         if (
@@ -1307,6 +1352,14 @@ bool parser::Ast_Node_Struct_Declaration::haveContructorDefined() {
         ) return 1;
 
     return 0;
+
+}
+
+void parser::Ast_Node_Struct_Declaration::checkBody() {
+
+    if (functions) return;
+
+    exception_handle->runExceptionAstControl("Use of forward struct declaration"); 
 
 }
 

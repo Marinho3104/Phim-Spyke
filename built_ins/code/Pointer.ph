@@ -98,22 +98,19 @@ spyke built_ins::Pointer::bracket(int __idx, int __s) {
 
 }
 
+void chng(int __to_change) {
 
+    __to_change = 100;
 
-
-
-
+}
 
 void main() {
 
-    int m;
-    int array[100];
+    int _to_change = 10;
 
-    *array = 1029;
-    
-    m = (int) (array[0]);
+    chng(_to_change);
 
-    m;
+    _to_change;
 
 }
 

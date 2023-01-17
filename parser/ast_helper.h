@@ -30,6 +30,8 @@ namespace parser {
 
         bool isSpykeStruct();
 
+        bool haveConstructorDefined();
+
         int getSize();
 
     };

@@ -270,6 +270,7 @@ namespace parser {
 
         Ast_Node_Expression* condition;
         utils::Linked_List <Ast_Node*>* body;
+        int conditions_count;
 
         ~Ast_Node_If(); Ast_Node_If(Ast_Node_Expression*, utils::Linked_List <Ast_Node*>*);
 
@@ -281,10 +282,13 @@ namespace parser {
 
         Ast_Node_Expression* condition;
         utils::Linked_List <Ast_Node*>* body;
+        int conditions_count;
 
         ~Ast_Node_Else_If(); Ast_Node_Else_If(Ast_Node_Expression*, utils::Linked_List <Ast_Node*>*);
 
         static Ast_Node_Else_If* generate();
+
+        static void updateConditionsCount();
 
     };
 

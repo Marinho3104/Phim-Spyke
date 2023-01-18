@@ -2400,7 +2400,7 @@ parser::Ast_Node_If::~Ast_Node_If() {
 }
 
 parser::Ast_Node_If::Ast_Node_If(Ast_Node_Expression* __condition, utils::Linked_List <Ast_Node*>* __body) 
-    : Ast_Node(0, AST_NODE_IF), condition(__condition), body(__body) {}
+    : Ast_Node(0, AST_NODE_IF), condition(__condition), body(__body), conditions_count(0) {}
 
 parser::Ast_Node_If* parser::Ast_Node_If::generate() {
 
@@ -2479,17 +2479,24 @@ parser::Ast_Node_If* parser::Ast_Node_If::generate() {
 
 
 parser::Ast_Node_Else_If::~Ast_Node_Else_If() {
-
+    condition->~Ast_Node_Expression(); free(condition);
+    delete body;
 }
 
 parser::Ast_Node_Else_If::Ast_Node_Else_If(Ast_Node_Expression* __condition, utils::Linked_List <Ast_Node*>* __body) 
-    : Ast_Node(0, AST_NODE_ELSE_IF), condition(__condition), body(__body) {}
+    : Ast_Node(0, AST_NODE_ELSE_IF), condition(__condition), body(__body), conditions_count(0) {}
 
 parser::Ast_Node_Else_If* parser::Ast_Node_Else_If::generate() {
     
     parser::ast_control->print("Ast Node Else If\n", AST_DEBUG_MODE_INC);
 
-    // if (ast_control->name_space_control->name_space_collection->operator[]())
+    if (
+        !ast_control->current_nodes_list->count ||
+        (ast_control->current_nodes_list->last->object->node_type != AST_NODE_IF &&
+        ast_control->current_nodes_list->last->object->node_type != AST_NODE_ELSE_IF)
+    ) exception_handle->runExceptionAstControl("Excpected node type AST_NODE_IF or AST_NODE_ELSE_IF");
+
+    updateConditionsCount();
 
     parser::ast_control->current_position++;
 
@@ -2549,16 +2556,35 @@ parser::Ast_Node_Else_If* parser::Ast_Node_Else_If::generate() {
         default: exception_handle->runExceptionAstControl("Node not supported in If Node"); break;
     }
 
-    Ast_Node_Else_If* _node_if = (Ast_Node_Else_If*) malloc(sizeof(Ast_Node_Else_If));
+    Ast_Node_Else_If* _node_else_if = (Ast_Node_Else_If*) malloc(sizeof(Ast_Node_Else_If));
 
-    new (_node_if) Ast_Node_Else_If(
+    new (_node_else_if) Ast_Node_Else_If(
         _condition_expression,
         _body
     );
 
     parser::ast_control->print("Ast Node Else If End\n", AST_DEBUG_MODE_DEC);
 
-    exit(1);
+    return _node_else_if;
+    
+}
+
+void parser::Ast_Node_Else_If::updateConditionsCount() {
+
+    utils::Data_Linked_List <Ast_Node*>* _current_node = ast_control->current_nodes_list->last;
+
+    while(_current_node && (_current_node->object->node_type == AST_NODE_IF || _current_node->object->node_type == AST_NODE_ELSE_IF)) {
+
+        switch (_current_node->object->node_type)
+        {
+        case AST_NODE_IF: ((Ast_Node_If*) _current_node->object)->conditions_count++; break;
+        case AST_NODE_ELSE_IF: ((Ast_Node_Else_If*) _current_node->object)->conditions_count++; break;
+        default: break;
+        }
+
+        _current_node = _current_node->previous;
+
+    }
 
 }
 

@@ -51,9 +51,10 @@ void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual
     case BYTE_CODE_BINARY_INC: execute_BYTE_BINARY_INC(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_DEC: execute_BYTE_BINARY_DEC(__byte_code->argument, __execution); break;
     case BYTE_CODE_EXECUTE_PREVIOUS_STACK: execute_BYTE_CODE_EXECUTE_PREVIOUS_STACK(__byte_code, __execution, __current_index); break;
+    case BYTE_CODE_JUMP: execute_BYTE_CODE_JUMP(__byte_code, __execution, __current_index); break;
 
     case BYTE_CODE_NOP: std::cout << "NOP" << std::endl; break;
-    default: std::cout << "error " << __byte_code->code << std::endl; exit(1); break;
+    default: std::cout << "error " << (int) __byte_code->code << std::endl; exit(1); break;
     }
 
 }
@@ -358,7 +359,7 @@ void virtual_machine::execute_BYTE_CODE_IF(int __arg, Execution* __execution, in
 
     if (
         !*((bool*) _condition) 
-    ) __current_index++;
+    ) __current_index+=2;
 
 }
 
@@ -448,7 +449,6 @@ void virtual_machine::execute_BYTE_BINARY_DEC(int __arg, Execution* __execution)
 
 }
 
-
 void virtual_machine::execute_BYTE_CODE_EXECUTE_PREVIOUS_STACK(byte_code::Byte_Code* __byte_code, Execution* __execution, int& __current_index) {
 
     std::cout << "EXECUTE_PREVIOUS_STACK" << std::endl;
@@ -477,4 +477,13 @@ void virtual_machine::execute_BYTE_CODE_EXECUTE_PREVIOUS_STACK(byte_code::Byte_C
     );
 
 }
+
+void virtual_machine::execute_BYTE_CODE_JUMP(byte_code::Byte_Code* __byte_code, Execution* __execution, int& __current_index) {
+
+    std::cout << "JUMP -- argument " << __byte_code->argument << std::endl;
+
+    __current_index += __byte_code->argument;
+
+}
+
 

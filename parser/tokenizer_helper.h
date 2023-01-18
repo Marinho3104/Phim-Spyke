@@ -27,6 +27,7 @@ namespace parser {
     bool isImplicitValueOrIdentifier(int);
     bool isAccessingOperator(int);
     bool isFunctionOperator(int);
+    bool isFunctionOperatorSingleArgument(int);
 
     bool isInt(char*);
 

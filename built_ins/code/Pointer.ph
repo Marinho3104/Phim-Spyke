@@ -27,6 +27,8 @@ namespace built_ins {
         
         spyke bracket(int, int);
 
+        pointer increment(int);
+
     };
 
 }
@@ -98,29 +100,30 @@ spyke built_ins::Pointer::bracket(int __idx, int __s) {
 
 }
 
-struct marinho {
+pointer built_ins::Pointer::increment(int __s) { *this += __s; return *this; }
 
-    int m;
 
-} *hey;
+
+
+
+
+
+
+
+
+
+
+
 
 void main() {
 
-    int m;
+    int* j;
 
-    if (1) {
+    j;
 
-        m = 100;
+    j ++;
 
-    } 
-    
-    if (1) {
-
-        m = 1000;
-
-    }
-
-    m;
+    j;
 
 }
 

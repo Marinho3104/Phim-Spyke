@@ -37,6 +37,8 @@ namespace parser {
 
     utils::Linked_List <byte_code::Byte_Code*>* getByteCodeOfNodeIf(Ast_Node_If*);
 
+    utils::Linked_List <byte_code::Byte_Code*>* getByteCodeOfNodeElse(Ast_Node_Else*);
+
     byte_code::Byte_Code* getByteCodeOfNodeFunctionSizeOf(Ast_Node_Function_Size_Of*);
 
     utils::Linked_List <byte_code::Byte_Code*>* getByteCodeOfNodeCast(Ast_Node_Cast*);

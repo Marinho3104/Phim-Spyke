@@ -128,7 +128,7 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
         goto return_; break;
     case AST_NODE_EXPRESSION: 
 
-        ((Ast_Node_Expression*) __node)->getResultDeclaration();
+        if (!((Ast_Node_Expression*) __node)->organized_set->count) ((Ast_Node_Expression*) __node)->getResultDeclaration();
     
         _byte_code = getByteCodeOfNodeExpression(
             (Ast_Node_Expression*) __node
@@ -183,6 +183,13 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
             (Ast_Node_If*) __node
         );
 
+        break;
+
+    case AST_NODE_ELSE:
+
+        _byte_code = getByteCodeOfNodeElse(
+            (Ast_Node_Else*) __node
+        );
         break;
     default: std::cout << "erorr yey" << std::endl; exit(1); break;
     }
@@ -940,9 +947,50 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeIf(Ast_Node
 
     _byte_code->add(_call_function);
 
+    if (__node_if->next) {
+
+        byte_code::Byte_Code* _jump = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+        new (_jump) byte_code::Byte_Code(
+            BYTE_CODE_JUMP,
+            1
+        );
+
+        _byte_code->add(_jump);
+        
+    }
+
     return _byte_code;
 
 }
+
+utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeElse(Ast_Node_Else* __node_else) {
+
+    parser::convertor_control->print("Node Else - Byte Code");
+
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>();
+    _byte_code->destroy_content = 0;
+
+    int _body_position = parser::convertor_control->allocBlock();
+
+    parser::convertor_control->setBlock(
+        __node_else->body->first->object->node_type == AST_NODE_CODE_BLOCK ? ((Ast_Node_Code_Block*)__node_else->body->first->object)->code : __node_else->body,
+        convertor_control->byte_code_blocks->last->object
+    );
+
+    byte_code::Byte_Code* _call_function = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+    new (_call_function) byte_code::Byte_Code(
+        BYTE_CODE_CALL_SUB,
+        _body_position
+    );
+
+    _byte_code->add(_call_function);
+
+    return _byte_code;
+
+}
+
 
 byte_code::Byte_Code* parser::getByteCodeOfNodeFunctionSizeOf(Ast_Node_Function_Size_Of* __node_function_size_of) {
 

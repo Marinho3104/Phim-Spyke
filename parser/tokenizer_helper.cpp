@@ -200,6 +200,12 @@ bool parser::isAccessingOperator(int __token_id) { return __token_id == ACCESSIN
 
 bool parser::isFunctionOperator(int __token_id) { return __token_id >= FUNCTION_OPERATOR_PLUS && __token_id <= FUNCTION_OPERATOR_BITWISE_RIGHT_SHIFT_ASSIGN || __token_id == FUNCTION_OPERATOR_EQUAL || __token_id == OPEN_BRACKET || __token_id == FUNCTION_OPERATOR_BITWISE_NOT; }
 
+bool parser::isFunctionOperatorSingleArgument(int __token_id) {
+
+    return __token_id == FUNCTION_OPERATOR_INCREMENT || __token_id == FUNCTION_OPERATOR_DECREMENT || __token_id == FUNCTION_OPERATOR_NOT || __token_id == FUNCTION_OPERATOR_BITWISE_NOT;
+
+}
+
 
 bool parser::isInt(char* __data) {
 

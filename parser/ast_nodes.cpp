@@ -1547,7 +1547,7 @@ parser::Ast_Node_Expression::~Ast_Node_Expression() {
 
 parser::Ast_Node_Expression::Ast_Node_Expression(Ast_Node_Expression* __expression, Ast_Node* __value, int __token_id)
     : Ast_Node(__value->representive_declaration, AST_NODE_EXPRESSION), expression(__expression), value(__value), token_id(__token_id), 
-        destroy_value(1) { organized_set = new utils::Linked_List <Ast_Node*>(); organized_set->destroy_content = 0;     }
+        destroy_value(1) { organized_set = new utils::Linked_List <Ast_Node*>(); organized_set->destroy_content = 0; }
 
 parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDeclaration() {
 
@@ -1742,11 +1742,13 @@ parser::Ast_Node_Variable_Declaration* parser::Ast_Node_Expression::getResultDec
 
     }
 
-    if (!this->organized_set->count)
+    if (!this->organized_set->count) {
 
         this->organized_set->add(
             _expressions_result_helper->operator[](0)->expression->value
         );
+
+    }
 
     Ast_Node_Variable_Declaration* _result = _expressions_result_helper->operator[](0)->declaration;
 
@@ -1777,15 +1779,27 @@ parser::Ast_Node_Expression* parser::Ast_Node_Expression::generate(int __value_n
 second_operator_check:
     int _token_id = isFunctionOperator(parser::ast_control->getToken(0)->id) ? parser::ast_control->getToken(0)->id : -1;
 
-    if (_token_id != -1) parser::ast_control->current_position++;
+    if (_token_id != -1) { 
+        
+        if (isFunctionOperatorSingleArgument(_token_id)) {
 
-    else 
+            _value = generate(_value);
+
+            goto second_operator_check;
+
+        }
+
+        parser::ast_control->current_position++;
+    }
+
+    else {
 
         switch (getNodeType())
         {
         case AST_NODE_ACCESSING: _value = Ast_Node_Accessing::generate(_value); goto second_operator_check; break;
         default: break;
         }
+    }
 
     std::cout << "Token id -> " << _token_id << std::endl;
  
@@ -1799,6 +1813,146 @@ second_operator_check:
     );
 
     parser::ast_control->print("Ast Node Expression End\n", AST_DEBUG_MODE_DEC);
+
+    return _expression_node;
+
+}
+
+parser::Ast_Node_Expression* parser::Ast_Node_Expression::generate(Ast_Node* __node) {
+
+    parser::ast_control->print("Ast Node Expression Single Argument\n", AST_DEBUG_MODE_INC);
+
+    int _token_id = parser::ast_control->getToken(0)->id;
+
+    parser::ast_control->current_position++;
+
+    if ((_token_id == FUNCTION_OPERATOR_INCREMENT || _token_id == FUNCTION_OPERATOR_DECREMENT) && !__node) 
+
+        _token_id = _token_id == FUNCTION_OPERATOR_INCREMENT ? _token_id == FUNCTION_OPERATOR_INCREMENT_LEFT : FUNCTION_OPERATOR_DECREMENT_LEFT;
+
+    if (!__node) __node = getValue(getNodeType());
+
+    parser::Ast_Node_Expression* _expression_node = (parser::Ast_Node_Expression*) malloc(sizeof(parser::Ast_Node_Expression));
+    new (_expression_node) parser::Ast_Node_Expression(
+        NULL,
+        __node,
+        _token_id
+    );
+
+    
+    utils::Linked_List <Ast_Node*>* _parameters = new utils::Linked_List <Ast_Node*>(); _parameters->destroy_content = 0;
+
+    Ast_Node_Variable_Declaration* _value_declaration = __node->representive_declaration->getCopy();
+    
+    Ast_Node* _third_argument_value = 0;
+
+    if (_value_declaration->type->pointer_level) {
+
+        utils::Linked_List <char*>* _scope = new utils::Linked_List <char*>(); _scope->destroy_content = 0;
+
+        _scope->add("built_ins");
+        _scope->add("Pointer");
+
+        parser::ast_control->addToChain(
+            parser::ast_control->name_space_control->getNameSpace(
+                _scope
+            ),
+            NULL
+        );
+
+        delete _scope;
+
+        Ast_Node_Variable_Declaration* _node_variable = _value_declaration->getCopy();
+        _node_variable->type->pointer_level--;
+
+        Ast_Node_Pointer_Operation* _node_pointer = (Ast_Node_Pointer_Operation*) malloc(sizeof(Ast_Node_Pointer_Operation));
+        new (_node_pointer) Ast_Node_Pointer_Operation(
+            _node_variable, -1, NULL
+        );
+        _node_pointer->destroy_value = 0;
+
+        Ast_Node_Expression* _node_expression = (Ast_Node_Expression*) malloc(sizeof(Ast_Node_Expression));
+
+        new (_node_expression) Ast_Node_Expression(
+            NULL, _node_pointer, -1
+        );
+
+        Ast_Node_Function_Size_Of* __node_size_of = (Ast_Node_Function_Size_Of*) malloc(sizeof(Ast_Node_Function_Size_Of));
+
+        new (__node_size_of) Ast_Node_Function_Size_Of(
+            _node_expression
+        );
+
+        _third_argument_value = __node_size_of;
+
+        _parameters->add(_third_argument_value->representive_declaration);
+
+
+        Ast_Node_Expression* _node_expression_to_remove = (Ast_Node_Expression*) malloc(sizeof(Ast_Node_Expression));
+
+        new (_node_expression_to_remove) Ast_Node_Expression(
+            NULL, __node_size_of, -1
+        );
+
+        _expression_node->expression = _node_expression_to_remove;
+
+    }
+
+    else parser::ast_control->addToChain(
+        parser::ast_control->name_space_control->getNameSpace(
+            _value_declaration->type->declaration->functions
+        ),
+        NULL
+    );
+
+    char* _function_name = built_ins::getFunctionNameFromTokenId(_token_id);
+
+    std::cout << "Function name -> " << _function_name << std::endl;
+    int _declaration_id = getDeclarationId(_function_name);
+    std::cout << "Declaration -> " << _declaration_id << std::endl;
+    free(_function_name);
+
+    if (_value_declaration->type->pointer_level);
+
+    else _value_declaration->type->pointer_level++;
+
+    _parameters->insert(_value_declaration, 0);
+
+    Ast_Node_Function_Declaration* _function_declaration = getFunctionDeclaration(_declaration_id, _parameters);
+
+    std::cout << "Function -> " << _function_declaration << std::endl;
+    std::cout << "Declaration -> " << _declaration_id << std::endl;
+
+    if (!_function_declaration || _declaration_id == -1) 
+
+        exception_handle->runExceptionAstControl("No function declaration with given name and given arguments");
+
+    if (!_value_declaration->type->isSpykeStruct()) 
+
+        _expression_node->organized_set->add(
+            __node
+        );
+
+    if (_third_argument_value)
+
+        _expression_node->organized_set->add(
+            _third_argument_value
+        );    
+    
+
+    _expression_node->organized_set->add(
+        _function_declaration
+    );
+
+    _expression_node->representive_declaration = _function_declaration->representive_declaration;
+
+    _value_declaration->~Ast_Node_Variable_Declaration(); free(_value_declaration);
+
+    delete _parameters;
+
+    ast_control->popFromChain();
+
+    parser::ast_control->print("Ast Node Expression Single Argument End\n", AST_DEBUG_MODE_DEC);
 
     return _expression_node;
 
@@ -2580,17 +2734,71 @@ void parser::Ast_Node_Else_If::updateNext() {
 
 }
 
-
-parser::Ast_Node_Else::~Ast_Node_Else() {
-
-}
+ 
+parser::Ast_Node_Else::~Ast_Node_Else() { delete body; }
 
 parser::Ast_Node_Else::Ast_Node_Else(utils::Linked_List <Ast_Node*>* __body) 
     : Ast_Node(0, AST_NODE_ELSE), body(__body) {}
 
 parser::Ast_Node_Else* parser::Ast_Node_Else::generate() {
     
+    parser::ast_control->print("Ast Node Else\n", AST_DEBUG_MODE_INC);
 
+    Ast_Node_Else_If::updateNext();
+
+    parser::ast_control->current_position++;
+
+    utils::Linked_List <Ast_Node*>* _body = new utils::Linked_List <Ast_Node*>(), *_temp;
+
+    switch (int _node_type = getNodeType())
+    {
+        case -2: parser::ast_control->current_position++; break;
+        case AST_NODE_CODE_BLOCK:
+
+            parser::ast_control->current_position++;
+
+            Ast_Node_Code_Block::setUp();
+            
+            _body->add(
+                parser::ast_control->code_block_chain->last->object
+            );
+
+            parser::ast_control->code_block_chain->last->object->setCode();
+
+            parser::ast_control->popFromChain();
+
+            break;
+
+        case AST_NODE_BYTE_CODE: _body->add(Ast_Node_Byte_Code::generate()); break;
+        case AST_NODE_RETURN: _body->add(Ast_Node_Return::generate()); break;
+        case AST_NODE_VARIABLE: case AST_NODE_VALUE: case AST_NODE_FUNCTION_CALL: case AST_NODE_POINTER_OPERATION: case AST_NODE_PARENTHESIS:
+        case AST_NODE_CAST:
+            _body->add(Ast_Node_Expression::generate(_node_type));
+            if (parser::ast_control->getToken(0)->id != END_INSTRUCTION) parser::exception_handle->runExceptionAstControl("Excpected token ';' aqui");
+            parser::ast_control->current_position++;
+            break;
+        case AST_NODE_VARIABLE_DECLARATION:
+            
+                _temp = Ast_Node_Variable_Declaration::generate();
+
+                _body->join(_temp);
+
+                delete _temp;
+
+                break;
+
+        default: exception_handle->runExceptionAstControl("Node not supported in Else Node"); break;
+    }
+
+    Ast_Node_Else* _node_else = (Ast_Node_Else*) malloc(sizeof(Ast_Node_Else));
+
+    new (_node_else) Ast_Node_Else(
+        _body
+    );
+
+    parser::ast_control->print("Ast Node Else End\n", AST_DEBUG_MODE_DEC);
+
+    return _node_else;
 
 }
 

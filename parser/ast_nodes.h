@@ -159,6 +159,8 @@ namespace parser {
 
         static Ast_Node_Expression* generate(int);
 
+        static Ast_Node_Expression* generate(Ast_Node*);
+
         static Ast_Node* getValue(int);
 
     };

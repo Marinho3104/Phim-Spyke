@@ -198,6 +198,37 @@ char* built_ins::getFunctionNameFromTokenId(int __token_id) {
 
         break; 
 
+    case FUNCTION_OPERATOR_INCREMENT:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_INCREMENT) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_INCREMENT);
+
+        break; 
+
+    case FUNCTION_OPERATOR_DECREMENT:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_DECREMENT) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_DECREMENT);
+
+        break; 
+
+    case FUNCTION_OPERATOR_INCREMENT_LEFT:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_INCREMENT_LEFT) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_INCREMENT_LEFT);
+
+        break; 
+
+    case FUNCTION_OPERATOR_DECREMENT_LEFT:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_DECREMENT_LEFT) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_DECREMENT_LEFT);
+
+        break; 
 
     default: std::cout << "Error getting Function Name for token -> " << __token_id << std::endl; exit(1); break;
     }

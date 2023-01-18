@@ -19,6 +19,14 @@ namespace built_ins {
 
         bool not_equal_to(int);
 
+        int increment();
+
+        int decrement();
+
+        int increment_left();
+        
+        int decrement_left();
+
     };
 
 }
@@ -53,3 +61,13 @@ void built_ins::Int::equal(int __eq) { *this; __eq; exec 10 4; }
 bool built_ins::Int::equal_to(int __comp) { bool __rslt; __rslt; *this; __comp; exec 19 4; return __rslt; }
 
 bool built_ins::Int::not_equal_to(int __comp) { bool __rslt; __rslt; *this; __comp; exec 20 4; return __rslt; }
+
+
+int built_ins::Int::increment() { return *this + 1; }
+
+//int built_ins::Int::decrement() { return *this - 1; }
+
+int built_ins::Int::increment_left() { int _rtr = *this; *this++; return _rtr; }
+
+//int built_ins::Int::decrement_left() { int _rtr = *this; *this--; return _rtr; }
+

@@ -42,15 +42,16 @@ void virtual_machine::Execution::popStack() {
 void virtual_machine::Execution::executeBlock(int __block_index, bool __stack_chage) {
 
     byte_code::Byte_Code* _current_byte_code;
-    int _current_index = 0;
 
     if (__stack_chage) addStack();
 
-    while((_current_byte_code = program->byte_code->getByteCode(__block_index, _current_index))->code != BYTE_CODE_END_CODE_BLOCK) {
+    stacks->last->object->current_index = 0;
 
-        virtual_machine::executeByteCode(_current_byte_code, this, _current_index);
+    while((_current_byte_code = program->byte_code->getByteCode(__block_index, stacks->last->object->current_index))->code != BYTE_CODE_END_CODE_BLOCK && (_current_byte_code = program->byte_code->getByteCode(__block_index, stacks->last->object->current_index))->code != BYTE_CODE_CLOSE_STACK_FRAME) {
 
-        _current_index ++;
+        virtual_machine::executeByteCode(_current_byte_code, this, stacks->last->object->current_index);
+
+        stacks->last->object->current_index ++;
 
     }
 

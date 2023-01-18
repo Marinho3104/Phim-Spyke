@@ -106,26 +106,21 @@ struct marinho {
 
 void main() {
 
-    if (0) {
+    int m;
 
-        exec 9 10;
+    if (1) {
 
-    } else if (1) {
+        m = 100;
 
-        exec 9 10;
-        exec 9 10;
+    } 
+    
+    if (1) {
 
-    }
-    else if (1) {
-
-        exec 9 10;
-        exec 9 10;
-        exec 9 10;
-        exec 9 10;
+        m = 1000;
 
     }
 
-    int j;
+    m;
 
 }
 

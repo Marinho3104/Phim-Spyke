@@ -25,6 +25,8 @@ namespace parser {
 
         void setBlock(utils::Linked_List<Ast_Node*>*, byte_code::Byte_Code_Block*);
 
+        void setBlock(Ast_Node*, byte_code::Byte_Code_Block*);
+
         int allocBlock();
 
         byte_code::Compiled_Code* getCompiledByteCode();

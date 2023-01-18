@@ -358,8 +358,36 @@ void virtual_machine::execute_BYTE_CODE_IF(int __arg, Execution* __execution, in
     std::cout << "Condition -> " << *((bool*) _condition) << std::endl;
 
     if (
-        !*((bool*) _condition) 
-    ) __current_index+=2;
+        *((bool*) _condition) 
+    ) {
+
+        // std::cout << "Current index -> " << __current_index << std::endl;
+
+        __current_index++;
+
+        if (__arg) {
+
+            byte_code::Byte_Code* _execute_previous_jump = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code) * 2);
+
+            _execute_previous_jump[0] = byte_code::Byte_Code(
+                BYTE_CODE_EXECUTE_PREVIOUS_STACK,
+                1
+            );
+
+            _execute_previous_jump[1] = byte_code::Byte_Code(
+                BYTE_CODE_JUMP,
+                1
+            );
+
+            int _temp = 0;
+
+            execute_BYTE_CODE_EXECUTE_PREVIOUS_STACK(_execute_previous_jump, __execution, _temp);
+
+            free(_execute_previous_jump);
+
+        }
+
+    }
 
 }
 
@@ -463,10 +491,16 @@ void virtual_machine::execute_BYTE_CODE_EXECUTE_PREVIOUS_STACK(byte_code::Byte_C
 
     for (int _ = 0; _ < __byte_code->argument; _++) {
 
+        std::cout << "loop" << std::endl;
+
         __byte_code++;
-        __current_index++;
+        
+        __execution->stacks->last->object->current_index++;
+        // __current_index++;
 
         executeByteCode(__byte_code, __execution, __current_index);
+
+        std::cout << "loop end" << std::endl;
 
     }
 

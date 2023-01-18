@@ -896,56 +896,49 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeIf(Ast_Node
 
     __node_if->condition->getResultDeclaration();
 
-    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = getByteCodeOfNodeExpression(__node_if->condition), *_temp;
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>();
+    _byte_code->destroy_content = 0;
+
+    int _body_position = parser::convertor_control->allocBlock();
+
+    parser::convertor_control->setBlock(
+        __node_if->condition,
+        convertor_control->byte_code_blocks->last->object
+    );
 
     byte_code::Byte_Code* _if_condition = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
     new (_if_condition) byte_code::Byte_Code(
         BYTE_CODE_IF,
+        __node_if->next
+    );
+
+    convertor_control->byte_code_blocks->last->object->block->add(
+        _if_condition
+    );
+
+    byte_code::Byte_Code* _end_code_block = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+    new (_end_code_block) byte_code::Byte_Code(
+        BYTE_CODE_CLOSE_STACK_FRAME,
         0
     );
-    _byte_code->add(_if_condition);
 
-    if (__node_if->body->first && __node_if->body->first->object->node_type == AST_NODE_CODE_BLOCK) {
-
-        _temp = getByteCodeOfNode(
-            __node_if->body->first->object
-        );
-
-        _byte_code->join(
-            _temp
-        );
-
-        delete _temp;
-
-    }
-
-    else {
-
-        int _body_position = parser::convertor_control->allocBlock();
-        
-        parser::convertor_control->setBlock(
-            __node_if->body,
-            convertor_control->byte_code_blocks->last->object
-        );
-
-        byte_code::Byte_Code* _call_function = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
-
-        new (_call_function) byte_code::Byte_Code(
-            BYTE_CODE_CALL_SUB,
-            _body_position
-        );
-
-        _byte_code->add(_call_function);
-
-    }
-
-    byte_code::Byte_Code* _jump = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
-    new (_jump) byte_code::Byte_Code(
-        BYTE_CODE_JUMP,
-        3 * __node_if->conditions_count
+    convertor_control->byte_code_blocks->last->object->block->add(
+        _end_code_block
     );
-    _byte_code->add(_jump);
 
+    parser::convertor_control->setBlock(
+        __node_if->body->first->object->node_type == AST_NODE_CODE_BLOCK ? ((Ast_Node_Code_Block*)__node_if->body->first->object)->code : __node_if->body,
+        convertor_control->byte_code_blocks->last->object
+    );
+
+    byte_code::Byte_Code* _call_function = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+    new (_call_function) byte_code::Byte_Code(
+        BYTE_CODE_CALL_SUB,
+        _body_position
+    );
+
+    _byte_code->add(_call_function);
 
     return _byte_code;
 

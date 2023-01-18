@@ -2400,7 +2400,7 @@ parser::Ast_Node_If::~Ast_Node_If() {
 }
 
 parser::Ast_Node_If::Ast_Node_If(Ast_Node_Expression* __condition, utils::Linked_List <Ast_Node*>* __body) 
-    : Ast_Node(0, AST_NODE_IF), condition(__condition), body(__body), conditions_count(0) {}
+    : Ast_Node(0, AST_NODE_IF), condition(__condition), body(__body), next(0) {}
 
 parser::Ast_Node_If* parser::Ast_Node_If::generate() {
 
@@ -2484,7 +2484,7 @@ parser::Ast_Node_Else_If::~Ast_Node_Else_If() {
 }
 
 parser::Ast_Node_Else_If::Ast_Node_Else_If(Ast_Node_Expression* __condition, utils::Linked_List <Ast_Node*>* __body) 
-    : Ast_Node(0, AST_NODE_ELSE_IF), condition(__condition), body(__body), conditions_count(0) {}
+    : Ast_Node(0, AST_NODE_ELSE_IF), condition(__condition), body(__body), next(0) {}
 
 parser::Ast_Node_Else_If* parser::Ast_Node_Else_If::generate() {
     
@@ -2496,7 +2496,7 @@ parser::Ast_Node_Else_If* parser::Ast_Node_Else_If::generate() {
         ast_control->current_nodes_list->last->object->node_type != AST_NODE_ELSE_IF)
     ) exception_handle->runExceptionAstControl("Excpected node type AST_NODE_IF or AST_NODE_ELSE_IF");
 
-    updateConditionsCount();
+    updateNext();
 
     parser::ast_control->current_position++;
 
@@ -2569,21 +2569,13 @@ parser::Ast_Node_Else_If* parser::Ast_Node_Else_If::generate() {
     
 }
 
-void parser::Ast_Node_Else_If::updateConditionsCount() {
+void parser::Ast_Node_Else_If::updateNext() {
 
-    utils::Data_Linked_List <Ast_Node*>* _current_node = ast_control->current_nodes_list->last;
-
-    while(_current_node && (_current_node->object->node_type == AST_NODE_IF || _current_node->object->node_type == AST_NODE_ELSE_IF)) {
-
-        switch (_current_node->object->node_type)
-        {
-        case AST_NODE_IF: ((Ast_Node_If*) _current_node->object)->conditions_count++; break;
-        case AST_NODE_ELSE_IF: ((Ast_Node_Else_If*) _current_node->object)->conditions_count++; break;
-        default: break;
-        }
-
-        _current_node = _current_node->previous;
-
+    switch (ast_control->current_nodes_list->last->object->node_type)
+    {
+    case AST_NODE_IF: ((Ast_Node_If*) ast_control->current_nodes_list->last->object)->next = 1; break;
+    case AST_NODE_ELSE_IF: ((Ast_Node_Else_If*) ast_control->current_nodes_list->last->object)->next = 1; break;
+    default: break;
     }
 
 }

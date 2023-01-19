@@ -91,11 +91,32 @@ char* built_ins::getFunctionNameFromTokenId(int __token_id) {
         strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_PLUS);
 
         break;
+    case FUNCTION_OPERATOR_MINUS:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_MINUS) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_MINUS);
+
+        break;
     case FUNCTION_OPERATOR_MULTIPLICATION:
         
         _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_MULTIPLICATION) + 1);
 
         strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_MULTIPLICATION);
+
+        break;
+    case FUNCTION_OPERATOR_DIVISION:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_DIVISION) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_DIVISION);
+
+        break;
+    case FUNCTION_OPERATOR_MODULOS:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_MODULOS) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_MODULOS);
 
         break;
     case FUNCTION_OPERATOR_EQUAL:
@@ -110,6 +131,34 @@ char* built_ins::getFunctionNameFromTokenId(int __token_id) {
         _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_PLUS_ASSIGN) + 1);
 
         strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_PLUS_ASSIGN);
+
+        break; 
+    case FUNCTION_OPERATOR_MINUS_ASSIGN:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_MINUS_ASSIGN) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_MINUS_ASSIGN);
+
+        break; 
+    case FUNCTION_OPERATOR_MULTIPLICATION_ASSIGN:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_MULTIPLICATION_ASSIGN) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_MULTIPLICATION_ASSIGN);
+
+        break; 
+    case FUNCTION_OPERATOR_DIVISION_ASSIGN:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_DIVISION_ASSIGN) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_DIVISION_ASSIGN);
+
+        break; 
+    case FUNCTION_OPERATOR_MODULOS_ASSIGN:
+        
+        _function_name = (char*) malloc(strlen(FUNCTION_NAME_FUNCTION_OPERATOR_MODULOS_ASSIGN) + 1);
+
+        strcpy(_function_name, FUNCTION_NAME_FUNCTION_OPERATOR_MODULOS_ASSIGN);
 
         break; 
     case FUNCTION_OPERATOR_EQUAL_TO:
@@ -241,15 +290,20 @@ char* built_ins::getFunctionNameFromTokenId(int __token_id) {
 
 char** built_ins::getPrimitivesNames() {
     
-    char** _names = (char**) malloc(8 * 7);
+    char** _names = (char**) malloc(8 * 8);
 
-    _names[6] = 0;
+    _names[7] = 0;
     _names[0] = getStructNameOfTokenId(PRIMITIVE_TYPE_VOID);
     _names[1] = getStructNameOfTokenId(PRIMITIVE_TYPE_BYTE);
     _names[2] = getStructNameOfTokenId(PRIMITIVE_TYPE_BOOL);
     _names[3] = getStructNameOfTokenId(PRIMITIVE_TYPE_INT);
     _names[4] = getStructNameOfTokenId(PRIMITIVE_TYPE_SPYKE);
     _names[5] = getStructNameOfTokenId(PRIMITIVE_TYPE_POINTER);
+    _names[6] = (char*) malloc(strlen("temp_file") + 1);
+    strcpy(
+        _names[6],
+        "temp_file"
+    );
 
     return _names;
 

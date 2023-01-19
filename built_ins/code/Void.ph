@@ -1,8 +1,2 @@
 
-namespace built_ins {
-
-    struct Void {
-
-    };
-
-}
+#include "./built_ins/code/Void.h"

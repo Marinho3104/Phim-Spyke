@@ -21,13 +21,6 @@ namespace virtual_machine {
     void binary_sub_4_bytes(Execution*);
 
 
-    void binary_equal_to_1_bytes(Execution*);
-
-    void binary_equal_to_2_bytes(Execution*);
-
-    void binary_equal_to_4_bytes(Execution*);
-
-
     void binary_mul_1_bytes(Execution*);
 
     void binary_mul_2_bytes(Execution*);
@@ -61,6 +54,20 @@ namespace virtual_machine {
     void binary_dec_2_bytes(Execution*);
 
     void binary_dec_4_bytes(Execution*);
+
+
+    void binary_equal_to_1_bytes(Execution*);
+
+    void binary_equal_to_2_bytes(Execution*);
+
+    void binary_equal_to_4_bytes(Execution*);
+
+
+    void binary_not_equal_to_1_bytes(Execution*);
+
+    void binary_not_equal_to_2_bytes(Execution*);
+
+    void binary_not_equal_to_4_bytes(Execution*);
 
 }
 

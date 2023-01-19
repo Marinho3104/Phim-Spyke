@@ -13,18 +13,24 @@
 
 
 
-parser::Pre_Compiler_Define::~Pre_Compiler_Define() { token_to_replace->~Token(); free(token_to_replace); free(name_to_find); }
+parser::Pre_Compiler_Define::~Pre_Compiler_Define() { if (token_to_replace) token_to_replace->~Token(); free(token_to_replace); free(name_to_find); }
 
 parser::Pre_Compiler_Define::Pre_Compiler_Define(char* __name_to_find, Token* __token_to_replace) 
     : name_to_find(__name_to_find), token_to_replace(__token_to_replace) {}
 
 void parser::Pre_Compiler_Define::addNewDefine() {
 
+    int _line = tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->position_information.line;
+
     utils::Data_Linked_List <Token*>* _data_linked_list;
 
     delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
 
     delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
+
+    if (
+        tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->position_information.line != _line
+    ) { std::cout << "Excpected token identifier" << std::endl; exit(1); }
 
     char* _name_to_find = (char*) malloc(strlen(tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->identifier) + 1);
     
@@ -35,11 +41,22 @@ void parser::Pre_Compiler_Define::addNewDefine() {
     
     delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position); 
 
-    Token* _token_to_replace = tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position);
-    _data_linked_list = tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position); _data_linked_list->destroy_content = 0;
-    delete _data_linked_list;
+    Token* _token_to_replace = 0;
 
-    // Miss remove rest at same line TODO
+    if (
+        tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->position_information.line == _line
+    ) { 
+
+        _token_to_replace = tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position);
+        _data_linked_list = tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position); _data_linked_list->destroy_content = 0;
+        delete _data_linked_list;
+
+    }
+
+    // Miss warning message
+    while(
+        tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->position_information.line == _line
+    ) delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
 
     int _position = getDefinedPosition(_name_to_find);
 
@@ -76,6 +93,14 @@ void parser::Pre_Compiler_Define::handle() {
                 tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->identifier
             )
         ) {
+
+            if (!pre_compiler_control->defines->operator[](_)->token_to_replace) {
+
+                delete tokenizer_control->tokens_collection->getDataLinkedList(pre_compiler_control->current_position)->object;
+
+                continue;
+
+            }
 
             tokenizer_control->tokens_collection->getDataLinkedList(pre_compiler_control->current_position)->object->id = 
                 pre_compiler_control->defines->operator[](_)->token_to_replace->id;
@@ -396,7 +421,7 @@ void parser::Pre_Compiler_Control::ignoreBlock() {
 
         }
 
-        else delete tokenizer_control->tokens_collection->remove(current_position);
+        delete tokenizer_control->tokens_collection->remove(current_position);
 
     }
 }

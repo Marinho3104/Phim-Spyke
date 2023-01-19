@@ -1,8 +1,2 @@
 
-namespace built_ins {
-
-    struct Byte {
-
-    };
-
-}
+#include "built_ins/code/Byte.h"

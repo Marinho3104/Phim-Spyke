@@ -37,6 +37,7 @@ void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual
     case BYTE_CODE_COPY_PREVIOUS_STACK_DATA_REMOVE: execute_BYTE_CODE_COPY_PREVIOUS_STACK_DATA_REMOVE(__byte_code->argument, __execution); break;
     case BYTE_CODE_CLOSE_STACK_FRAME: execute_BYTE_CLOSE_STACK_FRAME(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_ADD: execute_BYTE_BINARY_ADD(__byte_code->argument, __execution); break;
+    case BYTE_CODE_BINARY_SUB: execute_BYTE_BINARY_SUB(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_EQUAL_TO: execute_BYTE_CODE_BINARY_EQUAL_TO(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_NOT_EQUAL_TO: execute_BYTE_CODE_BINARY_NOT_EQUAL_TO(__byte_code->argument, __execution); break;
     case BYTE_CODE_BINARY_GREATER_THAN: execute_BYTE_CODE_BINARY_GREATER_THAN(__byte_code->argument, __execution); break;
@@ -328,7 +329,17 @@ void virtual_machine::execute_BYTE_CODE_BINARY_EQUAL_TO(int __arg, Execution* __
 
 }
 
-void virtual_machine::execute_BYTE_CODE_BINARY_NOT_EQUAL_TO(int, Execution*) {
+void virtual_machine::execute_BYTE_CODE_BINARY_NOT_EQUAL_TO(int __arg, Execution* __execution) {
+
+    std::cout << "BINARY_NOT_EQUAL_TO" << std::endl;
+
+    switch (__arg)
+    { 
+    case 1: binary_not_equal_to_1_bytes(__execution); break;
+    case 2: binary_not_equal_to_2_bytes(__execution); break;
+    case 4: binary_not_equal_to_4_bytes(__execution); break;
+    default: std::cout << "Error" << std::endl; exit(1); break;
+    }
 
 }
 

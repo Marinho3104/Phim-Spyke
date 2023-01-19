@@ -276,13 +276,13 @@ void parser::Ast_Node_Code_Block::setCode() {
             case AST_NODE_ELSE_IF: code->add(Ast_Node_Else_If::generate()); break;
             case AST_NODE_ELSE: code->add(Ast_Node_Else::generate()); break;
             case AST_NODE_VARIABLE: case AST_NODE_VALUE: case AST_NODE_FUNCTION_CALL: case AST_NODE_POINTER_OPERATION: case AST_NODE_PARENTHESIS:
-            case AST_NODE_CAST: case AST_NODE_SIZE_OF:
+            case AST_NODE_CAST: case AST_NODE_SIZE_OF: case -6:
                 code->add(Ast_Node_Expression::generate(_node_type));
                 // std::cout << (int) parser::ast_control->getToken(0)->id << std::endl; 
                 if (parser::ast_control->getToken(0)->id != END_INSTRUCTION) parser::exception_handle->runExceptionAstControl("Excpected token ';' aqui");
                 parser::ast_control->current_position++;
                 break;
-            case AST_NODE_VARIABLE_DECLARATION:
+            case AST_NODE_VARIABLE_DECLARATION: 
                 
                     _temp = Ast_Node_Variable_Declaration::generate();
 
@@ -709,9 +709,14 @@ utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Variable_Declaration::g
 
             utils::Linked_List <Ast_Node*>* _nodes_equal = equal(_variable_declaration);
 
-            _nodes->join(
-                _nodes_equal
-            ); 
+            if (_is_static) 
+
+                getCurrentNameSpace()->name_space_nodes->last->object->declarations->join(_nodes_equal);
+
+            else 
+                _nodes->join(
+                    _nodes_equal
+                ); 
 
             delete _nodes_equal;
             
@@ -826,7 +831,7 @@ utils::Linked_List <parser::Ast_Node*>* parser::Ast_Node_Variable_Declaration::e
                     exception_handle->runExceptionAstControl("Not same size");
 
                 break;
-    default: break;
+    default: exception_handle->runExceptionAstControl("Error equal variable declaration"); break;
     }
 
     _nodes->add(
@@ -1237,7 +1242,7 @@ parser::Ast_Node_Struct_Declaration* parser::Ast_Node_Struct_Declaration::genera
 
             _struct_declaration = getCurrentDeclarationTracker()->getStructDeclaration(_declaration_id);
 
-            if (_struct_declaration && _struct_declaration->functions && _struct_declaration->fields)
+            if (_struct_declaration && _struct_declaration->functions && _struct_declaration->fields && ast_control->getToken(0)->id != END_INSTRUCTION)
 
                 exception_handle->runExceptionAstControl("Redefenition of struct declaration");
 
@@ -1762,14 +1767,27 @@ parser::Ast_Node_Expression* parser::Ast_Node_Expression::generate(int __value_n
 
     parser::ast_control->print("Ast Node Expression\n", AST_DEBUG_MODE_INC);
 
-    Ast_Node* _value = getValue(__value_node_type);
+    Ast_Node* _value;
 
-    if (__value_node_type == AST_NODE_EXPRESSION) {
+    if (__value_node_type == -6) {
 
-        if (ast_control->getToken(0)->id != CLOSE_BRACKET) exception_handle->runExceptionAstControl("Excpected token ']'");
+        _value = generate(nullptr);
 
-        ast_control->current_position++;
-    
+    }
+
+
+    else {
+
+        _value = getValue(__value_node_type);
+
+        if (__value_node_type == AST_NODE_EXPRESSION) {
+
+            if (ast_control->getToken(0)->id != CLOSE_BRACKET) exception_handle->runExceptionAstControl("Excpected token ']'");
+
+            ast_control->current_position++;
+        
+        }
+
     }
 
     std::cout << (int) parser::ast_control->getToken(0)->id << std::endl;
@@ -1826,7 +1844,7 @@ parser::Ast_Node_Expression* parser::Ast_Node_Expression::generate(Ast_Node* __n
 
     if ((_token_id == FUNCTION_OPERATOR_INCREMENT || _token_id == FUNCTION_OPERATOR_DECREMENT) && !__node) 
 
-        _token_id = _token_id == FUNCTION_OPERATOR_INCREMENT ? _token_id == FUNCTION_OPERATOR_INCREMENT_LEFT : FUNCTION_OPERATOR_DECREMENT_LEFT;
+        _token_id = _token_id == FUNCTION_OPERATOR_INCREMENT ?  FUNCTION_OPERATOR_INCREMENT_LEFT : FUNCTION_OPERATOR_DECREMENT_LEFT;
 
     if (!__node) __node = getValue(getNodeType());
 
@@ -2568,6 +2586,69 @@ parser::Ast_Node_If* parser::Ast_Node_If::generate() {
 
     Ast_Node_Expression* _condition_expression = Ast_Node_Expression::generate(getNodeType()); 
 
+    Ast_Node_Variable_Declaration* _expression_result = _condition_expression->getResultDeclaration();
+
+    Ast_Node_Variable_Declaration* _variable_declaration_node = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
+    new (_variable_declaration_node) Ast_Node_Variable_Declaration(
+        Type_Information::generatePrimitiveType(PRIMITIVE_TYPE_BOOL), -1, 0
+    );
+    _condition_expression->organized_set->insert(
+        _variable_declaration_node, 0
+    );
+    ast_control->to_remove->add(_variable_declaration_node);
+
+    Ast_Node_Variable* _variable_node = (Ast_Node_Variable*) malloc(sizeof(Ast_Node_Variable));
+    new (_variable_node) Ast_Node_Variable(
+        _variable_declaration_node, -1
+    );
+    _condition_expression->organized_set->insert(
+        _variable_node, 1
+    );
+
+    ast_control->to_remove->add(_variable_node);
+
+    parser::ast_control->addToChain(
+        ast_control->name_space_control->getNameSpace(_variable_declaration_node->type->declaration->functions),
+        NULL
+    );
+
+    int _declaration_id = getDeclarationId(_variable_declaration_node->type->declaration->struct_name);
+
+    Ast_Node_Function_Declaration* _function_declaration;
+
+    utils::Linked_List <Ast_Node*>* _parameters = new utils::Linked_List <Ast_Node*>();
+
+    _parameters->add(
+        _variable_declaration_node->type->declaration->representive_declaration->getCopy()
+    );
+    _parameters->operator[](0)->representive_declaration->type->pointer_level++;
+
+    _parameters->add(
+        _expression_result, 0
+    );
+
+    _function_declaration = getFunctionDeclaration(
+        _declaration_id, _parameters
+    );
+
+    ast_control->popFromChain();
+
+    delete _parameters->remove(1);
+
+    delete _parameters;
+
+    if (_declaration_id == -1 || !_function_declaration)
+
+        exception_handle->runExceptionAstControl("No Bool Constructor with given argument");
+
+    _condition_expression->organized_set->add(
+        _function_declaration
+    );
+
+    _condition_expression->organized_set->add(
+        _variable_node
+    );
+
     if (parser::ast_control->getToken(0)->id != CLOSE_PARENTHESIS)
 
         exception_handle->runException("Excpected token ')'");
@@ -2659,6 +2740,69 @@ parser::Ast_Node_Else_If* parser::Ast_Node_Else_If::generate() {
     parser::ast_control->current_position++;
 
     Ast_Node_Expression* _condition_expression = Ast_Node_Expression::generate(getNodeType()); 
+
+    Ast_Node_Variable_Declaration* _expression_result = _condition_expression->getResultDeclaration();
+
+    Ast_Node_Variable_Declaration* _variable_declaration_node = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
+    new (_variable_declaration_node) Ast_Node_Variable_Declaration(
+        Type_Information::generatePrimitiveType(PRIMITIVE_TYPE_BOOL), -1, 0
+    );
+    _condition_expression->organized_set->insert(
+        _variable_declaration_node, 0
+    );
+    ast_control->to_remove->add(_variable_declaration_node);
+
+    Ast_Node_Variable* _variable_node = (Ast_Node_Variable*) malloc(sizeof(Ast_Node_Variable));
+    new (_variable_node) Ast_Node_Variable(
+        _variable_declaration_node, -1
+    );
+    _condition_expression->organized_set->insert(
+        _variable_node, 1
+    );
+
+    ast_control->to_remove->add(_variable_node);
+
+    parser::ast_control->addToChain(
+        ast_control->name_space_control->getNameSpace(_variable_declaration_node->type->declaration->functions),
+        NULL
+    );
+
+    int _declaration_id = getDeclarationId(_variable_declaration_node->type->declaration->struct_name);
+
+    Ast_Node_Function_Declaration* _function_declaration;
+
+    utils::Linked_List <Ast_Node*>* _parameters = new utils::Linked_List <Ast_Node*>();
+
+    _parameters->add(
+        _variable_declaration_node->type->declaration->representive_declaration->getCopy()
+    );
+    _parameters->operator[](0)->representive_declaration->type->pointer_level++;
+
+    _parameters->add(
+        _expression_result, 0
+    );
+
+    _function_declaration = getFunctionDeclaration(
+        _declaration_id, _parameters
+    );
+
+    ast_control->popFromChain();
+
+    delete _parameters->remove(1);
+
+    delete _parameters;
+
+    if (_declaration_id == -1 || !_function_declaration)
+
+        exception_handle->runExceptionAstControl("No Bool Constructor with given argument");
+
+    _condition_expression->organized_set->add(
+        _function_declaration
+    );
+
+    _condition_expression->organized_set->add(
+        _variable_node
+    );
 
     if (parser::ast_control->getToken(0)->id != CLOSE_PARENTHESIS)
 

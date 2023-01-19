@@ -1,73 +1,95 @@
 
-namespace built_ins {
-
-    struct Int {
-
-        Int();
-        
-        Int(int);
-
-        int add(int);
-
-        int mul(int);
+#include "built_ins/code/Int.h"
+#include "built_ins/code/Bool.h"
 
 
-        void equal(int);
+
+built_ins::Int::Int() {}
+
+built_ins::Int::Int(int __v) { *this = __v; }
 
 
-        bool equal_to(int);
+/* Arithmetic */
 
-        bool not_equal_to(int);
+int built_ins::Int::add(int __a) {
 
-        int increment();
+    int _r; 
+    
+    _r; *this; __a; exec 16 4;
 
-        int decrement();
-
-        int increment_left();
-        
-        int decrement_left();
-
-    };
+    return _r;
 
 }
 
-built_ins::Int::Int(int __val) { *this; __val; exec 10 4; }
+int built_ins::Int::sub(int __s) {
 
-int built_ins::Int::add(int __add) {
+    int _r; 
+    
+    _r; *this; __s; exec 17 4;
 
-    int __rtr; __rtr;
+    return _r;
 
-    *this; __add; exec 16 4;
-
-    return __rtr;
 }
 
-int built_ins::Int::mul(int __rslt) {
+int built_ins::Int::mul(int __m) {
 
-    int __rtr;
+    int _r; 
+    
+    _r; *this; __m; exec 27 4;
 
-    __rtr;
-    *this;
-    __rslt;
-    exec 27 4;
+    return _r;
 
-    return __rtr;
 }
 
+int built_ins::Int::div(int __d) {
+
+    int _r; 
+    
+    _r; *this; __d; exec 28 4;
+
+    return _r;
+
+}
+
+int built_ins::Int::mod(int __m) {
+
+    int _r; 
+    
+    _r; *this; __m; exec 29 4;
+
+    return _r;
+
+}
+
+
+/* Increment Decrement */
+
+int built_ins::Int::increment() { int _v = *this; *this; exec 30 4; return _v; }
+
+int built_ins::Int::decrement() { int _v = *this; *this; exec 31 4; return _v; } 
+
+int built_ins::Int::increment_left() { *this; exec 30 4; return *this; }
+
+int built_ins::Int::decrement_left() { *this; exec 31 4; return *this; }
+
+
+/* Assign */
 
 void built_ins::Int::equal(int __eq) { *this; __eq; exec 10 4; }
 
+void built_ins::Int::add_assign(int __a) { *this; *this; __a; exec 16 4; }
 
-bool built_ins::Int::equal_to(int __comp) { bool __rslt; __rslt; *this; __comp; exec 19 4; return __rslt; }
+void built_ins::Int::sub_assign(int __s) { *this; *this; __s; exec 17 4; }
 
-bool built_ins::Int::not_equal_to(int __comp) { bool __rslt; __rslt; *this; __comp; exec 20 4; return __rslt; }
+void built_ins::Int::mul_assign(int __m) { *this; *this; __m; exec 27 4; }
+
+void built_ins::Int::div_assign(int __d) { *this; *this; __d; exec 28 4; }
+
+void built_ins::Int::mod_assign(int __m) { *this; *this; __m; exec 29 4; }
 
 
-int built_ins::Int::increment() { return *this + 1; }
+/* Relational */
 
-//int built_ins::Int::decrement() { return *this - 1; }
+bool built_ins::Int::equal_to(int __cmp) { bool __rslt; __rslt; *this; __cmp; exec 19 4; return __rslt; }
 
-int built_ins::Int::increment_left() { int _rtr = *this; *this++; return _rtr; }
-
-//int built_ins::Int::decrement_left() { int _rtr = *this; *this--; return _rtr; }
-
+bool built_ins::Int::not_equal_to(int __n_cmp) { bool __rslt; __rslt; *this; __n_cmp; exec 20 4; return __rslt; }

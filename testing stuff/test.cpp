@@ -1,6 +1,8 @@
 
 #include <iostream>
 
+
+
 #define VALUE 100
 
 int main() {

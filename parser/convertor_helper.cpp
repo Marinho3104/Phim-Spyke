@@ -37,7 +37,12 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
     
     case AST_NODE_CODE_BLOCK: 
         {
+
+            int _current_address = convertor_control->byte_code_blocks->last->object->current_allocation_size;
+
             ((Ast_Node_Code_Block*) __node)->body_position = parser::convertor_control->allocBlock();
+
+            convertor_control->byte_code_blocks->last->object->current_allocation_size = _current_address;
             
             parser::convertor_control->setBlock(
                 ((Ast_Node_Code_Block*) __node)->code,
@@ -901,12 +906,16 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeIf(Ast_Node
 
     parser::convertor_control->print("Node If - Byte Code");
 
-    __node_if->condition->getResultDeclaration();
+    // __node_if->condition->getResultDeclaration();
 
     utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>();
     _byte_code->destroy_content = 0;
 
+    int _current_size = convertor_control->byte_code_blocks->last->object->current_allocation_size;
+
     int _body_position = parser::convertor_control->allocBlock();
+
+    convertor_control->byte_code_blocks->last->object->current_allocation_size = _current_size;
 
     parser::convertor_control->setBlock(
         __node_if->condition,

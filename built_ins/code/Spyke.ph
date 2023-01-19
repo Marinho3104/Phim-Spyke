@@ -1,8 +1,2 @@
 
-namespace built_ins {
-
-    struct Spyke {
-
-    };
-
-}
+#include "built_ins/code/Spyke.h"

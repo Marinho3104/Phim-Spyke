@@ -39,6 +39,8 @@ parser::Type_Information::Type_Information(parser::Ast_Node_Struct_Declaration* 
 
 bool parser::Type_Information::operator==(Type_Information* __to_comp) {
 
+    bool _declaration_comp = !strcmp(declaration->struct_name, __to_comp->declaration->struct_name);
+
     std::cout << "Comp" << std::endl;
     std::cout << "Struct Name this -> " << declaration->struct_name << std::endl;
     std::cout << "Struct Name to_comp -> " << __to_comp->declaration->struct_name << std::endl;
@@ -308,7 +310,7 @@ int parser::getNodeType() {
     case CLOSE_PARENTHESIS: return -3; break;
     case OPEN_BRACES: return AST_NODE_CODE_BLOCK; break;
     case COMMA: return -4; break;
-    case CLOSE_BRACKET: return -5; break;
+    case CLOSE_BRACKET: return -5; break; //next -7
     case BYTE_CODE: return AST_NODE_BYTE_CODE; break;
     case SIZE_OF: return AST_NODE_SIZE_OF; break;
     case RETURN: return AST_NODE_RETURN; break;
@@ -374,6 +376,8 @@ int parser::getNodeType() {
     }
 
     if (isImplicitValueOrIdentifier(parser::ast_control->getToken(0)->id)) return AST_NODE_VALUE;
+
+    if (isFunctionOperatorSingleArgument(parser::ast_control->getToken(0)->id)) return -6;
 
 excpection:
     exception_handle->runExceptionAstControl("Unknow token");
@@ -567,16 +571,16 @@ bool parser::isNameSpaceScope() {
 bool parser::isGlobalDeclaration() { return !parser::ast_control->code_block_chain->last->object; } 
 
 
-int parser::getOperatorPriority(int __token_id) {
+int parser::getOperatorPriority(int __token_id) { // order may not be correct TODO
 
-
-    if (__token_id == OPEN_BRACKET) return 0;
+    if (__token_id == OPEN_BRACKET || __token_id == FUNCTION_OPERATOR_NOT || __token_id == FUNCTION_OPERATOR_BITWISE_NOT) return 0;
     if (__token_id >= FUNCTION_OPERATOR_MULTIPLICATION && __token_id <= FUNCTION_OPERATOR_MODULOS) return 1;
     if (__token_id >= FUNCTION_OPERATOR_PLUS && __token_id <= FUNCTION_OPERATOR_MINUS) return 2;
     if (__token_id >= FUNCTION_OPERATOR_BITWISE_AND && __token_id <= FUNCTION_OPERATOR_BITWISE_RIGHT_SHIFT) return 3;
     if (__token_id >= FUNCTION_OPERATOR_AND && __token_id <= FUNCTION_OPERATOR_OR) return 4;
+    if (__token_id >= FUNCTION_OPERATOR_EQUAL_TO && __token_id <= FUNCTION_OPERATOR_LESS_THAN_EQUAL_TO) return 5;
 
-    return 5;
+    return 6;
 
 }
 

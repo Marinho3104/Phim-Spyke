@@ -78,6 +78,7 @@ namespace parser {
         utils::Linked_List <Ast_Node_Code_Block*>* code_block_chain;
 
         utils::Linked_List <Ast_Node*>* current_nodes_list;
+        utils::Linked_List <Ast_Node*>* to_remove;
 
         int current_position;
 

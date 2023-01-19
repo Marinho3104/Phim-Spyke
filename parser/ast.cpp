@@ -298,6 +298,7 @@ parser::Ast_Control::~Ast_Control() {
     delete name_space_chain; delete code_block_chain;
 
     delete implicit_values_collection;
+    delete to_remove;
     
 }
 
@@ -309,6 +310,8 @@ parser::Ast_Control::Ast_Control(bool __debug_mode) : current_position(0), debug
     code_block_chain = new utils::Linked_List <Ast_Node_Code_Block*>();
 
     implicit_values_collection = new utils::Linked_List <char*>();
+
+    to_remove = new utils::Linked_List <Ast_Node*>();
 
 }
 

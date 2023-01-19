@@ -33,7 +33,7 @@ int main() {
 
     // exit(1);
 
-    virtual_machine::Program* _program = new virtual_machine::Program(_compiled_code_readed, 23);
+    virtual_machine::Program* _program = new virtual_machine::Program(_compiled_code_readed, 25);
 
     _program->execute();
 

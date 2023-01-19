@@ -72,6 +72,7 @@ int built_ins::getPrimitiveTypeSize(char* __name) {
     if (!strcmp((const char*) __name, PRIMITIVE_TYPE_VOID_NAME)) return PRIMITIVE_TYPE_VOID_SIZE;
     if (!strcmp((const char*) __name, PRIMITIVE_TYPE_BOOL_NAME)) return PRIMITIVE_TYPE_BOOL_SIZE;
     if (!strcmp((const char*) __name, PRIMITIVE_TYPE_POINTER_NAME)) return PRIMITIVE_TYPE_POINTER_SIZE;
+    if (!strcmp((const char*) __name, PRIMITIVE_TYPE_SPYKE_NAME)) return PRIMITIVE_TYPE_SPYKE_SIZE;
 
     return -1;
 

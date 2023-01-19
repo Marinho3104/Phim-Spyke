@@ -1,142 +1,321 @@
 #include "pre_compiler.h"
 
-#include "pre_compiler_definitions.h"
 #include "token_definitions.h"
 #include "exception_handle.h"
 #include "tokenizer.h"
 #include "token.h"
-
+#include "common.h"
 
 #include "linked_List.h"
 
 #include <iostream>
 #include <string.h>
 
-parser::Pre_Compiler_Define::~Pre_Compiler_Define() { delete names_to_find; delete name_to_replace; }
 
-parser::Pre_Compiler_Define::Pre_Compiler_Define(utils::Linked_List <Pre_Compiler_Instruction*>* __pre_compiler_instructions) { 
-    names_to_find = new utils::Linked_List <Token*>(); name_to_replace = new utils::Linked_List <Token*>(); 
-    names_to_find->destroy_content = 0; name_to_replace->destroy_content = 0;
+
+parser::Pre_Compiler_Define::~Pre_Compiler_Define() { token_to_replace->~Token(); free(token_to_replace); free(name_to_find); }
+
+parser::Pre_Compiler_Define::Pre_Compiler_Define(char* __name_to_find, Token* __token_to_replace) 
+    : name_to_find(__name_to_find), token_to_replace(__token_to_replace) {}
+
+void parser::Pre_Compiler_Define::addNewDefine() {
+
     utils::Data_Linked_List <Token*>* _data_linked_list;
-    Token* _replace_token;
 
-    for (int _ = 0; _ < __pre_compiler_instructions->count; _++)
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
 
-        if (
-            !strcmp((const char*) __pre_compiler_instructions->operator[](_)->instructions->operator[](0)->identifier, PRE_COMPILER_DEFINE)
-        ) {
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
 
-            if (__pre_compiler_instructions->operator[](_)->instructions->count < 2) exception_handle->runException("Few arguments for instruction define");
-
-            if (__pre_compiler_instructions->operator[](_)->instructions->count != 2) 
-                
-                _replace_token = __pre_compiler_instructions->operator[](_)->instructions->operator[](2);
-
-            else _replace_token = NULL;
-
-
-            addNewPair(
-                __pre_compiler_instructions->operator[](_)->instructions->operator[](1),
-                _replace_token
-            );
-
-
-        }
-
-    replace();
-
-}
-
-void parser::Pre_Compiler_Define::addNewPair(Token* __to_find, Token* __to_replace) { 
-
-    names_to_find->add(__to_find); 
+    char* _name_to_find = (char*) malloc(strlen(tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->identifier) + 1);
     
-    name_to_replace->add(__to_replace); 
+    strcpy(
+        _name_to_find,
+        tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->identifier
+    );
     
-}
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position); 
 
-parser::Token* parser::Pre_Compiler_Define::getFindToken(char* __token_identifier) {
+    Token* _token_to_replace = tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position);
+    _data_linked_list = tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position); _data_linked_list->destroy_content = 0;
+    delete _data_linked_list;
 
-    for (int _ = 0; _ < names_to_find->count; _++)
+    // Miss remove rest at same line TODO
 
-        if (
-            !strcmp(
-                (const char*) names_to_find->operator[](_)->identifier,
-                (const char*) __token_identifier
-            )
-        ) return names_to_find->operator[](_);
+    int _position = getDefinedPosition(_name_to_find);
 
-    return NULL;
+    if (_position == -1) {
 
-}
+        Pre_Compiler_Define* _define = (Pre_Compiler_Define*) malloc(sizeof(Pre_Compiler_Define));
 
-int parser::Pre_Compiler_Define::getTokenPositionByLine(int __line_position) {
+        new (_define) Pre_Compiler_Define(
+            _name_to_find, _token_to_replace
+        );
 
-    int _position = 0;
-
-    while(_position < tokenizer_control->tokens_collection->count) {
-
-        if (
-            tokenizer_control->tokens_collection->operator[](_position)->position_information.line > __line_position
-        ) return _position;
-
-        _position++;
+        pre_compiler_control->defines->add(_define);
 
     }
 
+    else {
+
+        pre_compiler_control->defines->operator[](_position)->~Pre_Compiler_Define();
+
+        pre_compiler_control->defines->operator[](_position)->name_to_find = _name_to_find;
+        pre_compiler_control->defines->operator[](_position)->token_to_replace = _token_to_replace;
+
+    }
+
+}
+
+void parser::Pre_Compiler_Define::handle() {
+
+    for (int _ = 0; _ < pre_compiler_control->defines->count; _++) {
+
+        if (
+            !strcmp(
+                pre_compiler_control->defines->operator[](_)->name_to_find,
+                tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->identifier
+            )
+        ) {
+
+            tokenizer_control->tokens_collection->getDataLinkedList(pre_compiler_control->current_position)->object->id = 
+                pre_compiler_control->defines->operator[](_)->token_to_replace->id;
+
+            free(tokenizer_control->tokens_collection->getDataLinkedList(pre_compiler_control->current_position)->object->identifier);
+
+            tokenizer_control->tokens_collection->getDataLinkedList(pre_compiler_control->current_position)->object->identifier = 
+                (char*) malloc(strlen(pre_compiler_control->defines->operator[](_)->token_to_replace->identifier) + 1);
+
+            strcpy(
+                tokenizer_control->tokens_collection->getDataLinkedList(pre_compiler_control->current_position)->object->identifier,
+                pre_compiler_control->defines->operator[](_)->token_to_replace->identifier
+            );
+
+        }
+
+    }
+
+}
+
+int parser::Pre_Compiler_Define::getDefinedPosition(char* __name_to_find) {
+
+    for (int _ = 0; _ < pre_compiler_control->defines->count; _++)
+
+        if (
+            !strcmp(
+                pre_compiler_control->defines->operator[](_)->name_to_find, __name_to_find
+            ) 
+        ) return _;
+    
     return -1;
 
 }
 
-void parser::Pre_Compiler_Define::replace() {
 
-    Token* _founded_token;
-    int _position;
+void parser::Pre_Compiler_Include::handle() {
 
-    for (int _ = names_to_find->count - 1; _ >= 0; _--) {
+    std::cout << "Handle include" << std::endl;
 
-        _position = getTokenPositionByLine(names_to_find->operator[](_)->position_information.line);
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
 
-        std::cout << _position << std::endl;
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
 
-        while(_position < tokenizer_control->tokens_collection->count) {
+    char* _include_path = (char*) malloc(strlen(tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->identifier) + 1);
+    
+    strcpy(
+        _include_path,
+        tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->identifier
+    );
 
-            if (tokenizer_control->tokens_collection->operator[](_position)->id == IDENTIFIER)
-                std::cout << tokenizer_control->tokens_collection->operator[](_position)->identifier << std::endl;
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
+    
+    char* _include_code = utils::getFileContent(_include_path);
 
-            if (tokenizer_control->tokens_collection->operator[](_position)->id == IDENTIFIER && 
-                !strcmp(tokenizer_control->tokens_collection->operator[](_position)->identifier, 
-                names_to_find->operator[](_)->identifier)
-            ) {
 
-                _founded_token = tokenizer_control->tokens_collection->operator[](_position);
+    Tokenizer_Control* _tokenizer_control = tokenizer_control;
+    char* _code = code;
 
-                tokenizer_control->tokens_collection->getDataLinkedList(_position)->object = name_to_replace->operator[](_)->getCopy();
+    code = _include_code;
+    tokenizer_control = new Tokenizer_Control(1);
+    tokenizer_control->tokens_collection->destroy_content = 0;
 
-                _founded_token->~Token(); free(_founded_token);
+    tokenizer_control->generate();
 
-            }
+    _tokenizer_control->tokens_collection->join(
+        tokenizer_control->tokens_collection,
+        pre_compiler_control->current_position
+    );
 
-            _position++;
+    delete tokenizer_control;
+    free(code);
 
-        }
+    tokenizer_control = _tokenizer_control;
+    code = _code;
 
+    free(_include_path);
+     
+}
+
+
+void parser::Pre_Compiler_If_Def::handle() {
+
+    std::cout << "Handle If Define" << std::endl;
+
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
+
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
+
+    char* _defined_name = (char*) malloc(strlen(tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->identifier) + 1);
+    
+    strcpy(
+        _defined_name,
+        tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->identifier
+    );
+
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
+
+    if (Pre_Compiler_Define::getDefinedPosition(_defined_name) != -1) {
+
+        pre_compiler_control->generate(1);
+
+        if (tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position + 1)->id == PRE_COMPILER_ELSE)
+
+            parser::Pre_Compiler_Else::handle(1);
+
+        else parser::Pre_Compiler_End_If::handle();
+
+    } else {
+
+        pre_compiler_control->ignoreBlock();
+
+        if (tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position + 1)->id == PRE_COMPILER_ELSE)
+
+            parser::Pre_Compiler_Else::handle(0);
+
+        else parser::Pre_Compiler_End_If::handle();
 
     }
+
+
+
+    free(_defined_name);
 
 }
 
 
+void parser::Pre_Compiler_If_N_Def::handle() {
 
-parser::Pre_Compiler_Instruction::~Pre_Compiler_Instruction() { delete instructions; }
+    std::cout << "Handle If Not Define" << std::endl;
 
-parser::Pre_Compiler_Instruction::Pre_Compiler_Instruction(utils::Linked_List <Token*>* __instructions) : instructions(__instructions) {}
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
+
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
+
+    char* _defined_name = (char*) malloc(strlen(tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->identifier) + 1);
+    
+    strcpy(
+        _defined_name,
+        tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->identifier
+    );
+
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
+
+    if (Pre_Compiler_Define::getDefinedPosition(_defined_name) == -1) {
+
+        pre_compiler_control->generate(1);
+
+        if (tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position + 1)->id == PRE_COMPILER_ELSE)
+
+            parser::Pre_Compiler_Else::handle(1);
+
+        else parser::Pre_Compiler_End_If::handle();
+
+    } else {
+
+        pre_compiler_control->ignoreBlock();
+
+        if (tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position + 1)->id == PRE_COMPILER_ELSE)
+
+            parser::Pre_Compiler_Else::handle(0);
+
+        else parser::Pre_Compiler_End_If::handle();
+
+    }
 
 
-parser::Pre_Compiler_Control::~Pre_Compiler_Control() { delete pre_compiler_instructions; }
 
-parser::Pre_Compiler_Control::Pre_Compiler_Control(bool __debug_mode) : current_position(0), debug_mode(__debug_mode), pre_compiler_define(NULL)
-    { pre_compiler_instructions = new utils::Linked_List <Pre_Compiler_Instruction*>(); }
+    free(_defined_name);
+
+}
+
+
+void parser::Pre_Compiler_Else::handle(bool __ignore) {
+
+    std::cout << "Pre Compiler Else" << std::endl;
+
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
+
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
+
+    if (__ignore) pre_compiler_control->ignoreBlock();
+
+    else {
+
+        while(pre_compiler_control->current_position < tokenizer_control->tokens_collection->count) {
+
+            if (tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->id == PRE_PROCESSOR) {
+
+                std::cout << (int) tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position + 1)->id << std::endl;
+
+                bool _break = 0;
+
+                switch (tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position + 1)->id)
+                {
+                case PRE_COMPILER_DEFINE: Pre_Compiler_Define::addNewDefine(); break;
+                case PRE_COMPILER_INCLUDE: Pre_Compiler_Include::handle(); break;
+                case PRE_COMPILER_IF_DEF: Pre_Compiler_If_Def::handle(); break;
+                case PRE_COMPILER_ELSE: case PRE_COMPILER_END_IF: _break = 1; break;
+                default: break;
+                }
+
+                if (_break) break;
+
+            }
+
+            else {
+
+                switch (tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->id)
+                {
+                case IDENTIFIER: Pre_Compiler_Define::handle(); break;
+                default: break;
+                }
+
+                pre_compiler_control->current_position++;
+
+            }
+
+        }
+
+    }
+    
+    Pre_Compiler_End_If::handle();
+
+}
+
+
+void parser::Pre_Compiler_End_If::handle() {
+
+    std::cout << "Pre Compiler End If" << std::endl;
+
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
+
+    delete tokenizer_control->tokens_collection->remove(pre_compiler_control->current_position);
+
+}
+
+parser::Pre_Compiler_Control::~Pre_Compiler_Control() { delete defines; }
+
+parser::Pre_Compiler_Control::Pre_Compiler_Control(bool __debug_mode) : current_position(0), debug_mode(__debug_mode) 
+    { defines = new utils::Linked_List <Pre_Compiler_Define*>(); }
 
 void parser::Pre_Compiler_Control::print(const char* __information) {
 
@@ -152,56 +331,72 @@ void parser::Pre_Compiler_Control::preCompile() {
     print("\t--> Pre Compiler Control <---");
     print("");
 
-    utils::Data_Linked_List <Token*>* _data_linked_list, *_pre_processor;
-    Pre_Compiler_Instruction* _pre_compiler_instruction;
-    utils::Linked_List <Token*>* _instructions_set;
+    generate(0);    
+
+}
+
+void parser::Pre_Compiler_Control::generate(bool __condition_block) {
 
     while(current_position < tokenizer_control->tokens_collection->count) {
 
-        if (tokenizer_control->tokens_collection->operator[](current_position++)->id != PRE_PROCESSOR) continue;
+        if (tokenizer_control->tokens_collection->operator[](current_position)->id == PRE_PROCESSOR) {
 
-        _instructions_set = new utils::Linked_List <Token*>();
+            std::cout << (int) tokenizer_control->tokens_collection->operator[](current_position + 1)->id << std::endl;
 
-        --current_position;
+            bool _break = 0;
 
-        _pre_processor = tokenizer_control->tokens_collection->remove(current_position);
+            switch (tokenizer_control->tokens_collection->operator[](current_position + 1)->id)
+            {
+            case PRE_COMPILER_DEFINE: Pre_Compiler_Define::addNewDefine(); break;
+            case PRE_COMPILER_INCLUDE: Pre_Compiler_Include::handle(); break;
+            case PRE_COMPILER_IF_DEF: Pre_Compiler_If_Def::handle(); break;
+            case PRE_COMPILER_IF_N_DEF: Pre_Compiler_If_N_Def::handle(); break;
+            case PRE_COMPILER_ELSE: case PRE_COMPILER_END_IF: if (__condition_block) _break = 1; else {std::cout<<"Error pre compiler" << std::endl; exit(1);} break;
+            default: break;
+            }
 
-        while(tokenizer_control->tokens_collection->operator[](current_position)->position_information.line == _pre_processor->object->position_information.line) {
-
-            _data_linked_list = tokenizer_control->tokens_collection->remove(current_position);
-            _data_linked_list->destroy_content = 0;
-
-            _instructions_set->add(
-                _data_linked_list->object
-            );
-
-            delete _data_linked_list;
+            if (_break) break;
 
         }
 
-        delete _pre_processor;
+        else {
 
-        _pre_compiler_instruction = (Pre_Compiler_Instruction*) malloc(sizeof(Pre_Compiler_Instruction));
+            switch (tokenizer_control->tokens_collection->operator[](current_position)->id)
+            {
+            case IDENTIFIER: Pre_Compiler_Define::handle(); break;
+            default: break;
+            }
 
-        new (_pre_compiler_instruction) Pre_Compiler_Instruction(
-            _instructions_set
-        );
+            current_position++;
 
-        pre_compiler_instructions->add(
-            _pre_compiler_instruction
-        );
+        }
 
     }
-
-    pre_compiler_define = new Pre_Compiler_Define(
-        pre_compiler_instructions
-    );
-
-    delete pre_compiler_define;
-
 
 
 }
 
 
+void parser::Pre_Compiler_Control::ignoreBlock() {
+    std::cout << "Ignore Block" << std::endl;
 
+    while(pre_compiler_control->current_position < tokenizer_control->tokens_collection->count) {
+
+        if (tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position)->id == PRE_PROCESSOR) {
+
+            bool _break = 0;
+
+            switch (tokenizer_control->tokens_collection->operator[](pre_compiler_control->current_position + 1)->id)
+            {
+            case PRE_COMPILER_ELSE: case PRE_COMPILER_END_IF: _break = 1; break;            
+            default: break;
+            }
+
+            if (_break) break;
+
+        }
+
+        else delete tokenizer_control->tokens_collection->remove(current_position);
+
+    }
+}

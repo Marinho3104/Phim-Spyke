@@ -1,11 +1,14 @@
 
+#include <iostream>
+
+#define VALUE 100
 
 int main() {
 
-    int m = 12 + 90;
+    std::cout << VALUE << std::endl;
 
-    int marinho[m];
+    #include "test_1.cpp"
 
-    int k = 123;
+    std::cout << VALUE << std::endl;
 
 }

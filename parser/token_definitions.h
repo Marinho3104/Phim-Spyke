@@ -124,3 +124,12 @@
 #define SIZE_OF 81 // sizeof
 
 // next 85
+
+
+
+#define PRE_COMPILER_DEFINE 85
+#define PRE_COMPILER_INCLUDE 86
+#define PRE_COMPILER_IF_DEF 87
+#define PRE_COMPILER_IF_N_DEF 88
+#define PRE_COMPILER_ELSE 89
+#define PRE_COMPILER_END_IF 90

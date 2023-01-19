@@ -7,34 +7,56 @@
 
 namespace parser {
 
-    struct Pre_Compiler_Instruction {
+    struct Pre_Compiler_Define {
 
-        utils::Linked_List <Token*>* instructions;
+        char* name_to_find;
+        
+        Token* token_to_replace;
 
-        ~Pre_Compiler_Instruction(); Pre_Compiler_Instruction(utils::Linked_List <Token*>*);
+        ~Pre_Compiler_Define(); Pre_Compiler_Define(char*, Token*);
+
+        static void addNewDefine();
+
+        static void handle();
+
+        static int getDefinedPosition(char*);
 
     };
 
-    struct Pre_Compiler_Define { // not corrected
+    struct Pre_Compiler_Include {
 
-        utils::Linked_List <Token*>* names_to_find, *name_to_replace;
+        static void handle();
 
-        ~Pre_Compiler_Define(); Pre_Compiler_Define(utils::Linked_List <Pre_Compiler_Instruction*>*);
+    };
 
-        void addNewPair(Token*, Token*);
+    struct Pre_Compiler_If_Def {
 
-        Token* getFindToken(char*);
+        static void handle();
 
-        int getTokenPositionByLine(int);
 
-        void replace();
+    };
+
+    struct Pre_Compiler_If_N_Def {
+        
+        static void handle();
+
+    };
+
+    struct Pre_Compiler_Else {
+
+        static void handle(bool);
+
+    };
+
+    struct Pre_Compiler_End_If {
+
+        static void handle();
 
     };
 
     struct Pre_Compiler_Control {
 
-        utils::Linked_List <Pre_Compiler_Instruction*>* pre_compiler_instructions;
-        Pre_Compiler_Define* pre_compiler_define;
+        utils::Linked_List <Pre_Compiler_Define*>* defines;
 
         int current_position;
 
@@ -45,6 +67,10 @@ namespace parser {
         void print(const char*);
 
         void preCompile();
+
+        void generate(bool);
+
+        void ignoreBlock();
 
     };
 

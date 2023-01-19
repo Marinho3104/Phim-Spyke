@@ -1453,9 +1453,7 @@ int parser::Ast_Node_Struct_Declaration::getSize() {
     checkBody();
 
     int _size = built_ins::getPrimitiveTypeSize(
-        parser::ast_control->name_space_control->getNameSpace(
-            functions
-        )->scope->last->object
+        struct_name
     );
 
     if (_size != -1) return _size;
@@ -1526,7 +1524,7 @@ bool parser::Ast_Node_Struct_Declaration::haveContructorDefined() {
 
 void parser::Ast_Node_Struct_Declaration::checkBody() {
 
-    if (functions) return;
+    if (functions || built_ins::getPrimitiveTypeSize(struct_name) != -1) return;
 
     exception_handle->runExceptionAstControl("Use of forward struct declaration"); 
 

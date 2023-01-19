@@ -102,32 +102,56 @@ spyke built_ins::Pointer::bracket(int __idx, int __s) {
 
 pointer built_ins::Pointer::increment(int __s) { *this += __s; return *this; }
 
+#define AI l
+#ifndef AI
+
+int m;
+
+#else 
+
+bool m;
+
+#endif
 
 
+#include "./built_ins/code/include.h"
 
+struct Marinho {
 
+    int m, k,l,e,t,y;
 
-
-
-
-
-
-
-
+} kk;
 
 void main() {
 
-    int* j;
-
-    j;
-
-    j ++;
-
-    j;
+    VALUE;
 
 }
 
 /*
+
+
+int k = VALUE;
+
+    #define VALUE 350
+
+    int m = VALUE;
+
+    if (k) {
+
+        k = 12345;
+
+    }
+
+    k;
+    m;
+
+
+
+
+
+
+
 int m;
     int _var[100];
     

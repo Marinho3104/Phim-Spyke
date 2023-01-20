@@ -136,6 +136,8 @@ namespace parser {
 
         int getVariablesOff(Ast_Node_Variable*);
 
+        void setDefaultFieldsAddress();
+
         bool isStaticVariableDeclaration(Ast_Node_Variable_Declaration*);
 
         bool haveContructorDefined();
@@ -313,6 +315,28 @@ namespace parser {
         static Ast_Node_Function_Size_Of* generate();
 
         int getSizeOf();
+
+    };
+
+    struct Ast_Node_While : Ast_Node {
+
+        Ast_Node_Expression* condition;
+        utils::Linked_List <Ast_Node*>* body;
+
+        ~Ast_Node_While(); Ast_Node_While(Ast_Node_Expression*, utils::Linked_List <Ast_Node*>*);
+
+        static Ast_Node_While* generate();
+
+    };
+
+    struct Ast_Node_Do_While : Ast_Node {
+
+        Ast_Node_Expression* condition;
+        utils::Linked_List <Ast_Node*>* body;
+
+        ~Ast_Node_Do_While(); Ast_Node_Do_While(Ast_Node_Expression*, utils::Linked_List <Ast_Node*>*);
+
+        static Ast_Node_Do_While* generate();
 
     };
 

@@ -118,14 +118,13 @@
 #define IF 77 // if
 #define ELSE_IF 78 // else if
 #define ELSE 79 // else
+#define WHILE 91 // while
+#define DO 92 // do
+#define BREAK 93 // break
 
 #define PRIMITIVE_TYPE_POINTER 80 // pointer
 
 #define SIZE_OF 81 // sizeof
-
-// next 85
-
-
 
 #define PRE_COMPILER_DEFINE 85
 #define PRE_COMPILER_INCLUDE 86

@@ -274,6 +274,8 @@ void parser::Ast_Node_Code_Block::setCode() {
             case AST_NODE_RETURN: code->add(Ast_Node_Return::generate()); break;
             case AST_NODE_IF: code->add(Ast_Node_If::generate()); break;
             case AST_NODE_ELSE_IF: code->add(Ast_Node_Else_If::generate()); break;
+            case AST_NODE_WHILE: code->add(Ast_Node_While::generate()); break;
+            case AST_NODE_DO_WHILE: code->add(Ast_Node_Do_While::generate()); break;
             case AST_NODE_ELSE: code->add(Ast_Node_Else::generate()); break;
             case AST_NODE_VARIABLE: case AST_NODE_VALUE: case AST_NODE_FUNCTION_CALL: case AST_NODE_POINTER_OPERATION: case AST_NODE_PARENTHESIS:
             case AST_NODE_CAST: case AST_NODE_SIZE_OF: case -6:
@@ -1449,6 +1451,8 @@ void parser::Ast_Node_Struct_Declaration::setFields() {
 
     }
 
+    setDefaultFieldsAddress();
+
     parser::ast_control->print("Ast Node Struct Set Fields End\n", AST_DEBUG_MODE_DEC);
 
 }
@@ -1496,6 +1500,23 @@ int parser::Ast_Node_Struct_Declaration::getVariablesOff(Ast_Node_Variable* __va
     return -1;
 
 }
+
+void parser::Ast_Node_Struct_Declaration::setDefaultFieldsAddress() {
+
+    int _address = 0;
+
+    for (int _ = 0; _ < fields->code->count; _++) {
+
+        if (fields->code->operator[](_)->node_type != AST_NODE_VARIABLE_DECLARATION) continue;
+
+        ((Ast_Node_Variable_Declaration*)fields->code->operator[](_))->address = _address;
+
+        _address += ((Ast_Node_Variable_Declaration*)fields->code->operator[](_))->type->getSize();
+
+    }
+
+}
+
 
 bool parser::Ast_Node_Struct_Declaration::isStaticVariableDeclaration(Ast_Node_Variable_Declaration* __variable_declaration) {
 
@@ -3007,5 +3028,322 @@ int parser::Ast_Node_Function_Size_Of::getSizeOf() {
     return _size;
 
 }
+
+
+parser::Ast_Node_While::~Ast_Node_While() {
+    condition->~Ast_Node_Expression(); free(condition);
+    delete body;
+}
+
+parser::Ast_Node_While::Ast_Node_While(Ast_Node_Expression* __condition, utils::Linked_List <Ast_Node*>* __body) 
+    : Ast_Node(0, AST_NODE_WHILE), condition(__condition), body(__body) {}
+
+parser::Ast_Node_While* parser::Ast_Node_While::generate() {
+
+    parser::ast_control->print("Ast Node While\n", AST_DEBUG_MODE_INC);
+    Ast_Node_Expression* _condition_expression;
+
+    {
+        parser::ast_control->current_position++;
+
+        if (parser::ast_control->getToken(0)->id != OPEN_PARENTHESIS)
+
+            exception_handle->runException("Excpected token '('");
+
+        parser::ast_control->current_position++;
+
+        _condition_expression = Ast_Node_Expression::generate(getNodeType()); 
+
+        Ast_Node_Variable_Declaration* _expression_result = _condition_expression->getResultDeclaration();
+
+        Ast_Node_Variable_Declaration* _variable_declaration_node = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
+        new (_variable_declaration_node) Ast_Node_Variable_Declaration(
+            Type_Information::generatePrimitiveType(PRIMITIVE_TYPE_BOOL), -1, 0
+        );
+        _condition_expression->organized_set->insert(
+            _variable_declaration_node, 0
+        );
+        ast_control->to_remove->add(_variable_declaration_node);
+
+        Ast_Node_Variable* _variable_node = (Ast_Node_Variable*) malloc(sizeof(Ast_Node_Variable));
+        new (_variable_node) Ast_Node_Variable(
+            _variable_declaration_node, -1
+        );
+        _condition_expression->organized_set->insert(
+            _variable_node, 1
+        );
+
+        ast_control->to_remove->add(_variable_node);
+
+        parser::ast_control->addToChain(
+            ast_control->name_space_control->getNameSpace(_variable_declaration_node->type->declaration->functions),
+            NULL
+        );
+
+        int _declaration_id = getDeclarationId(_variable_declaration_node->type->declaration->struct_name);
+
+        Ast_Node_Function_Declaration* _function_declaration;
+
+        utils::Linked_List <Ast_Node*>* _parameters = new utils::Linked_List <Ast_Node*>();
+
+        _parameters->add(
+            _variable_declaration_node->type->declaration->representive_declaration->getCopy()
+        );
+        _parameters->operator[](0)->representive_declaration->type->pointer_level++;
+
+        _parameters->add(
+            _expression_result, 0
+        );
+
+        _function_declaration = getFunctionDeclaration(
+            _declaration_id, _parameters
+        );
+
+        ast_control->popFromChain();
+
+        delete _parameters->remove(1);
+
+        delete _parameters;
+
+        if (_declaration_id == -1 || !_function_declaration)
+
+            exception_handle->runExceptionAstControl("No Bool Constructor with given argument");
+
+        _condition_expression->organized_set->add(
+            _function_declaration
+        );
+
+        _condition_expression->organized_set->add(
+            _variable_node
+        );
+
+        if (parser::ast_control->getToken(0)->id != CLOSE_PARENTHESIS)
+
+            exception_handle->runException("Excpected token ')'");
+
+        parser::ast_control->current_position++;
+
+    }
+
+    utils::Linked_List <Ast_Node*>* _body = new utils::Linked_List <Ast_Node*>(), *_temp;
+
+    switch (int _node_type = getNodeType())
+    {
+        case -2: parser::ast_control->current_position++; break;
+        case AST_NODE_CODE_BLOCK:
+
+            parser::ast_control->current_position++;
+
+            Ast_Node_Code_Block::setUp();
+            
+            _body->add(
+                parser::ast_control->code_block_chain->last->object
+            );
+
+            parser::ast_control->code_block_chain->last->object->setCode();
+
+            parser::ast_control->popFromChain();
+
+            break;
+
+        case AST_NODE_BYTE_CODE: _body->add(Ast_Node_Byte_Code::generate()); break;
+        case AST_NODE_RETURN: _body->add(Ast_Node_Return::generate()); break;
+        case AST_NODE_VARIABLE: case AST_NODE_VALUE: case AST_NODE_FUNCTION_CALL: case AST_NODE_POINTER_OPERATION: case AST_NODE_PARENTHESIS:
+        case AST_NODE_CAST:
+            _body->add(Ast_Node_Expression::generate(_node_type));
+            if (parser::ast_control->getToken(0)->id != END_INSTRUCTION) parser::exception_handle->runExceptionAstControl("Excpected token ';' aqui");
+            parser::ast_control->current_position++;
+            break;
+        case AST_NODE_VARIABLE_DECLARATION:
+            
+                _temp = Ast_Node_Variable_Declaration::generate();
+
+                _body->join(_temp);
+
+                delete _temp;
+
+                break;
+
+        default: exception_handle->runExceptionAstControl("Node not supported in If Node"); break;
+    }
+
+    parser::Ast_Node_While* _node_while = (Ast_Node_While*) malloc(sizeof(Ast_Node_While));
+
+    new (_node_while) Ast_Node_While(
+        _condition_expression,
+        _body
+    );
+
+    parser::ast_control->print("Ast Node While\n", AST_DEBUG_MODE_DEC);
+
+    return _node_while;
+
+}
+
+
+parser::Ast_Node_Do_While::~Ast_Node_Do_While() {
+    condition->~Ast_Node_Expression(); free(condition);
+    delete body;
+}
+
+parser::Ast_Node_Do_While::Ast_Node_Do_While(Ast_Node_Expression* __condition, utils::Linked_List <Ast_Node*>* __body) 
+    : Ast_Node(0, AST_NODE_DO_WHILE), condition(__condition), body(__body) {}
+
+parser::Ast_Node_Do_While* parser::Ast_Node_Do_While::generate() {
+
+    parser::ast_control->print("Ast Node Do While\n", AST_DEBUG_MODE_INC);
+    Ast_Node_Expression* _condition_expression;
+
+    parser::ast_control->current_position++;
+
+    utils::Linked_List <Ast_Node*>* _body = new utils::Linked_List <Ast_Node*>(), *_temp;
+
+    std::cout << "Node type -> " << getNodeType() << std::endl;
+
+    switch (int _node_type = getNodeType())
+    {
+        case -2: parser::ast_control->current_position++; break;
+        case AST_NODE_CODE_BLOCK:
+
+            parser::ast_control->current_position++;
+
+            Ast_Node_Code_Block::setUp();
+            
+            _body->add(
+                parser::ast_control->code_block_chain->last->object
+            );
+
+            parser::ast_control->code_block_chain->last->object->setCode();
+
+            parser::ast_control->popFromChain();
+
+            break;
+
+        case AST_NODE_BYTE_CODE: _body->add(Ast_Node_Byte_Code::generate()); break;
+        case AST_NODE_RETURN: _body->add(Ast_Node_Return::generate()); break;
+        case AST_NODE_VARIABLE: case AST_NODE_VALUE: case AST_NODE_FUNCTION_CALL: case AST_NODE_POINTER_OPERATION: case AST_NODE_PARENTHESIS:
+        case AST_NODE_CAST:
+            _body->add(Ast_Node_Expression::generate(_node_type));
+            if (parser::ast_control->getToken(0)->id != END_INSTRUCTION) parser::exception_handle->runExceptionAstControl("Excpected token ';' aqui");
+            parser::ast_control->current_position++;
+            break;
+        case AST_NODE_VARIABLE_DECLARATION:
+            
+                _temp = Ast_Node_Variable_Declaration::generate();
+
+                _body->join(_temp);
+
+                delete _temp;
+
+                break;
+
+        default: exception_handle->runExceptionAstControl("Node not supported in Do While Node"); break;
+    }
+
+    {
+        parser::ast_control->current_position++;
+
+        if (parser::ast_control->getToken(0)->id != OPEN_PARENTHESIS)
+
+            exception_handle->runException("Excpected token '('");
+
+        parser::ast_control->current_position++;
+
+        _condition_expression = Ast_Node_Expression::generate(getNodeType()); 
+
+        Ast_Node_Variable_Declaration* _expression_result = _condition_expression->getResultDeclaration();
+
+        Ast_Node_Variable_Declaration* _variable_declaration_node = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
+        new (_variable_declaration_node) Ast_Node_Variable_Declaration(
+            Type_Information::generatePrimitiveType(PRIMITIVE_TYPE_BOOL), -1, 0
+        );
+        _condition_expression->organized_set->insert(
+            _variable_declaration_node, 0
+        );
+        ast_control->to_remove->add(_variable_declaration_node);
+
+        Ast_Node_Variable* _variable_node = (Ast_Node_Variable*) malloc(sizeof(Ast_Node_Variable));
+        new (_variable_node) Ast_Node_Variable(
+            _variable_declaration_node, -1
+        );
+        _condition_expression->organized_set->insert(
+            _variable_node, 1
+        );
+
+        ast_control->to_remove->add(_variable_node);
+
+        parser::ast_control->addToChain(
+            ast_control->name_space_control->getNameSpace(_variable_declaration_node->type->declaration->functions),
+            NULL
+        );
+
+        int _declaration_id = getDeclarationId(_variable_declaration_node->type->declaration->struct_name);
+
+        Ast_Node_Function_Declaration* _function_declaration;
+
+        utils::Linked_List <Ast_Node*>* _parameters = new utils::Linked_List <Ast_Node*>();
+
+        _parameters->add(
+            _variable_declaration_node->type->declaration->representive_declaration->getCopy()
+        );
+        _parameters->operator[](0)->representive_declaration->type->pointer_level++;
+
+        _parameters->add(
+            _expression_result, 0
+        );
+
+        _function_declaration = getFunctionDeclaration(
+            _declaration_id, _parameters
+        );
+
+        ast_control->popFromChain();
+
+        delete _parameters->remove(1);
+
+        delete _parameters;
+
+        if (_declaration_id == -1 || !_function_declaration)
+
+            exception_handle->runExceptionAstControl("No Bool Constructor with given argument");
+
+        _condition_expression->organized_set->add(
+            _function_declaration
+        );
+
+        _condition_expression->organized_set->add(
+            _variable_node
+        );
+
+        if (parser::ast_control->getToken(0)->id != CLOSE_PARENTHESIS)
+
+            exception_handle->runException("Excpected token ')'");
+
+        parser::ast_control->current_position++;
+
+    }
+
+    if (parser::ast_control->getToken(0)->id != END_INSTRUCTION)
+
+            exception_handle->runException("Excpected token ';'");
+
+    parser::ast_control->current_position++;
+    
+    parser::Ast_Node_Do_While* _node_do_while = (Ast_Node_Do_While*) malloc(sizeof(Ast_Node_Do_While));
+
+    new (_node_do_while) Ast_Node_Do_While(
+        _condition_expression,
+        _body
+    );
+
+    parser::ast_control->print("Ast Node Do While\n", AST_DEBUG_MODE_DEC);
+
+    return _node_do_while;
+
+}
+
+
+
+
+
 
 

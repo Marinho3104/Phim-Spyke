@@ -70,6 +70,8 @@ namespace virtual_machine {
 
     void execute_BYTE_CODE_JUMP(byte_code::Byte_Code*, Execution*, int&);
 
+    void execute_BYTE_CODE_SET_INDEX(int, Execution*, int&);
+
 }
 
 #endif

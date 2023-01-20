@@ -8,6 +8,8 @@ built_ins::Int::Int() {}
 
 built_ins::Int::Int(int __v) { *this = __v; }
 
+built_ins::Int::Int(bool __v) { *this = __v; }
+
 
 /* Arithmetic */
 
@@ -76,6 +78,8 @@ int built_ins::Int::decrement_left() { *this; exec 31 4; return *this; }
 /* Assign */
 
 void built_ins::Int::equal(int __eq) { *this; __eq; exec 10 4; }
+
+void built_ins::Int::equal(bool __eq) { *this; __eq; exec 10 1; }
 
 void built_ins::Int::add_assign(int __a) { *this; *this; __a; exec 16 4; }
 

@@ -31,6 +31,8 @@ namespace built_ins {
         /* Assign */
 
         void equal(int);
+        void equal(bool);
+
         void add_assign(int);
         void sub_assign(int);
         void mul_assign(int);

@@ -67,6 +67,8 @@ char* built_ins::getStructNameOfTokenId(int __token_id) {
 
 int built_ins::getPrimitiveTypeSize(char* __name) {
 
+    if (!__name) return -1;
+
     if (!strcmp((const char*) __name, PRIMITIVE_TYPE_BYTE_NAME)) return PRIMITIVE_TYPE_BYTE_SIZE;
     if (!strcmp((const char*) __name, PRIMITIVE_TYPE_INT_NAME)) return PRIMITIVE_TYPE_INT_SIZE;
     if (!strcmp((const char*) __name, PRIMITIVE_TYPE_VOID_NAME)) return PRIMITIVE_TYPE_VOID_SIZE;

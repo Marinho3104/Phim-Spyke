@@ -314,6 +314,8 @@ int parser::getNodeType() {
     case BYTE_CODE: return AST_NODE_BYTE_CODE; break;
     case SIZE_OF: return AST_NODE_SIZE_OF; break;
     case RETURN: return AST_NODE_RETURN; break;
+    case WHILE: return AST_NODE_WHILE; break;
+    case DO: return AST_NODE_DO_WHILE; break;
     case NAMESPACE: return AST_NODE_NAME_SPACE; break;
     case STRUCT: return AST_NODE_STRUCT_DECLARATION; break;
     case OPEN_PARENTHESIS: 

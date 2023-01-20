@@ -53,8 +53,9 @@ void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual
     case BYTE_CODE_BINARY_DEC: execute_BYTE_BINARY_DEC(__byte_code->argument, __execution); break;
     case BYTE_CODE_EXECUTE_PREVIOUS_STACK: execute_BYTE_CODE_EXECUTE_PREVIOUS_STACK(__byte_code, __execution, __current_index); break;
     case BYTE_CODE_JUMP: execute_BYTE_CODE_JUMP(__byte_code, __execution, __current_index); break;
+    case BYTE_CODE_SET_INDEX: execute_BYTE_CODE_SET_INDEX(__byte_code->argument, __execution, __current_index); break;
 
-    case BYTE_CODE_NOP: std::cout << "NOP" << std::endl; break;
+    case BYTE_CODE_NOP: std::cout << "NOP" << std::endl; __execution->stacks->last->object->stack->printContent(); break;
     default: std::cout << "error " << (int) __byte_code->code << std::endl; exit(1); break;
     }
 
@@ -144,6 +145,9 @@ void virtual_machine::execute_BYTE_CODE_LOAD_IMPLICIT_VALUE(int __arg, Execution
         STACK_MEMORY_SIZE + HEAP_MEMORY_SIZE + __arg
     );
 
+    std::cout << "Value loaded -> " <<
+        *((int*)__execution->program->memory->getRealAddress(STACK_MEMORY_SIZE + HEAP_MEMORY_SIZE + __arg)) << std::endl;
+
     __execution->stacks->last->object->stack->printContent();
 
 }
@@ -176,9 +180,12 @@ void virtual_machine::execute_BYTE_CODE_MEMORY_COPY(int __arg, Execution* __exec
 
 }
 
+/* Poem valor do address no stack address */
 void virtual_machine::execute_BYTE_CODE_SET_INTO_STACK(int __arg, Execution* __execution) {
 
     std::cout << "SET_INTO_STACK" << std::endl;
+
+    __execution->stacks->last->object->stack->printContent();
 
     int _last_arg = __execution->stacks->last->object->popFromStack();
 
@@ -199,6 +206,7 @@ void virtual_machine::execute_BYTE_CODE_SET_INTO_STACK(int __arg, Execution* __e
 
 }
 
+/* Poem o address numa variavel copy receive */
 void virtual_machine::execute_BYTE_CODE_GET_FROM_STACK(int __arg, Execution* __execution) {
 
     std::cout << "GET_FROM_STACK" << std::endl;
@@ -223,6 +231,8 @@ void virtual_machine::execute_BYTE_CODE_GET_FROM_STACK(int __arg, Execution* __e
     __execution->stacks->last->object->addToStack(
         _last_address
     );
+
+    __execution->stacks->last->object->stack->printContent();
 
 }
 
@@ -531,4 +541,11 @@ void virtual_machine::execute_BYTE_CODE_JUMP(byte_code::Byte_Code* __byte_code, 
 
 }
 
+void virtual_machine::execute_BYTE_CODE_SET_INDEX(int __arg, Execution* __execution, int& __current_index) {
+
+    std::cout << "SET_INDEX -- argument " << __arg << std::endl;
+
+    __current_index = __arg;
+
+}
 

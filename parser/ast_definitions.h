@@ -20,6 +20,8 @@
 #define AST_NODE_ELSE_IF 17
 #define AST_NODE_ELSE 18
 #define AST_NODE_SIZE_OF 19
+#define AST_NODE_WHILE 20
+#define AST_NODE_DO_WHILE 21
 
 
 

@@ -1,24 +1,28 @@
 
+struct mr {
 
-void test_func() {
+    bool k, kk;
 
-    static int marinho = 5;
+};
 
-    marinho;
+struct marinho {
 
-    marinho += 5;
+    int m, l;
+    ::mr ml;
 
-}
+    void j() {  }
+
+};
+
 
 void main() {
 
-    int k = 10;
+    int m = 0;
 
-    int m;
-    
-    m = ++k++;
+    do { m = 1000; }
 
-    k;
+    while(0); 
+
     m;
 
 }

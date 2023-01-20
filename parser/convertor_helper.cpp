@@ -196,6 +196,22 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNode(Ast_Node* 
             (Ast_Node_Else*) __node
         );
         break;
+    case AST_NODE_WHILE:
+
+        _byte_code = getByteCodeOfNodeWhile(
+            (Ast_Node_While*) __node
+        );
+
+        break;
+    case AST_NODE_DO_WHILE:
+
+        _byte_code = getByteCodeOfNodeDoWhile(
+            (Ast_Node_Do_While*) __node
+        );
+
+        break;
+
+
     default: std::cout << "erorr yey" << std::endl; exit(1); break;
     }
 
@@ -746,15 +762,17 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeAccessing(A
     utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>(), *_temp;
     _byte_code->destroy_content = 0;
 
-    // _temp = getByteCodeOfNode(
-    //     __node_accessing->value
-    // );
+    _temp = getByteCodeOfNode(
+        __node_accessing->value
+    );
 
-    // _byte_code->join(
-    //     _temp
-    // );
+    _byte_code->join(
+        _temp
+    );
 
-    // delete _temp;
+    delete _temp;
+
+    int _address = __node_accessing->value->representive_declaration->address;
 
     while(__node_accessing) {
 
@@ -784,20 +802,82 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeAccessing(A
 
                 else {
 
-                    __node_accessing->accessing->representive_declaration->address = __node_accessing->value->representive_declaration->address + 
-                            __node_accessing->value->representive_declaration->type->declaration->getVariablesOff((Ast_Node_Variable*)__node_accessing->accessing);
+                    byte_code::Byte_Code* _variable_alloc = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+                    new (_variable_alloc) byte_code::Byte_Code(
+                        BYTE_CODE_STACK_MEMORY_ALLOCATE,
+                        2
+                    );
+                    _byte_code->add(_variable_alloc);
 
-                    if (__node_accessing->next) break;
+                    int _address = 
+                        convertor_control->block_in_set->current_allocation_size;
 
-                    byte_code::Byte_Code* _load_byte_code = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+                    convertor_control->block_in_set->current_allocation_size += _variable_alloc->argument;
 
-                    new (_load_byte_code) byte_code::Byte_Code(
-                        __node_accessing->value->representive_declaration->global ? BYTE_CODE_LOAD_GLOBAL : BYTE_CODE_LOAD,
-                        __node_accessing->accessing->representive_declaration->address
+                    byte_code::Byte_Code* _variable_load = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+                    new (_variable_load) byte_code::Byte_Code(
+                        BYTE_CODE_LOAD,
+                        _address
+                    );
+                    _byte_code->add(_variable_load);
+
+                    byte_code::Byte_Code* _get_from_stack = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+                    new (_get_from_stack) byte_code::Byte_Code(
+                        BYTE_CODE_GET_FROM_STACK,
+                        0
+                    );
+                    _byte_code->add(
+                        _get_from_stack
                     );
 
+                    byte_code::Byte_Code* _variable_load_add = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+                    new (_variable_load_add) byte_code::Byte_Code(
+                        BYTE_CODE_LOAD,
+                        _address
+                    );
+                    _byte_code->add(_variable_load_add);
+
+                    char* _value;
+                    asprintf (&_value, "%i", __node_accessing->accessing->representive_declaration->address);
+
+                    int _position = parser::ast_control->addImplicitValue(_value);
+                    free(_value);
+
+                    byte_code::Byte_Code* _load_implicit = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+                    new (_load_implicit) byte_code::Byte_Code(
+                        BYTE_CODE_LOAD_IMPLICIT_VALUE,
+                        getImplicitValueOff(_position)
+                    );
                     _byte_code->add(
-                        _load_byte_code
+                        _load_implicit
+                    );
+
+                    byte_code::Byte_Code* _add_binary = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+                    new (_add_binary) byte_code::Byte_Code(
+                        BYTE_CODE_BINARY_ADD,
+                        2
+                    );
+                    _byte_code->add(
+                        _add_binary
+                    );
+
+
+                    byte_code::Byte_Code* _variable_load_add_1 = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+                    new (_variable_load_add_1) byte_code::Byte_Code(
+                        BYTE_CODE_LOAD,
+                        _address
+                    );
+                    _byte_code->add(_variable_load_add_1);
+
+                    byte_code::Byte_Code* _set_into_stack_1 = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+                    new (_set_into_stack_1) byte_code::Byte_Code(
+                        BYTE_CODE_SET_INTO_STACK,
+                        0
+                    );
+                    _byte_code->add(
+                        _set_into_stack_1
                     );
 
                 }
@@ -831,6 +911,10 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeAccessing(A
         __node_accessing = __node_accessing->next;
 
     }
+
+    // __node_accessing->value->representive_declaration->type->declaration->setDefaultFieldsAddress();
+
+    // exit(1);
 
     //exit(1);
 
@@ -905,8 +989,6 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeReturn(Ast_
 utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeIf(Ast_Node_If* __node_if) {
 
     parser::convertor_control->print("Node If - Byte Code");
-
-    // __node_if->condition->getResultDeclaration();
 
     utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>();
     _byte_code->destroy_content = 0;
@@ -1000,7 +1082,6 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeElse(Ast_No
 
 }
 
-
 byte_code::Byte_Code* parser::getByteCodeOfNodeFunctionSizeOf(Ast_Node_Function_Size_Of* __node_function_size_of) {
 
     parser::convertor_control->print("Node Function Size Of - Byte Code");
@@ -1064,6 +1145,132 @@ utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeCast(Ast_No
 
     return _byte_code;
     
+}
+
+utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeWhile(Ast_Node_While* __node_while) {
+
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>();
+    _byte_code->destroy_content = 0;
+
+    int _current_size = convertor_control->byte_code_blocks->last->object->current_allocation_size;
+
+    int _body_position = parser::convertor_control->allocBlock();
+
+    convertor_control->byte_code_blocks->last->object->current_allocation_size = _current_size;
+
+    parser::convertor_control->setBlock(
+        __node_while->condition,
+        convertor_control->byte_code_blocks->last->object
+    );
+
+    byte_code::Byte_Code* _if_condition = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+    new (_if_condition) byte_code::Byte_Code(
+        BYTE_CODE_IF,
+        0
+    );
+
+    convertor_control->byte_code_blocks->last->object->block->add(
+        _if_condition
+    );
+
+    byte_code::Byte_Code* _end_code_block = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+    new (_end_code_block) byte_code::Byte_Code(
+        BYTE_CODE_CLOSE_STACK_FRAME,
+        0
+    );
+
+    convertor_control->byte_code_blocks->last->object->block->add(
+        _end_code_block
+    );
+
+    parser::convertor_control->setBlock(
+        __node_while->body->first->object->node_type == AST_NODE_CODE_BLOCK ? ((Ast_Node_Code_Block*)__node_while->body->first->object)->code : __node_while->body,
+        convertor_control->byte_code_blocks->last->object
+    );
+
+    byte_code::Byte_Code* _set_index = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+    new (_set_index) byte_code::Byte_Code(
+        BYTE_CODE_SET_INDEX,
+        0
+    );
+
+    convertor_control->byte_code_blocks->last->object->block->add(_set_index);
+
+    byte_code::Byte_Code* _call_function = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+    new (_call_function) byte_code::Byte_Code(
+        BYTE_CODE_CALL_SUB,
+        _body_position
+    );
+
+    _byte_code->add(_call_function);
+
+    return _byte_code;
+
+}
+
+utils::Linked_List <byte_code::Byte_Code*>* parser::getByteCodeOfNodeDoWhile(Ast_Node_Do_While* __node_do_while) {
+
+    utils::Linked_List <byte_code::Byte_Code*>* _byte_code = new utils::Linked_List <byte_code::Byte_Code*>();
+    _byte_code->destroy_content = 0;
+
+    int _current_size = convertor_control->byte_code_blocks->last->object->current_allocation_size;
+
+    int _body_position = parser::convertor_control->allocBlock();
+
+    convertor_control->byte_code_blocks->last->object->current_allocation_size = _current_size;
+
+    parser::convertor_control->setBlock(
+        __node_do_while->body->first->object->node_type == AST_NODE_CODE_BLOCK ? ((Ast_Node_Code_Block*)__node_do_while->body->first->object)->code : __node_do_while->body,
+        convertor_control->byte_code_blocks->last->object
+    );
+
+    parser::convertor_control->setBlock(
+        __node_do_while->condition,
+        convertor_control->byte_code_blocks->last->object
+    );
+
+    byte_code::Byte_Code* _if_condition = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+    new (_if_condition) byte_code::Byte_Code(
+        BYTE_CODE_IF,
+        0
+    );
+
+    convertor_control->byte_code_blocks->last->object->block->add(
+        _if_condition
+    );
+
+    byte_code::Byte_Code* _end_code_block = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+    new (_end_code_block) byte_code::Byte_Code(
+        BYTE_CODE_CLOSE_STACK_FRAME,
+        0
+    );
+
+    convertor_control->byte_code_blocks->last->object->block->add(
+        _end_code_block
+    );
+
+    byte_code::Byte_Code* _set_index = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+    new (_set_index) byte_code::Byte_Code(
+        BYTE_CODE_SET_INDEX,
+        0
+    );
+
+    convertor_control->byte_code_blocks->last->object->block->add(_set_index);
+
+    byte_code::Byte_Code* _call_function = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code));
+
+    new (_call_function) byte_code::Byte_Code(
+        BYTE_CODE_CALL_SUB,
+        _body_position
+    );
+
+    _byte_code->add(_call_function);
+
+    return _byte_code;
+
 }
 
 

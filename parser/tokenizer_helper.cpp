@@ -123,8 +123,9 @@ int parser::getTokenKeyWord(const char*& __current_position) {
     if (!strncmp(__current_position, "else if", 7)) { __current_position += 7; return ELSE_IF; }
     if (!strncmp(__current_position, "else", 4)) { __current_position += 4; return ELSE; }
     if (!strncmp(__current_position, "sizeof", 6)) { __current_position += 6; return SIZE_OF; }
-
-
+    if (!strncmp(__current_position, "while", 5)) { __current_position += 5; return WHILE; }
+    if (!strncmp(__current_position, "do", 2)) { __current_position += 2; return DO; }
+    if (!strncmp(__current_position, "break", 5)) { __current_position += 5; return BREAK; }
 
     return 0;
 

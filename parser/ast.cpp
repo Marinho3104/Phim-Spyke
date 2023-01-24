@@ -312,6 +312,7 @@ parser::Ast_Control::Ast_Control(bool __debug_mode) : current_position(0), debug
     implicit_values_collection = new utils::Linked_List <char*>();
 
     to_remove = new utils::Linked_List <Ast_Node*>();
+    open_loops = new utils::Linked_List <Ast_Node*>();
 
 }
 

@@ -32,6 +32,8 @@ void virtual_machine::Execution::addStack() {
 }
 
 void virtual_machine::Execution::popStack() { 
+
+    // std::cout << "Call Position -> " <<  stacks->last->object->call_position << std::endl;
     
     program->memory->deallocateStack(stacks->last->object->call_position - 1); 
 
@@ -47,11 +49,13 @@ void virtual_machine::Execution::executeBlock(int __block_index, bool __stack_ch
 
     stacks->last->object->current_index = 0;
 
-    while((_current_byte_code = program->byte_code->getByteCode(__block_index, stacks->last->object->current_index))->code != BYTE_CODE_END_CODE_BLOCK && (_current_byte_code = program->byte_code->getByteCode(__block_index, stacks->last->object->current_index))->code != BYTE_CODE_CLOSE_STACK_FRAME) {
+    while((_current_byte_code = program->byte_code->getByteCode(__block_index, stacks->last->object->current_index))->code != BYTE_CODE_END_CODE_BLOCK) {
 
         virtual_machine::executeByteCode(_current_byte_code, this, stacks->last->object->current_index);
 
         stacks->last->object->current_index ++;
+
+        if (stacks->last->object->close) break;
 
     }
 

@@ -22,6 +22,8 @@
 #define AST_NODE_SIZE_OF 19
 #define AST_NODE_WHILE 20
 #define AST_NODE_DO_WHILE 21
+#define AST_NODE_BREAK 22
+#define AST_NODE_CONTINUE 23
 
 
 

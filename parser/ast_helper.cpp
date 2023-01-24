@@ -316,6 +316,8 @@ int parser::getNodeType() {
     case RETURN: return AST_NODE_RETURN; break;
     case WHILE: return AST_NODE_WHILE; break;
     case DO: return AST_NODE_DO_WHILE; break;
+    case BREAK: return AST_NODE_BREAK; break;
+    case CONTINUE: return AST_NODE_CONTINUE; break;
     case NAMESPACE: return AST_NODE_NAME_SPACE; break;
     case STRUCT: return AST_NODE_STRUCT_DECLARATION; break;
     case OPEN_PARENTHESIS: 
@@ -585,6 +587,78 @@ int parser::getOperatorPriority(int __token_id) { // order may not be correct TO
     return 6;
 
 }
+
+
+bool parser::setImplicitConversion(Ast_Node_Expression* __expression, int __conversion_type) {
+
+    Ast_Node_Variable_Declaration* _expression_result_type = __expression->getResultDeclaration();
+
+    Ast_Node_Variable_Declaration* _conversion_type_variable_declaration = (Ast_Node_Variable_Declaration*) malloc(sizeof(Ast_Node_Variable_Declaration));
+    new (_conversion_type_variable_declaration) Ast_Node_Variable_Declaration(
+        Type_Information::generatePrimitiveType(__conversion_type), -1, 0
+    );
+    ast_control->to_remove->add(_conversion_type_variable_declaration);
+
+
+    Ast_Node_Variable* _node_variable = (Ast_Node_Variable*) malloc(sizeof(Ast_Node_Variable));
+    new (_node_variable) Ast_Node_Variable(
+        _conversion_type_variable_declaration, -1
+    );
+    ast_control->to_remove->add(_node_variable);
+
+
+
+    parser::ast_control->addToChain(
+        ast_control->name_space_control->getNameSpace(_conversion_type_variable_declaration->type->declaration->functions),
+        NULL
+    );
+
+    int _declaration_id = 
+        getDeclarationId(_conversion_type_variable_declaration->type->declaration->struct_name);
+
+
+
+    utils::Linked_List <Ast_Node*>* _parameters = new utils::Linked_List <Ast_Node*>();
+
+    _parameters->add(
+        _conversion_type_variable_declaration->type->declaration->representive_declaration->getCopy()
+    );
+    _parameters->operator[](0)->representive_declaration->type->pointer_level++;
+
+    _parameters->add(
+        _expression_result_type, 0
+    );
+
+    Ast_Node_Function_Declaration* _function_declaration = getFunctionDeclaration(
+        _declaration_id, _parameters
+    );
+
+    delete _parameters->remove(1); delete _parameters;
+
+    parser::ast_control->popFromChain();
+
+    if (_declaration_id == -1 || !_function_declaration) return 0;
+
+
+
+    __expression->organized_set->insert(
+        _conversion_type_variable_declaration, 0
+    ); 
+    __expression->organized_set->insert(
+        _node_variable, 1
+    );
+    __expression->organized_set->insert(
+        _node_variable, 1
+    );
+
+    __expression->organized_set->add(
+        _function_declaration
+    );
+
+    return 1;
+
+}
+
 
 
 template <typename type>

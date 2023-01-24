@@ -121,6 +121,7 @@
 #define WHILE 91 // while
 #define DO 92 // do
 #define BREAK 93 // break
+#define CONTINUE 94 // continue
 
 #define PRIMITIVE_TYPE_POINTER 80 // pointer
 

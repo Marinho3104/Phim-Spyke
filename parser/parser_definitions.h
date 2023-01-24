@@ -37,8 +37,10 @@ namespace parser {
     struct Ast_Node_Else;
     struct Ast_Node_Value;
     struct Ast_Node_While;
+    struct Ast_Node_Break;
     struct Ast_Node_Return;
     struct Ast_Node_Else_If;
+    struct Ast_Node_Continue;
     struct Ast_Node_Variable;
     struct Ast_Node_Do_While;
     struct Ast_Node_Accessing;

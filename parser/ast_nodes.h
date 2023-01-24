@@ -230,8 +230,9 @@ namespace parser {
 
         Ast_Node* value, *accessing;
         Ast_Node_Accessing* next;
+        bool pointer_accessing;
 
-        ~Ast_Node_Accessing(); Ast_Node_Accessing(Ast_Node*, Ast_Node*, Ast_Node_Accessing*);
+        ~Ast_Node_Accessing(); Ast_Node_Accessing(Ast_Node*, Ast_Node*, Ast_Node_Accessing*, bool);
 
         static Ast_Node_Accessing* generate(Ast_Node*);
 
@@ -322,6 +323,7 @@ namespace parser {
 
         Ast_Node_Expression* condition;
         utils::Linked_List <Ast_Node*>* body;
+        int body_position;
 
         ~Ast_Node_While(); Ast_Node_While(Ast_Node_Expression*, utils::Linked_List <Ast_Node*>*);
 
@@ -333,12 +335,34 @@ namespace parser {
 
         Ast_Node_Expression* condition;
         utils::Linked_List <Ast_Node*>* body;
+        int body_position;
 
         ~Ast_Node_Do_While(); Ast_Node_Do_While(Ast_Node_Expression*, utils::Linked_List <Ast_Node*>*);
 
         static Ast_Node_Do_While* generate();
 
     };
+
+    struct Ast_Node_Break : Ast_Node {
+
+        int* body_position;
+
+        ~Ast_Node_Break(); Ast_Node_Break(int*);
+
+        static Ast_Node_Break* generate();
+
+    };
+
+    struct Ast_Node_Continue : Ast_Node {
+
+        int* body_position;
+
+        ~Ast_Node_Continue(); Ast_Node_Continue(int*);
+
+        static Ast_Node_Continue* generate();
+
+    };
+
 
 }
 

@@ -9,7 +9,7 @@
 
 virtual_machine::Memory::~Memory() {
 
-    if (top_stack_memory != -1) std::cout << "Not all memory deallocated" << std::endl; 
+    if (top_stack_memory != -1) std::cout << "Not all memory deallocated -- " << top_stack_memory << std::endl; 
 
 }
 
@@ -56,7 +56,7 @@ int virtual_machine::Memory::allocateStack(int __s) {
 
 void virtual_machine::Memory::deallocateStack(int __s) {
 
-    if (__s < -1 >= top_stack_memory) return;
+    if (__s < -1 || __s >= top_stack_memory) return;
 
     // For degub only
     while(top_stack_memory != __s) { void* _ = getRealAddress(top_stack_memory); *((char*) _) = 0; top_stack_memory--; }

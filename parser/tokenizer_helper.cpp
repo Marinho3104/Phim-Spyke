@@ -112,12 +112,12 @@ int parser::getTokenKeyWord(const char*& __current_position) {
     if (!strncmp(__current_position, "exec", 4)) { __current_position += 4; return BYTE_CODE; }
     if (!strncmp(__current_position, "return", 6)) { __current_position += 6; return RETURN; }
 
-    if (!strncmp(__current_position, "define", 6)) { __current_position += 6; return PRE_COMPILER_DEFINE; }
-    if (!strncmp(__current_position, "include", 7)) { __current_position += 7; return PRE_COMPILER_INCLUDE; }
-    if (!strncmp(__current_position, "ifdef", 5)) { __current_position += 5; return PRE_COMPILER_IF_DEF; }
-    if (!strncmp(__current_position, "ifndef", 6)) { __current_position += 6; return PRE_COMPILER_IF_N_DEF; }
-    if (!strncmp(__current_position, "else", 4)) { __current_position += 4; return PRE_COMPILER_ELSE; }
-    if (!strncmp(__current_position, "endif", 5)) { __current_position += 5; return PRE_COMPILER_END_IF; }
+    if (tokenizer_control->tokens_collection->count && !strncmp(__current_position - 1, "#define", 7)) { __current_position += 6; return PRE_COMPILER_DEFINE; }
+    if (tokenizer_control->tokens_collection->count && !strncmp(__current_position - 1, "#include", 8)) { __current_position += 7; return PRE_COMPILER_INCLUDE; }
+    if (tokenizer_control->tokens_collection->count && !strncmp(__current_position - 1, "#ifdef", 6)) { __current_position += 5; return PRE_COMPILER_IF_DEF; }
+    if (tokenizer_control->tokens_collection->count && !strncmp(__current_position - 1, "#ifndef", 7)) { __current_position += 6; return PRE_COMPILER_IF_N_DEF; }
+    if (tokenizer_control->tokens_collection->count && !strncmp(__current_position - 1, "#else", 5)) { __current_position += 4; return PRE_COMPILER_ELSE; }
+    if (tokenizer_control->tokens_collection->count && !strncmp(__current_position - 1, "#endif", 6)) { __current_position += 5; return PRE_COMPILER_END_IF; }
 
     if (!strncmp(__current_position, "if", 2)) { __current_position += 2; return IF; }
     if (!strncmp(__current_position, "else if", 7)) { __current_position += 7; return ELSE_IF; }
@@ -126,6 +126,7 @@ int parser::getTokenKeyWord(const char*& __current_position) {
     if (!strncmp(__current_position, "while", 5)) { __current_position += 5; return WHILE; }
     if (!strncmp(__current_position, "do", 2)) { __current_position += 2; return DO; }
     if (!strncmp(__current_position, "break", 5)) { __current_position += 5; return BREAK; }
+    if (!strncmp(__current_position, "continue", 8)) { __current_position += 8; return CONTINUE; }
 
     return 0;
 

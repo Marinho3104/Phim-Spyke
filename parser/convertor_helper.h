@@ -47,6 +47,10 @@ namespace parser {
     
     utils::Linked_List <byte_code::Byte_Code*>* getByteCodeOfNodeDoWhile(Ast_Node_Do_While*);
 
+    byte_code::Byte_Code* getByteCodeOfNodeBreak(Ast_Node_Break*);
+
+    byte_code::Byte_Code* getByteCodeOfNodeContinue(Ast_Node_Continue*);
+
     int getImplicitValueOff(int);
 
 }

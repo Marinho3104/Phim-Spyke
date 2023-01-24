@@ -10,20 +10,32 @@ struct marinho {
     int m, l;
     ::mr ml;
 
-    void j() {  }
+    void jj() { this->m = 192; }
 
 };
 
+int mm() {
+
+    int m = 10;
+
+    while(m) {
+
+        if (--m) {continue;}
+
+        m = 10;
+
+    }
+
+    return m;
+
+}
 
 void main() {
 
-    int m = 0;
 
-    do { m = 1000; }
+    int l = mm();
 
-    while(0); 
-
-    m;
+    l;
 
 }
 

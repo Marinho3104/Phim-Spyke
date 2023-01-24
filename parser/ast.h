@@ -80,6 +80,8 @@ namespace parser {
         utils::Linked_List <Ast_Node*>* current_nodes_list;
         utils::Linked_List <Ast_Node*>* to_remove;
 
+        utils::Linked_List <Ast_Node*>* open_loops;
+
         int current_position;
 
         int debug_mode_tab;

@@ -4,6 +4,7 @@
 
 #include "byte_code_execution_helper.h"
 #include "byte_code_store.h"
+#include "sub_opcodes.h"
 #include "byte_code.h"
 #include "execution.h"
 #include "program.h"
@@ -54,6 +55,7 @@ void virtual_machine::executeByteCode(byte_code::Byte_Code* __byte_code, virtual
     case BYTE_CODE_EXECUTE_PREVIOUS_STACK: execute_BYTE_CODE_EXECUTE_PREVIOUS_STACK(__byte_code, __execution, __current_index); break;
     case BYTE_CODE_JUMP: execute_BYTE_CODE_JUMP(__byte_code, __execution, __current_index); break;
     case BYTE_CODE_SET_INDEX: execute_BYTE_CODE_SET_INDEX(__byte_code->argument, __execution, __current_index); break;
+    case BYTE_CODE_CLOSE_STACK_FRAME_SPECIFIC: execute_BYTE_CODE_CLOSE_STACK_FRAME_SPECIFIC(__byte_code->argument, __execution, __current_index); break;
 
     case BYTE_CODE_NOP: std::cout << "NOP" << std::endl; __execution->stacks->last->object->stack->printContent(); break;
     default: std::cout << "error " << (int) __byte_code->code << std::endl; exit(1); break;
@@ -248,14 +250,26 @@ void virtual_machine::execute_BYTE_CODE_COPY_PREVIOUS_STACK_DATA(int __arg, Exec
 
     std::cout << "COPY_LAST_PREVIOUS_STACK_DATA" << std::endl;
 
-    utils::Data_Linked_List <int>* __data_linked_list = __execution->stacks->last->previous->object->stack->last;
+    utils::Data_Linked_List <Stack*>* __data_linked_list = __execution->stacks->last->previous;
 
-    for (int _ = 0; _ < __arg; _++) __data_linked_list = __data_linked_list->previous;
+    if (__data_linked_list->next->object->sub_call) {
+
+        while (__data_linked_list->object->sub_call) {std::cout << "sub" << std::endl;__data_linked_list = __data_linked_list->previous;}
+        __data_linked_list = __data_linked_list->previous;
+
+    }
+
+    utils::Data_Linked_List <int>* __data_linked_list_1 = __data_linked_list->object->stack->last;
+
+    // for (int _ = 0; _ < __arg; _++) __data_linked_list_1 = __data_linked_list_1->previous;
 
     __execution->stacks->last->object->stack->printContent();
+    __data_linked_list->object->stack->printContent();
+
+    // exit(1);
 
     __execution->stacks->last->object->stack->add(
-        __data_linked_list->object
+        __data_linked_list_1->object
     );
 
     __execution->stacks->last->object->stack->printContent();
@@ -290,9 +304,27 @@ void virtual_machine::execute_BYTE_CODE_COPY_PREVIOUS_STACK_DATA_REMOVE(int __ar
     
 }
 
-void virtual_machine::execute_BYTE_CLOSE_STACK_FRAME(int, Execution* __execution) {
+void virtual_machine::execute_BYTE_CLOSE_STACK_FRAME(int __arg, Execution* __execution) {
 
     std::cout << "CLOSE_STACK_FRAME" << std::endl;
+
+    __execution->stacks->last->object->close = 1;
+
+    utils::Data_Linked_List <Stack*>* _data_linked_list = __execution->stacks->last->previous;
+
+    if (__arg && _data_linked_list->next->object->sub_call) {
+
+        while(_data_linked_list->object->sub_call) {
+
+            _data_linked_list->object->close = 1;
+
+            _data_linked_list = _data_linked_list->previous;
+
+        }
+
+        _data_linked_list->object->close = 1;
+
+    }
 
 
 }
@@ -327,7 +359,7 @@ void virtual_machine::execute_BYTE_BINARY_SUB(int __arg, Execution* __execution)
 
 void virtual_machine::execute_BYTE_CODE_BINARY_EQUAL_TO(int __arg, Execution* __execution) {
 
-    std::cout << "BINARY_EQUAL_TO" << std::endl;
+    std::cout << "\t\t\t\t\t\t\t\t\t\tBINARY_EQUAL_TO" << std::endl;
 
     switch (__arg)
     {
@@ -371,22 +403,28 @@ void virtual_machine::execute_BYTE_CODE_BINARY_LESS_THAN_EQUAL_TO(int, Execution
 
 void virtual_machine::execute_BYTE_CODE_IF(int __arg, Execution* __execution, int& __current_index) {
 
-    std::cout << "IF" << std::endl;
+    std::cout << "\t\t\t\tIF" << std::endl;
 
     int _condition_address = __execution->stacks->last->object->popFromStack();
     void* _condition = __execution->program->memory->getRealAddress(_condition_address);
 
-    std::cout << "Condition -> " << *((bool*) _condition) << std::endl;
+    std::cout << "\t\t\t\tCondition -> " << *((bool*) _condition) << std::endl;
 
-    if (
-        *((bool*) _condition) 
-    ) {
+    switch (__arg)
+    {
 
-        // std::cout << "Current index -> " << __current_index << std::endl;
+    case SUB_BYTE_CODE_IF_NODE_IF_0: case SUB_BYTE_CODE_IF_NODE_IF_1:
 
-        __current_index++;
 
-        if (__arg) {
+        if (
+            *((bool*) _condition)
+        ) {
+
+            __current_index++;
+
+        }
+
+        else {
 
             byte_code::Byte_Code* _execute_previous_jump = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code) * 2);
 
@@ -406,9 +444,51 @@ void virtual_machine::execute_BYTE_CODE_IF(int __arg, Execution* __execution, in
 
             free(_execute_previous_jump);
 
+
         }
 
+        break;
+
+
+    case SUB_BYTE_CODE_IF_NODE_WHILE_0:
+        
+        if (
+            *((bool*) _condition)
+        ) {
+
+            __current_index++;
+
+        } else {
+
+            byte_code::Byte_Code* _execute_previous_jump = (byte_code::Byte_Code*) malloc(sizeof(byte_code::Byte_Code) * 2);
+
+            _execute_previous_jump[0] = byte_code::Byte_Code(
+                BYTE_CODE_EXECUTE_PREVIOUS_STACK,
+                1
+            );
+
+            _execute_previous_jump[1] = byte_code::Byte_Code(
+                BYTE_CODE_JUMP,
+                1
+            );
+
+            int _temp = 0;
+
+            execute_BYTE_CODE_EXECUTE_PREVIOUS_STACK(_execute_previous_jump, __execution, _temp);
+
+            free(_execute_previous_jump);
+
+
+        }
+
+
+        break;
+    
+    default:
+        break;
     }
+
+    // exit(1);
 
 }
 
@@ -421,6 +501,8 @@ void virtual_machine::execute_BYTE_CODE_CALL_SUB(int __arg, Execution* __executi
     __execution->addStack();
 
     __execution->stacks->last->object->inicial_position = __execution->stacks->last->previous->object->inicial_position;
+    __execution->stacks->last->object->sub_call = 1;
+    __execution->stacks->last->object->position = __arg;
 
     __execution->executeBlock(__arg, 0); 
     
@@ -549,3 +631,25 @@ void virtual_machine::execute_BYTE_CODE_SET_INDEX(int __arg, Execution* __execut
 
 }
 
+void virtual_machine::execute_BYTE_CODE_CLOSE_STACK_FRAME_SPECIFIC(int __arg, Execution* __execution, int&) {
+
+    std::cout << "BYTE_CODE_CLOSE_STACK_FRAME_SPECIFIC -- argument " << __arg << std::endl;
+
+    utils::Data_Linked_List <Stack*>* _data_linked_list = __execution->stacks->last;
+
+    while(_data_linked_list->object->position != __arg) {
+
+        std::cout << "Position -> " << _data_linked_list->object->position << std::endl;
+
+        _data_linked_list->object->close = 1;
+
+        _data_linked_list = _data_linked_list->previous;
+
+    }
+
+    _data_linked_list->object->close = 1;
+    _data_linked_list->previous->object->current_index++;
+
+    // exit(1);
+
+}

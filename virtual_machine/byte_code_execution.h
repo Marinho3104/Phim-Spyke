@@ -72,6 +72,8 @@ namespace virtual_machine {
 
     void execute_BYTE_CODE_SET_INDEX(int, Execution*, int&);
 
+    void execute_BYTE_CODE_CLOSE_STACK_FRAME_SPECIFIC(int, Execution*, int&);
+
 }
 
 #endif
